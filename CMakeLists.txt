@@ -41,6 +41,8 @@ set(HWS_SAMPLING_INTERVAL "100" CACHE STRING "The interval in milliseconds in wh
 if (NOT ${HWS_SAMPLING_INTERVAL} MATCHES "^[0-9]+$" OR ${HWS_SAMPLING_INTERVAL} LESS_EQUAL 0)
     message(FATAL_ERROR "The HWS_SAMPLING_INTERVAL must be a natural number greater 0, but is \"${HWS_SAMPLING_INTERVAL}\"!")
 endif ()
+message(STATUS "Setting the hardware sampler interval to ${HWS_SAMPLING_INTERVAL}ms.")
+target_compile_definitions(${HWS_LIBRARY_NAME} PUBLIC HWS_SAMPLING_INTERVAL=${HWS_SAMPLING_INTERVAL}ms)
 
 
 ####################################################################################################################
