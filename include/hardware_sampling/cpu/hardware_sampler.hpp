@@ -103,7 +103,7 @@ class cpu_hardware_sampler : public hardware_sampler {
 
   private:
     /**
-     * @copydoc plssvm::detail::tracking::hardware_sampler::sampling_loop
+     * @copydoc hws::hardware_sampler::sampling_loop
      */
     void sampling_loop() final;
 

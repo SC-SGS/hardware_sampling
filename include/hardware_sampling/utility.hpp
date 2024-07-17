@@ -39,7 +39,7 @@ namespace hws::detail {
 
 /**
  * @brief Defines a public optional vector getter with name `get_sample_name` and a private optional vector member with name `sample_name_`.
- * @details Same as `PLSSVM_SAMPLE_STRUCT_FIXED_MEMBER` but per sample_name multiple values can be tracked.
+ * @details Same as `HWS_SAMPLE_STRUCT_FIXED_MEMBER` but per sample_name multiple values can be tracked.
  */
 #define HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(sample_type, sample_name)                                   \
   public:                                                                                             \
