@@ -79,7 +79,7 @@ IncludeBlocks: Regroup
 IncludeCategories:
   - Regex: '^"hardware_sampling/'
     Priority: 1
-  - Regex: '^"(|pybind|nvml|rocm_smi|level_zero|subprocess)'
+  - Regex: '^"(pybind|nvml|rocm_smi|level_zero|subprocess)'
     Priority: 2
   - Regex: '^.*'
     Priority: 3
@@ -168,4 +168,3 @@ TypeNames: [ ]
 TypenameMacros: [ ]
 UseTab: Never
 WhitespaceSensitiveMacros: [ 'STRINGIZE', 'PP_STRINGIZE', 'BOOST_PP_STRINGIZE' ]
-...
