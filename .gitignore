@@ -1,4 +1,5 @@
-# Prerequisites
+# C++ ================================
+Prerequisites
 *.d
 
 # Compiled Object files
@@ -30,3 +31,26 @@
 *.exe
 *.out
 *.app
+
+
+# CMake ================================
+bin/
+build*/
+cmake-build*/
+CMakeLists.txt.user
+CMakeCache.txt
+CMakeSettings.json
+CMakeFiles
+CMakeScripts
+Testing
+Makefile
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+
+
+# IDEs ================================
+.idea/
+.vscode/
+.vs/
