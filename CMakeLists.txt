@@ -37,6 +37,13 @@ target_compile_options(${HWS_LIBRARY_NAME} PUBLIC
         $<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/W4 /bigobj /wd4459 /Zc:lambda>>
 )
 
+## add option to enable/disable error checking in the hardware sampling functions
+option(HWS_ENABLE_ERROR_CHECKS "Enable error checking for the hardware sampling functions. May be problematic with smaller sample intervals." OFF)
+if (HWS_ENABLE_ERROR_CHECKS)
+    message(STATUS "Enable error checks for the hardware sampling functions.")
+    target_compile_definitions(${HWS_LIBRARY_NAME} PRIVATE HWS_ERROR_CHECKS_ENABLED)
+endif ()
+
 # specify the sampling interval in milliseconds
 set(HWS_SAMPLING_INTERVAL "100" CACHE STRING "The interval in milliseconds in which the hardware information (like clock frequency or power draw) are queried.")
 if (NOT ${HWS_SAMPLING_INTERVAL} MATCHES "^[0-9]+$" OR ${HWS_SAMPLING_INTERVAL} LESS_EQUAL 0)
@@ -223,6 +230,5 @@ if (HWS_FOR_INTEL_GPUS)
     # add compile definition
     target_compile_definitions(${HWS_LIBRARY_NAME} PUBLIC HWS_FOR_INTEL_GPUS_ENABLED)
 endif ()
-
 
 # TODO: install target
