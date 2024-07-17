@@ -19,7 +19,7 @@ set(HWS_SOURCES
 )
 
 # create hardware sampling library
-set(HWS_LIBRARY_NAME hws)
+set(HWS_LIBRARY_NAME hardware_sampling)
 add_library(${HWS_LIBRARY_NAME} SHARED ${HWS_SOURCES})
 
 # use C++20
@@ -231,4 +231,17 @@ if (HWS_FOR_INTEL_GPUS)
     target_compile_definitions(${HWS_LIBRARY_NAME} PUBLIC HWS_FOR_INTEL_GPUS_ENABLED)
 endif ()
 
+
+####################################################################################################################
+##                                             enable Python bindings                                             ##
+####################################################################################################################
+option(HWS_ENABLE_PYTHON_BINDINGS "Build langauge bindings for Python." ON)
+
+if (HWS_ENABLE_PYTHON_BINDINGS)
+    add_subdirectory(bindings)
+endif ()
+
+
 # TODO: install target
+# TODO: auto detect GPU?
+# TODO: events in sampler
