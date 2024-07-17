@@ -126,7 +126,7 @@ if (HWS_FOR_CPUS)
             # fetch subprocess library subprocess.h
             FetchContent_Declare(subprocess
                     GIT_REPOSITORY https://github.com/sheredom/subprocess.h.git
-                    GIT_TAG ${PLSSVM_subprocess_VERSION}
+                    GIT_TAG ${HWS_subprocess_VERSION}
                     QUIET
                     CONFIGURE_COMMAND ""
                     BUILD_COMMAND ""
