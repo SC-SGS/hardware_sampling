@@ -1,5 +1,5 @@
 ## Authors: Marcel Breyer
-## Copyright (C): 2018-today All Rights Reserved
+## Copyright (C): 2024-today All Rights Reserved
 ## License: This file is released under the MIT license.
 ##          See the LICENSE.md file in the project root for full license information.
 ########################################################################################################################
