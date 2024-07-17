@@ -134,7 +134,7 @@ void cpu_hardware_sampler::sampling_loop() {
     // -q, --quiet              skip decoding system configuration header
 
     // get header information
-    #if defined(PLSSVM_HARDWARE_TRACKING_VIA_TURBOSTAT_ROOT)
+    #if defined(HWS_VIA_TURBOSTAT_ROOT)
     // run with sudo
     const std::string_view turbostat_command_line = "sudo turbostat -n 1 -i 0.001 -S -q";
     #else
