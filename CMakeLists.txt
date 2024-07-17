@@ -12,7 +12,10 @@ project("HWS - Hardware Sampling for GPUs and CPUs"
         DESCRIPTION "Hardware sampling (e.g., clock frequencies, memory consumption, temperatures, or energy draw) for CPUs, and GPUS.")
 
 # explicitly set library source files
-set(HWS_SOURCES "")
+set(HWS_SOURCES
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/events.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/hardware_sampler.cpp
+)
 
 # create hardware sampling library
 set(HWS_LIBRARY_NAME hws)
@@ -20,6 +23,9 @@ add_library(${HWS_LIBRARY_NAME} SHARED ${HWS_SOURCES})
 
 # use C++20
 target_compile_features(${HWS_LIBRARY_NAME} PUBLIC cxx_std_20)
+
+# add target include directory
+target_include_directories(${HWS_LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 # additional library compile options
 target_compile_options(${HWS_LIBRARY_NAME} PUBLIC
@@ -129,9 +135,9 @@ if (HWS_FOR_CPUS)
         # add source file to source file list
         target_sources(${HWS_LIBRARY_NAME} PRIVATE
                 $<BUILD_INTERFACE:
-                ${CMAKE_CURRENT_SOURCE_DIR}/cpu/hardware_sampler.cpp;
-                ${CMAKE_CURRENT_SOURCE_DIR}/cpu/cpu_samples.cpp;
-                ${CMAKE_CURRENT_SOURCE_DIR}/cpu/utility.cpp;
+                ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/cpu/hardware_sampler.cpp;
+                ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/cpu/cpu_samples.cpp;
+                ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/cpu/utility.cpp;
                 >)
 
         # add compile definitions
@@ -157,8 +163,8 @@ if (HWS_FOR_NVIDIA_GPUS)
     # add source file to source file list
     target_sources(${HWS_LIBRARY_NAME} PRIVATE
             $<BUILD_INTERFACE:
-            ${CMAKE_CURRENT_SOURCE_DIR}/gpu_nvidia/hardware_sampler.cpp;
-            ${CMAKE_CURRENT_SOURCE_DIR}/gpu_nvidia/nvml_samples.cpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/gpu_nvidia/hardware_sampler.cpp;
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/gpu_nvidia/nvml_samples.cpp
             >)
 
     # add compile definition
@@ -182,8 +188,8 @@ if (HWS_FOR_AMD_GPUS)
     # add source file to source file list
     target_sources(${HWS_LIBRARY_NAME} PRIVATE
             $<BUILD_INTERFACE:
-            ${CMAKE_CURRENT_SOURCE_DIR}/gpu_amd/hardware_sampler.cpp;
-            ${CMAKE_CURRENT_SOURCE_DIR}/gpu_amd/rocm_smi_samples.cpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/gpu_amd/hardware_sampler.cpp;
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/gpu_amd/rocm_smi_samples.cpp
             >)
 
     # add compile definition
@@ -206,9 +212,9 @@ if (HWS_FOR_INTEL_GPUS)
     # add source file to source file list
     target_sources(${HWS_LIBRARY_NAME} PRIVATE
             $<BUILD_INTERFACE:
-            ${CMAKE_CURRENT_SOURCE_DIR}/gpu_intel/hardware_sampler.cpp;
-            ${CMAKE_CURRENT_SOURCE_DIR}/gpu_intel/level_zero_samples.cpp;
-            ${CMAKE_CURRENT_SOURCE_DIR}/gpu_intel/utility.cpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/gpu_intel/hardware_sampler.cpp;
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/gpu_intel/level_zero_samples.cpp;
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/gpu_intel/utility.cpp
             >)
 
     # add compile definition
