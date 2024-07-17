@@ -15,6 +15,7 @@ project("HWS - Hardware Sampling for GPUs and CPUs"
 set(HWS_SOURCES
         ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/events.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/hardware_sampler.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/utility.cpp
 )
 
 # create hardware sampling library
