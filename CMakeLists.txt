@@ -164,7 +164,7 @@ endif ()
 ##                                          NVIDIA GPU sampling via NVML                                          ##
 ####################################################################################################################
 # find libraries necessary for NVML and link against them
-find_package(CUDAToolkit)
+find_package(CUDAToolkit QUIET)
 if (CUDAToolkit_FOUND)
     target_link_libraries(${HWS_LIBRARY_NAME} PRIVATE CUDA::nvml)
 
@@ -188,7 +188,7 @@ endif ()
 ##                                        AMD GPU sampling via ROCm SMI lib                                       ##
 ####################################################################################################################
 ## try finding ROCm SMI
-find_package(rocm_smi)
+find_package(rocm_smi QUIET)
 if (rocm_smi_FOUND)
     target_link_libraries(${HWS_LIBRARY_NAME} PRIVATE -lrocm_smi64)
     target_include_directories(${HWS_LIBRARY_NAME} PRIVATE ${ROCM_SMI_INCLUDE_DIR})
@@ -213,7 +213,7 @@ endif ()
 ##                                        Intel GPU sampling via Level Zero                                       ##
 ####################################################################################################################
 # try finding Level Zero
-find_package(level_zero)
+find_package(level_zero QUIET)
 if (level_zero_FOUND)
     target_link_libraries(${HWS_LIBRARY_NAME} PRIVATE level_zero)
 
