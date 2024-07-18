@@ -9,7 +9,7 @@ message(STATUS "Building Python language bindings for PLSSVM.")
 find_package(Python COMPONENTS Interpreter Development)
 
 ## try finding pybind11
-set(HWS_pybind11_VERSION 43de801)
+set(HWS_pybind11_VERSION master)
 find_package(pybind11 2.13.1 QUIET)
 if (pybind11_FOUND)
     message(STATUS "Found package pybind11.")
