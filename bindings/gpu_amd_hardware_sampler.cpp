@@ -20,10 +20,8 @@
 namespace py = pybind11;
 
 void init_gpu_amd_hardware_sampler(py::module_ &m) {
-    const py::module_ hardware_sampling_module = m.def_submodule("HardwareSampling");
-
     // bind the general samples
-    py::class_<hws::rocm_smi_general_samples>(hardware_sampling_module, "RocmSmiGeneralSamples")
+    py::class_<hws::rocm_smi_general_samples>(m, "RocmSmiGeneralSamples")
         .def("get_name", &hws::rocm_smi_general_samples::get_name, "the name of the device")
         .def("get_performance_level", &hws::rocm_smi_general_samples::get_performance_level, "the performance level: one of rsmi_dev_perf_level_t")
         .def("get_utilization_gpu", &hws::rocm_smi_general_samples::get_utilization_gpu, "the GPU compute utilization in percent")
@@ -33,7 +31,7 @@ void init_gpu_amd_hardware_sampler(py::module_ &m) {
         });
 
     // bind the clock samples
-    py::class_<hws::rocm_smi_clock_samples>(hardware_sampling_module, "RocmSmiClockSamples")
+    py::class_<hws::rocm_smi_clock_samples>(m, "RocmSmiClockSamples")
         .def("get_clock_system_min", &hws::rocm_smi_clock_samples::get_clock_system_min, "the minimum possible system clock frequency in Hz")
         .def("get_clock_system_max", &hws::rocm_smi_clock_samples::get_clock_system_max, "the maximum possible system clock frequency in Hz")
         .def("get_clock_socket_min", &hws::rocm_smi_clock_samples::get_clock_socket_min, "the minimum possible socket clock frequency in Hz")
@@ -50,7 +48,7 @@ void init_gpu_amd_hardware_sampler(py::module_ &m) {
         });
 
     // bind the power samples
-    py::class_<hws::rocm_smi_power_samples>(hardware_sampling_module, "RocmSmiPowerSamples")
+    py::class_<hws::rocm_smi_power_samples>(m, "RocmSmiPowerSamples")
         .def("get_power_default_cap", &hws::rocm_smi_power_samples::get_power_default_cap, "the default power cap, may be different from power cap")
         .def("get_power_cap", &hws::rocm_smi_power_samples::get_power_cap, "if the GPU draws more power (μW) than the power cap, the GPU may throttle")
         .def("get_power_type", &hws::rocm_smi_power_samples::get_power_type, "the type of the power management: either current power draw or average power draw")
@@ -63,7 +61,7 @@ void init_gpu_amd_hardware_sampler(py::module_ &m) {
         });
 
     // bind the memory samples
-    py::class_<hws::rocm_smi_memory_samples>(hardware_sampling_module, "RocmSmiMemorySamples")
+    py::class_<hws::rocm_smi_memory_samples>(m, "RocmSmiMemorySamples")
         .def("get_memory_total", &hws::rocm_smi_memory_samples::get_memory_total, "the total available memory in Byte")
         .def("get_visible_memory_total", &hws::rocm_smi_memory_samples::get_visible_memory_total, "the total visible available memory in Byte, may be smaller than the total memory")
         .def("get_min_num_pcie_lanes", &hws::rocm_smi_memory_samples::get_min_num_pcie_lanes, "the minimum number of used PCIe lanes")
@@ -76,7 +74,7 @@ void init_gpu_amd_hardware_sampler(py::module_ &m) {
         });
 
     // bind the temperature samples
-    py::class_<hws::rocm_smi_temperature_samples>(hardware_sampling_module, "RocmSmiTemperatureSamples")
+    py::class_<hws::rocm_smi_temperature_samples>(m, "RocmSmiTemperatureSamples")
         .def("get_num_fans", &hws::rocm_smi_temperature_samples::get_num_fans, "the number of fans (if any)")
         .def("get_max_fan_speed", &hws::rocm_smi_temperature_samples::get_max_fan_speed, "the maximum fan speed")
         .def("get_temperature_edge_min", &hws::rocm_smi_temperature_samples::get_temperature_edge_min, "the minimum temperature on the GPU's edge temperature sensor in m°C")
@@ -106,7 +104,7 @@ void init_gpu_amd_hardware_sampler(py::module_ &m) {
         });
 
     // bind the GPU AMD hardware sampler class
-    py::class_<hws::gpu_amd_hardware_sampler, hws::hardware_sampler>(hardware_sampling_module, "GpuAmdHardwareSampler")
+    py::class_<hws::gpu_amd_hardware_sampler, hws::hardware_sampler>(m, "GpuAmdHardwareSampler")
         .def(py::init<std::size_t>(), "construct a new AMD GPU hardware sampler specifying the device to sample")
         .def(py::init<std::size_t, std::chrono::milliseconds>(), "construct a new AMD GPU hardware sampler specifying the device to sample and the used sampling interval")
         .def("general_samples", &hws::gpu_amd_hardware_sampler::general_samples, "get all general samples")

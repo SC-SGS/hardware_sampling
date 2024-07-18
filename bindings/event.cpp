@@ -15,10 +15,8 @@
 namespace py = pybind11;
 
 void init_event(py::module_ &m) {
-    const py::module_ hardware_sampling_module = m.def_submodule("HardwareSampling");
-
     // bind a single event
-    py::class_<hws::event>(hardware_sampling_module, "Event")
+    py::class_<hws::event>(m, "Event")
         .def(py::init<decltype(hws::event::time_point), decltype(hws::event::name)>(), "construct a new event using a time point and a name")
         .def_readonly("time_point", &hws::event::time_point, "read the time point associated to this event")
         .def_readonly("name", &hws::event::name, "read the name associated to this event")

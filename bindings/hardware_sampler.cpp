@@ -31,10 +31,6 @@ namespace py = pybind11;
 void init_hardware_sampler(py::module_ &m) {
     const py::module_ pure_virtual_module = m.def_submodule("__pure_virtual");
 
-    // use a detail.tracking submodule for the hardware sampling
-    py::module_ detail_module = m.def_submodule("detail", "a module containing detail functionality");
-    const py::module_ tracking_module = detail_module.def_submodule("tracking", "a module containing performance tracking and hardware sampling functionality");
-
     // bind the pure virtual hardware sampler base class
     py::class_<hws::hardware_sampler> pyhardware_sampler(pure_virtual_module, "__pure_virtual_base_HardwareSampler");
     pyhardware_sampler.def("start", &hws::hardware_sampler::start_sampling, "start the current hardware sampling")

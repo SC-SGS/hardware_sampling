@@ -20,10 +20,8 @@
 namespace py = pybind11;
 
 void init_gpu_nvidia_hardware_sampler(py::module_ &m) {
-    const py::module_ hardware_sampling_module = m.def_submodule("HardwareSampling");
-
     // bind the general samples
-    py::class_<hws::nvml_general_samples>(hardware_sampling_module, "NvmlGeneralSamples")
+    py::class_<hws::nvml_general_samples>(m, "NvmlGeneralSamples")
         .def("get_name", &hws::nvml_general_samples::get_name, "the name of the device")
         .def("get_persistence_mode", &hws::nvml_general_samples::get_persistence_mode, "the persistence mode: if true, the driver is always loaded reducing the latency for the first API call")
         .def("get_num_cores", &hws::nvml_general_samples::get_num_cores, "the number of CUDA cores")
@@ -35,7 +33,7 @@ void init_gpu_nvidia_hardware_sampler(py::module_ &m) {
         });
 
     // bind the clock samples
-    py::class_<hws::nvml_clock_samples>(hardware_sampling_module, "NvmlClockSamples")
+    py::class_<hws::nvml_clock_samples>(m, "NvmlClockSamples")
         .def("get_adaptive_clock_status", &hws::nvml_clock_samples::get_adaptive_clock_status, "true if clock boosting is currently enabled")
         .def("get_clock_graph_min", &hws::nvml_clock_samples::get_clock_graph_min, "the minimum possible graphics clock frequency in MHz")
         .def("get_clock_graph_max", &hws::nvml_clock_samples::get_clock_graph_max, "the maximum possible graphics clock frequency in MHz")
@@ -52,7 +50,7 @@ void init_gpu_nvidia_hardware_sampler(py::module_ &m) {
         });
 
     // bind the power samples
-    py::class_<hws::nvml_power_samples>(hardware_sampling_module, "NvmlPowerSamples")
+    py::class_<hws::nvml_power_samples>(m, "NvmlPowerSamples")
         .def("get_power_management_mode", &hws::nvml_power_samples::get_power_management_mode, "true if power management algorithms are supported and active")
         .def("get_power_management_limit", &hws::nvml_power_samples::get_power_management_limit, "if the GPU draws more power (mW) than the power management limit, the GPU may throttle")
         .def("get_power_enforced_limit", &hws::nvml_power_samples::get_power_enforced_limit, "the actually enforced power limit, may be different from power management limit if external limiters are set")
@@ -64,7 +62,7 @@ void init_gpu_nvidia_hardware_sampler(py::module_ &m) {
         });
 
     // bind the memory samples
-    py::class_<hws::nvml_memory_samples>(hardware_sampling_module, "NvmlMemorySamples")
+    py::class_<hws::nvml_memory_samples>(m, "NvmlMemorySamples")
         .def("get_memory_total", &hws::nvml_memory_samples::get_memory_total, "the total available memory in Byte")
         .def("get_pcie_link_max_speed", &hws::nvml_memory_samples::get_pcie_link_max_speed, "the maximum PCIe link speed in MBPS")
         .def("get_memory_bus_width", &hws::nvml_memory_samples::get_memory_bus_width, "the memory bus with in Bit")
@@ -79,7 +77,7 @@ void init_gpu_nvidia_hardware_sampler(py::module_ &m) {
         });
 
     // bind the temperature samples
-    py::class_<hws::nvml_temperature_samples>(hardware_sampling_module, "NvmlTemperatureSamples")
+    py::class_<hws::nvml_temperature_samples>(m, "NvmlTemperatureSamples")
         .def("get_num_fans", &hws::nvml_temperature_samples::get_num_fans, "the number of fans (if any)")
         .def("get_min_fan_speed", &hws::nvml_temperature_samples::get_min_fan_speed, "the minimum fan speed the user can set in %")
         .def("get_max_fan_speed", &hws::nvml_temperature_samples::get_max_fan_speed, "the maximum fan speed the user can set in %")
@@ -92,7 +90,7 @@ void init_gpu_nvidia_hardware_sampler(py::module_ &m) {
         });
 
     // bind the GPU NVIDIA hardware sampler class
-    py::class_<hws::gpu_nvidia_hardware_sampler, hws::hardware_sampler>(hardware_sampling_module, "GpuNvidiaHardwareSampler")
+    py::class_<hws::gpu_nvidia_hardware_sampler, hws::hardware_sampler>(m, "GpuNvidiaHardwareSampler")
         .def(py::init<std::size_t>(), "construct a new NVIDIA GPU hardware sampler specifying the device to sample")
         .def(py::init<std::size_t, std::chrono::milliseconds>(), "construct a new NVIDIA GPU hardware sampler specifying the device to sample and the used sampling interval")
         .def("general_samples", &hws::gpu_nvidia_hardware_sampler::general_samples, "get all general samples")

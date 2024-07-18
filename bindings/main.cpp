@@ -17,7 +17,7 @@ void init_gpu_nvidia_hardware_sampler(py::module_ &);
 void init_gpu_amd_hardware_sampler(py::module_ &);
 void init_gpu_intel_hardware_sampler(py::module_ &);
 
-PYBIND11_MODULE(py_hardware_sampling, m) {
+PYBIND11_MODULE(HardwareSampling, m) {
     m.doc() = "Hardware Sampling for CPUs and GPUs";
 
     init_event(m);

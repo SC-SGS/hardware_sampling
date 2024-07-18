@@ -20,10 +20,8 @@
 namespace py = pybind11;
 
 void init_gpu_intel_hardware_sampler(py::module_ &m) {
-    const py::module_ hardware_sampling_module = m.def_submodule("HardwareSampling");
-
     // bind the general samples
-    py::class_<hws::level_zero_general_samples>(hardware_sampling_module, "LevelZeroGeneralSamples")
+    py::class_<hws::level_zero_general_samples>(m, "LevelZeroGeneralSamples")
         .def("get_name", &hws::level_zero_general_samples::get_name, "the model name of the device")
         .def("get_standby_mode", &hws::level_zero_general_samples::get_standby_mode, "the enabled standby mode (power saving or never)")
         .def("get_num_threads_per_eu", &hws::level_zero_general_samples::get_num_threads_per_eu, "the number of threads per EU unit")
@@ -33,7 +31,7 @@ void init_gpu_intel_hardware_sampler(py::module_ &m) {
         });
 
     // bind the clock samples
-    py::class_<hws::level_zero_clock_samples>(hardware_sampling_module, "LevelZeroClockSamples")
+    py::class_<hws::level_zero_clock_samples>(m, "LevelZeroClockSamples")
         .def("get_clock_gpu_min", &hws::level_zero_clock_samples::get_clock_gpu_min, "the minimum possible GPU clock frequency in MHz")
         .def("get_clock_gpu_max", &hws::level_zero_clock_samples::get_clock_gpu_max, "the maximum possible GPU clock frequency in MHz")
         .def("get_available_clocks_gpu", &hws::level_zero_clock_samples::get_available_clocks_gpu, "the available GPU clock frequencies in MHz (slowest to fastest)")
@@ -51,7 +49,7 @@ void init_gpu_intel_hardware_sampler(py::module_ &m) {
         });
 
     // bind the power samples
-    py::class_<hws::level_zero_power_samples>(hardware_sampling_module, "LevelZeroPowerSamples")
+    py::class_<hws::level_zero_power_samples>(m, "LevelZeroPowerSamples")
         .def("get_energy_threshold_enabled", &hws::level_zero_power_samples::get_energy_threshold_enabled, "true if the energy threshold is enabled")
         .def("get_energy_threshold", &hws::level_zero_power_samples::get_energy_threshold, "the energy threshold in J")
         .def("get_power_total_energy_consumption", &hws::level_zero_power_samples::get_power_total_energy_consumption, "the total power consumption since the last driver reload in mJ")
@@ -60,7 +58,7 @@ void init_gpu_intel_hardware_sampler(py::module_ &m) {
         });
 
     // bind the memory samples
-    py::class_<hws::level_zero_memory_samples>(hardware_sampling_module, "LevelZeroMemorySamples")
+    py::class_<hws::level_zero_memory_samples>(m, "LevelZeroMemorySamples")
         .def("get_memory_total", &hws::level_zero_memory_samples::get_memory_total, "the total memory size of the different memory modules in Bytes")
         .def("get_allocatable_memory_total", &hws::level_zero_memory_samples::get_allocatable_memory_total, "the total allocatable memory size of the different memory modules in Bytes")
         .def("get_pcie_link_max_speed", &hws::level_zero_memory_samples::get_pcie_link_max_speed, "the maximum PCIe bandwidth in bytes/sec")
@@ -78,7 +76,7 @@ void init_gpu_intel_hardware_sampler(py::module_ &m) {
         });
 
     // bind the temperature samples
-    py::class_<hws::level_zero_temperature_samples>(hardware_sampling_module, "LevelZeroTemperatureSamples")
+    py::class_<hws::level_zero_temperature_samples>(m, "LevelZeroTemperatureSamples")
         .def("get_temperature_max", &hws::level_zero_temperature_samples::get_temperature_max, "the maximum temperature for the sensor in °C")
         .def("get_temperature_psu", &hws::level_zero_temperature_samples::get_temperature_psu, "the temperature of the PSU in °C")
         .def("get_temperature", &hws::level_zero_temperature_samples::get_temperature, "the current temperature for the sensor in °C")
@@ -87,7 +85,7 @@ void init_gpu_intel_hardware_sampler(py::module_ &m) {
         });
 
     // bind the GPU Intel hardware sampler class
-    py::class_<hws::gpu_intel_hardware_sampler, hws::hardware_sampler>(hardware_sampling_module, "GpuIntelHardwareSampler")
+    py::class_<hws::gpu_intel_hardware_sampler, hws::hardware_sampler>(m, "GpuIntelHardwareSampler")
         .def(py::init<std::size_t>(), "construct a new Intel GPU hardware sampler specifying the device to sample")
         .def(py::init<std::size_t, std::chrono::milliseconds>(), "construct a new Intel GPU hardware sampler specifying the device to sample and the used sampling interval")
         .def("general_samples", &hws::gpu_intel_hardware_sampler::general_samples, "get all general samples")

@@ -52,7 +52,7 @@ if ("HWS_FOR_INTEL_GPUS_ENABLED" IN_LIST HWS_COMPILE_DEFINITIONS)
 endif ()
 
 # create pybind11 module
-set(HWS_PYTHON_BINDINGS_LIBRARY_NAME py_hardware_sampling)
+set(HWS_PYTHON_BINDINGS_LIBRARY_NAME HardwareSampling)
 pybind11_add_module(${HWS_PYTHON_BINDINGS_LIBRARY_NAME} ${HWS_PYTHON_BINDINGS_SOURCES})
 
 # add necessary compile options
