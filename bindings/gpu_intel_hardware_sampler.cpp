@@ -86,8 +86,10 @@ void init_gpu_intel_hardware_sampler(py::module_ &m) {
 
     // bind the GPU Intel hardware sampler class
     py::class_<hws::gpu_intel_hardware_sampler, hws::hardware_sampler>(m, "GpuIntelHardwareSampler")
-        .def(py::init<std::size_t>(), "construct a new Intel GPU hardware sampler specifying the device to sample")
-        .def(py::init<std::size_t, std::chrono::milliseconds>(), "construct a new Intel GPU hardware sampler specifying the device to sample and the used sampling interval")
+        .def(py::init<>(), "construct a new Intel GPU hardware sampler for the default device with the default sampling interval")
+        .def(py::init<std::size_t>(), "construct a new Intel GPU hardware sampler for the specified device with the default sampling interval")
+        .def(py::init<std::chrono::milliseconds>(), "construct a new Intel GPU hardware sampler for the default device with the specified sampling interval")
+        .def(py::init<std::size_t, std::chrono::milliseconds>(), "construct a new Intel GPU hardware sampler for the specified device and sampling interval")
         .def("general_samples", &hws::gpu_intel_hardware_sampler::general_samples, "get all general samples")
         .def("clock_samples", &hws::gpu_intel_hardware_sampler::clock_samples, "get all clock related samples")
         .def("power_samples", &hws::gpu_intel_hardware_sampler::power_samples, "get all power related samples")

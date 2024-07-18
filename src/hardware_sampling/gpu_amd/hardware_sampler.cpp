@@ -31,6 +31,15 @@
 
 namespace hws {
 
+gpu_amd_hardware_sampler::gpu_amd_hardware_sampler() :
+    gpu_amd_hardware_sampler{ 0, HWS_SAMPLING_INTERVAL } { }
+
+gpu_amd_hardware_sampler::gpu_amd_hardware_sampler(const std::size_t device_id) :
+    gpu_amd_hardware_sampler{ device_id, HWS_SAMPLING_INTERVAL } { }
+
+gpu_amd_hardware_sampler::gpu_amd_hardware_sampler(const std::chrono::milliseconds sampling_interval) :
+    gpu_amd_hardware_sampler{ 0, sampling_interval } { }
+
 gpu_amd_hardware_sampler::gpu_amd_hardware_sampler(const std::size_t device_id, const std::chrono::milliseconds sampling_interval) :
     hardware_sampler{ sampling_interval },
     device_id_{ static_cast<std::uint32_t>(device_id) } {

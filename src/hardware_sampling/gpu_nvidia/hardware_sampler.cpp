@@ -31,6 +31,15 @@
 
 namespace hws {
 
+gpu_nvidia_hardware_sampler::gpu_nvidia_hardware_sampler() :
+    gpu_nvidia_hardware_sampler{ 0, HWS_SAMPLING_INTERVAL } { }
+
+gpu_nvidia_hardware_sampler::gpu_nvidia_hardware_sampler(const std::size_t device_id) :
+    gpu_nvidia_hardware_sampler{ device_id, HWS_SAMPLING_INTERVAL } { }
+
+gpu_nvidia_hardware_sampler::gpu_nvidia_hardware_sampler(const std::chrono::milliseconds sampling_interval) :
+    gpu_nvidia_hardware_sampler{ 0, sampling_interval } { }
+
 gpu_nvidia_hardware_sampler::gpu_nvidia_hardware_sampler(const std::size_t device_id, const std::chrono::milliseconds sampling_interval) :
     hardware_sampler{ sampling_interval } {
     // make sure that nvmlInit is only called once for all instances

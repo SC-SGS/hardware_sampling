@@ -33,12 +33,29 @@ using namespace std::chrono_literals;
 class gpu_intel_hardware_sampler : public hardware_sampler {
   public:
     /**
+     * @brief Construct a new Intel GPU hardware sampler for the default device with the default sampling interval.
+     * @details If this is the first Intel GPU sampler, initializes the Level Zero environment.
+     */
+    gpu_intel_hardware_sampler();
+    /**
+     * @brief Construct a new Intel GPU hardware sampler for device @p device_id with the default sampling interval.
+     * @details If this is the first Intel GPU sampler, initializes the Level Zero environment.
+     * @param[in] device_id the ID of the device to sample
+     */
+    explicit gpu_intel_hardware_sampler(std::size_t device_id);
+    /**
+     * @brief Construct a new Intel GPU hardware sampler for the default device with the @p sampling_interval.
+     * @details If this is the first Intel GPU sampler, initializes the Level Zero environment.
+     * @param[in] sampling_interval the used sampling interval
+     */
+    explicit gpu_intel_hardware_sampler(std::chrono::milliseconds sampling_interval);
+    /**
      * @brief Construct a new Intel GPU hardware sampler for device @p device_id with the @p sampling_interval.
      * @details If this is the first Intel GPU sampler, initializes the Level Zero environment.
      * @param[in] device_id the ID of the device to sample
      * @param[in] sampling_interval the used sampling interval
      */
-    explicit gpu_intel_hardware_sampler(std::size_t device_id, std::chrono::milliseconds sampling_interval = HWS_SAMPLING_INTERVAL);
+    gpu_intel_hardware_sampler(std::size_t device_id, std::chrono::milliseconds sampling_interval);
 
     /**
      * @brief Delete the copy-constructor (already implicitly deleted due to the base class's std::atomic member).

@@ -31,6 +31,9 @@
 
 namespace hws {
 
+cpu_hardware_sampler::cpu_hardware_sampler() :
+    cpu_hardware_sampler{ HWS_SAMPLING_INTERVAL } { }
+
 cpu_hardware_sampler::cpu_hardware_sampler(const std::chrono::milliseconds sampling_interval) :
     hardware_sampler{ sampling_interval } { }
 

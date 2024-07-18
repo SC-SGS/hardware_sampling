@@ -31,10 +31,14 @@ using namespace std::chrono_literals;
 class cpu_hardware_sampler : public hardware_sampler {
   public:
     /**
+     * @brief Construct a new CPU hardware sampler with the default sampling interval.
+     */
+    cpu_hardware_sampler();
+    /**
      * @brief Construct a new CPU hardware sampler with the @p sampling_interval.
      * @param[in] sampling_interval the used sampling interval
      */
-    explicit cpu_hardware_sampler(std::chrono::milliseconds sampling_interval = HWS_SAMPLING_INTERVAL);
+    explicit cpu_hardware_sampler(std::chrono::milliseconds sampling_interval);
 
     /**
      * @brief Delete the copy-constructor (already implicitly deleted due to the base class's std::atomic member).
