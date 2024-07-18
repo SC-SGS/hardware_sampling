@@ -120,6 +120,21 @@ void hardware_sampler::dump_yaml(const char *filename) {
 
     // set the device identification
     file << std::format("device_identification: {}\n\n", this->device_identification());
+
+    // output the event information
+    std::vector<decltype(event::time_point)> event_time_points{};
+    std::vector<decltype(event::name)> event_names{};
+    for (const auto &[time_point, name] : events_) {
+        event_time_points.push_back(time_point);
+        event_names.push_back(name);
+    }
+    file << std::format("events:\n"
+                        "  time_points: [{}]\n"
+                        "  names: [{}]\n\n",
+                        detail::join(detail::durations_from_reference_time(event_time_points, this->get_event(0).time_point), ", "),
+                        detail::join(event_names, ", "));
+
+    // output the sampling information
     file << std::format("sampling_interval: {}\n"
                         "time_points: [{}]\n"
                         "{}\n\n",
