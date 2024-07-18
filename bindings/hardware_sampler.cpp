@@ -23,6 +23,7 @@
 #endif
 
 #include "pybind11/pybind11.h"  // py::module_, py::class_
+#include "pybind11/stl.h"       // bind STL types
 
 #include <format>  // std::format
 

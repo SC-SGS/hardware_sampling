@@ -11,7 +11,7 @@
 
 #include "pybind11/chrono.h"    // automatic bindings for std::chrono::milliseconds
 #include "pybind11/pybind11.h"  // py::module_
-#include "pybind11/stl.h"       // automatic bindings for std::optional and std::vector
+#include "pybind11/stl.h"       // bind STL types
 
 #include <chrono>   // std::chrono::milliseconds
 #include <cstddef>  // std::size_t
