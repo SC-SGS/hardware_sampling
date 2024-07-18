@@ -10,11 +10,12 @@
 #include "hardware_sampling/event.hpp"  // hws::event
 
 #include <chrono>     // std::chrono::{steady_clock, duration_cast, milliseconds}
+#include <cstddef>    // std::size_t
 #include <exception>  // std::exception
 #include <iostream>   // std::cerr, std::endl
-#include <stdexcept>  // std::runtime_error
-#include <string>     // std::string
+#include <stdexcept>  // std::runtime_error, std::out_of_range
 #include <thread>     // std::thread
+#include <utility>    // std::move
 
 namespace hws {
 

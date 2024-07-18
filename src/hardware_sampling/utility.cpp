@@ -53,4 +53,4 @@ std::vector<std::string_view> split(const std::string_view str, const char delim
     return split_str;
 }
 
-}  // namespace hws
+}  // namespace hws::detail

@@ -12,16 +12,19 @@
 #define HARDWARE_SAMPLING_UTILITY_HPP_
 #pragma once
 
-#include <charconv>     // std::from_chars
-#include <chrono>       // std::chrono::milliseconds
-#include <cstddef>      // std::size_t
-#include <format>       // std::format
-#include <optional>     // std::optional
-#include <stdexcept>    // std::runtime_error
-#include <string>       // std::string, std::stof, std::stod, std::stold
-#include <string_view>  // std::string_view
-#include <type_traits>  // std::is_same_v, std::remove_cvref_t
-#include <vector>       // std::vector
+#include <charconv>      // std::from_chars
+#include <chrono>        // std::chrono::{milliseconds, duration_cast}
+#include <cstddef>       // std::size_t
+#include <format>        // std::format, std::formatter, std::basic_format_context, std::format_to
+#include <iterator>      // std::back_inserter, std::next, std::prev
+#include <optional>      // std::optional
+#include <sstream>       // std::basic_stringstream
+#include <stdexcept>     // std::runtime_error
+#include <string>        // std::string, std::stof, std::stod, std::stold
+#include <string_view>   // std::string_view, std::basic_string_view
+#include <system_error>  // std::errc
+#include <type_traits>   // std::is_same_v, std::remove_cvref_t
+#include <vector>        // std::vector
 
 namespace hws::detail {
 
@@ -100,10 +103,26 @@ template <typename T>
     }
 }
 
+/**
+ * @brief Trim the @p str, i.e., remove all leading and trailing whitespace characters.
+ * @param[in] str the string to trim
+ * @return the trimmed string (`[[nodiscard]]`)
+ */
 [[nodiscard]] std::string_view trim(std::string_view str) noexcept;
 
+/**
+ * @brief Convert the @p str to its lower case representation.
+ * @param[in] str the string to convert to lower case
+ * @return the lower case string (`[[nodiscard]]`)
+ */
 [[nodiscard]] std::string to_lower_case(std::string_view str);
 
+/**
+ * @brief Convert the @p str to a value of type @p T.
+ * @tparam T the type to convert the string to
+ * @param[in] str the string to convert
+ * @return the value of type @p T (`[[nodiscard]]`)
+ */
 template <typename T>
 [[nodiscard]] inline T convert_to(const std::string_view str) {
     if constexpr (std::is_same_v<std::remove_cvref_t<T>, std::string>) {
@@ -150,6 +169,13 @@ template <typename T>
     }
 }
 
+/**
+ * @brief Split the @p str at the delimiters @p delim and convert each token to a value of type @p T.
+ * @tparam T the type to convert the tokens to
+ * @param[in] str the string to split
+ * @param[in] delim the used delimiter
+ * @return a vector containing all split tokens convert to a value of type T (`[[nodiscard]]`)
+ */
 template <typename T>
 [[nodiscard]] inline std::vector<T> split_as(const std::string_view str, const char delim = ' ') {
     std::vector<std::string> split_str;
@@ -169,21 +195,38 @@ template <typename T>
     return split_str;
 }
 
+/**
+ * @brief Split the @p str at the delimiters @p delim.
+ * @param[in] str the string to split
+ * @param[in] delim the used delimiter
+ * @return a vector containing all split tokens (`[[nodiscard]]`)
+ */
 [[nodiscard]] std::vector<std::string_view> split(std::string_view str, char delim = ' ');
 
+/**
+ * @brief A std::formatter child class allowing to format custom types using an `operator<<` overload.
+ * @tparam CharT the character type
+ */
 template <typename CharT>
 struct basic_ostream_formatter : std::formatter<std::basic_string_view<CharT>, CharT> {
     template <typename T, typename OutputIt>
     OutputIt format(const T &value, std::basic_format_context<OutputIt, CharT> &ctx) const {
         std::basic_stringstream<CharT> ss;
         ss << value;
-        return std::formatter<std::basic_string_view<CharT>, CharT>::format(
-            ss.view(), ctx);
+        return std::formatter<std::basic_string_view<CharT>, CharT>::format(ss.view(), ctx);
     }
 };
 
+/// Type alias for a basic_ostream_formatter using a normal char.
 using ostream_formatter = basic_ostream_formatter<char>;
 
+/**
+ * @brief Join all values in @p c to a single string using @p delim as delimiter.
+ * @tparam Container the type of the container
+ * @param[in] c the container for what the values should be joined
+ * @param[in] delim the delimiter used in joining the values
+ * @return the joined string (`[[nodiscard]]`)
+ */
 template <typename Container>
 [[nodiscard]] inline std::string join(const Container &c, const std::string_view delim) {
     if (c.empty()) {
