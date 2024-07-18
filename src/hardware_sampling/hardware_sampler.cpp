@@ -32,7 +32,8 @@ void hardware_sampler::start_sampling() {
 
     // start sampling loop
     sampling_started_ = true;
-    this->resume_sampling();
+    sampling_running_ = true;
+    this->add_event("sampling_started");
     sampling_thread_ = std::thread{
         [this]() {
             try {
@@ -57,13 +58,15 @@ void hardware_sampler::stop_sampling() {
     }
 
     // stop sampling
-    this->pause_sampling();
+    sampling_running_ = false;
     sampling_stopped_ = true;  // -> notifies the sampling std::thread
     sampling_thread_.join();
+    this->add_event("sampling_stopped");
 }
 
 void hardware_sampler::pause_sampling() {
     sampling_running_ = false;  // notifies the sampling std::thread
+    this->add_event("sampling_paused");
 }
 
 void hardware_sampler::resume_sampling() {
@@ -71,6 +74,7 @@ void hardware_sampler::resume_sampling() {
         throw std::runtime_error{ "Can't resume a hardware sampler that has already been stopped!" };
     }
     sampling_running_ = true;  // notifies the sampling std::thread
+    this->add_event("sampling_resumed");
 }
 
 bool hardware_sampler::has_sampling_started() const noexcept {
@@ -91,6 +95,10 @@ void hardware_sampler::add_event(event e) {
 
 void hardware_sampler::add_event(decltype(event::time_point) time_point, decltype(event::name) name) {
     events_.emplace_back(time_point, name);
+}
+
+void hardware_sampler::add_event(decltype(event::name) name) {
+    events_.emplace_back(std::chrono::steady_clock::now(), name);
 }
 
 event hardware_sampler::get_event(const std::size_t idx) const {

@@ -106,6 +106,11 @@ class hardware_sampler {
      * @param[in] name the name of the event
      */
     void add_event(decltype(event::time_point) time_point, decltype(event::name) name);
+    /**
+     * @brief Add a new event. The time_point will be the current time.
+     * @param[in] name the name of the event
+     */
+    void add_event(decltype(event::name) name);
 
     /**
      * @brief Return the number of recorded events.
