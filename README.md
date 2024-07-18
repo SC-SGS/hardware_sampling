@@ -106,7 +106,7 @@ plt.show()
 ```
 
 <p align="center">
-  <img alt="example frequency plot" src=".figures/clock_frequency.png" width="50%">
+  <img alt="example frequency plot" src=".figures/clock_frequency.png" width="75%">
 </p>
 
 ## License
