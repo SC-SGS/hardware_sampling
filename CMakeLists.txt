@@ -22,11 +22,17 @@ set(HWS_SOURCES
 set(HWS_LIBRARY_NAME hardware_sampling)
 add_library(${HWS_LIBRARY_NAME} SHARED ${HWS_SOURCES})
 
+# set install target
+set(HWS_TARGETS_TO_INSTALL ${HWS_LIBRARY_NAME})
+
 # use C++20
 target_compile_features(${HWS_LIBRARY_NAME} PUBLIC cxx_std_20)
 
 # add target include directory
-target_include_directories(${HWS_LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(${HWS_LIBRARY_NAME} PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
+)
 
 # additional library compile options
 target_compile_options(${HWS_LIBRARY_NAME} PUBLIC
@@ -238,4 +244,48 @@ if (HWS_ENABLE_PYTHON_BINDINGS)
 endif ()
 
 
-# TODO: install target
+########################################################################################################################
+##                                           add support for `make install`                                           ##
+########################################################################################################################
+include(GNUInstallDirs)
+## install all necessary library targets
+install(TARGETS ${HWS_TARGETS_TO_INSTALL}
+        EXPORT hardware_sampling_Targets
+        ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"  # all files that are neither executables, shared lib or headers
+        LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"  # all shared lib files
+        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"  # all executables
+)
+
+## mark header to install via 'make install'
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/"
+        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+)
+
+## manage version comparison
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(
+        "hardware_samplingConfigVersion.cmake"
+        VERSION ${PROJECT_VERSION}
+        COMPATIBILITY SameMajorVersion
+)
+
+## generate configuration file
+configure_package_config_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/hardware_samplingConfig.cmake.in"
+        "${PROJECT_BINARY_DIR}/hardware_samplingConfig.cmake"
+        INSTALL_DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/hardware_sampling/cmake
+)
+
+## create and copy install-targets file
+install(EXPORT hardware_sampling_Targets
+        FILE hardware_samplingTargets.cmake
+        NAMESPACE hws::
+        DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/hardware_sampling/cmake
+)
+
+## create file containing the build configuration and version information
+install(FILES
+        "${PROJECT_BINARY_DIR}/hardware_samplingConfig.cmake"
+        "${PROJECT_BINARY_DIR}/hardware_samplingConfigVersion.cmake"
+        DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/hardware_sampling/cmake
+)

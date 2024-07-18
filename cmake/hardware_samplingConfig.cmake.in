@@ -1,0 +1,13 @@
+## Authors: Marcel Breyer
+## Copyright (C): 2024-today All Rights Reserved
+## License: This file is released under the MIT license.
+##          See the LICENSE.md file in the project root for full license information.
+########################################################################################################################
+
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+
+# sanity checks
+include("${CMAKE_CURRENT_LIST_DIR}/hardware_samplingTargets.cmake")
+check_required_components("hardware_sampling")
