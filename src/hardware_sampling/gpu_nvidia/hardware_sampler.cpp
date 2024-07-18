@@ -24,6 +24,7 @@
 #include <iostream>   // std::cerr, std::endl
 #include <optional>   // std::optional
 #include <ostream>    // std::ostream
+#include <stdexcept>  // std::runtime_error
 #include <string>     // std::string
 #include <thread>     // std::this_thread
 #include <vector>     // std::vector
@@ -410,6 +411,30 @@ void gpu_nvidia_hardware_sampler::sampling_loop() {
         // wait for the sampling interval to pass to retrieve the next sample
         std::this_thread::sleep_for(this->sampling_interval());
     }
+}
+
+std::string gpu_nvidia_hardware_sampler::device_identification() const {
+    nvmlPciInfo_st pcie_info{};
+    HWS_NVML_ERROR_CHECK(nvmlDeviceGetPciInfo_v3(device_.get_impl().device, &pcie_info));
+    return std::format("gpu_nvidia_device_{}_{}", pcie_info.bus, pcie_info.device);
+}
+
+std::string gpu_nvidia_hardware_sampler::generate_yaml_string() const {
+    // check whether it's safe to generate the YAML entry
+    if (this->is_sampling()) {
+        throw std::runtime_error{ "Can't create the final YAML entry if the hardware sampler is still running!" };
+    }
+
+    return std::format("{}\n"
+                       "{}\n"
+                       "{}\n"
+                       "{}\n"
+                       "{}",
+                       general_samples_.generate_yaml_string(),
+                       clock_samples_.generate_yaml_string(),
+                       power_samples_.generate_yaml_string(),
+                       memory_samples_.generate_yaml_string(),
+                       temperature_samples_.generate_yaml_string());
 }
 
 std::ostream &operator<<(std::ostream &out, const gpu_nvidia_hardware_sampler &sampler) {

@@ -35,6 +35,13 @@ class rocm_smi_general_samples {
     friend class gpu_amd_hardware_sampler;
 
   public:
+    /**
+     * @brief Assemble the YAML string containing all available general hardware samples.
+     * @details Hardware samples that are not supported by the current device are omitted in the YAML output.
+     * @return the YAML string (`[[nodiscard]]`)
+     */
+    [[nodiscard]] std::string generate_yaml_string() const;
+
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, name)  // the name of the device
 
     HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(int, performance_level)          // the performance level: one of rsmi_dev_perf_level_t
@@ -63,6 +70,13 @@ class rocm_smi_clock_samples {
     friend class gpu_amd_hardware_sampler;
 
   public:
+    /**
+     * @brief Assemble the YAML string containing all available general hardware samples.
+     * @details Hardware samples that are not supported by the current device are omitted in the YAML output.
+     * @return the YAML string (`[[nodiscard]]`)
+     */
+    [[nodiscard]] std::string generate_yaml_string() const;
+
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::uint64_t, clock_system_min)  // the minimum possible system clock frequency in Hz
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::uint64_t, clock_system_max)  // the maximum possible system clock frequency in Hz
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::uint64_t, clock_socket_min)  // the minimum possible socket clock frequency in Hz
@@ -74,7 +88,7 @@ class rocm_smi_clock_samples {
     HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(std::uint64_t, clock_socket)            // the current socket clock frequency in Hz
     HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(std::uint64_t, clock_memory)            // the current memory clock frequency in Hz
     HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(std::uint32_t, overdrive_level)         // the GPU overdrive percentage
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(std::uint32_t, memory_overdrive_level)  // the GPU's memory overdrive percentage
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(std::uint32_t, memory_overdrive_level)  // the GPU memory overdrive percentage
 };
 
 /**
@@ -98,6 +112,13 @@ class rocm_smi_power_samples {
     friend class gpu_amd_hardware_sampler;
 
   public:
+    /**
+     * @brief Assemble the YAML string containing all available general hardware samples.
+     * @details Hardware samples that are not supported by the current device are omitted in the YAML output.
+     * @return the YAML string (`[[nodiscard]]`)
+     */
+    [[nodiscard]] std::string generate_yaml_string() const;
+
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::uint64_t, power_default_cap)                    // the default power cap, may be different from power cap
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::uint64_t, power_cap)                            // if the GPU draws more power (μW) than the power cap, the GPU may throttle
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, power_type)                             // the type of the power management: either current power draw or average power draw
@@ -129,6 +150,13 @@ class rocm_smi_memory_samples {
     friend class gpu_amd_hardware_sampler;
 
   public:
+    /**
+     * @brief Assemble the YAML string containing all available general hardware samples.
+     * @details Hardware samples that are not supported by the current device are omitted in the YAML output.
+     * @return the YAML string (`[[nodiscard]]`)
+     */
+    [[nodiscard]] std::string generate_yaml_string() const;
+
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::uint64_t, memory_total)          // the total available memory in Byte
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::uint64_t, visible_memory_total)  // the total visible available memory in Byte, may be smaller than the total memory
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::uint32_t, min_num_pcie_lanes)    // the minimum number of used PCIe lanes
@@ -160,6 +188,13 @@ class rocm_smi_temperature_samples {
     friend class gpu_amd_hardware_sampler;
 
   public:
+    /**
+     * @brief Assemble the YAML string containing all available general hardware samples.
+     * @details Hardware samples that are not supported by the current device are omitted in the YAML output.
+     * @return the YAML string (`[[nodiscard]]`)
+     */
+    [[nodiscard]] std::string generate_yaml_string() const;
+
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::uint32_t, num_fans)                // the number of fans (if any)
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::uint64_t, max_fan_speed)           // the maximum fan speed
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::int64_t, temperature_edge_min)     // the minimum temperature on the GPU's edge temperature sensor in m°C

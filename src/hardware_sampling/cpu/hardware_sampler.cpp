@@ -22,6 +22,7 @@
 #include <optional>       // std::make_optional
 #include <ostream>        // std::ostream
 #include <regex>          // std::regex, std::regex::extended, std::regex_match, std::regex_replace
+#include <stdexcept>      // std::runtime_error
 #include <string>         // std::string
 #include <string_view>    // std::string_view
 #include <thread>         // std::this_thread
@@ -397,6 +398,32 @@ void cpu_hardware_sampler::sampling_loop() {
         // wait for the sampling interval to pass to retrieve the next sample
         std::this_thread::sleep_for(this->sampling_interval());
     }
+}
+
+std::string cpu_hardware_sampler::device_identification() const {
+    return "cpu_device";
+}
+
+std::string cpu_hardware_sampler::generate_yaml_string() const {
+    // check whether it's safe to generate the YAML entry
+    if (this->is_sampling()) {
+        throw std::runtime_error{ "Can't create the final YAML entry if the hardware sampler is still running!" };
+    }
+
+    return std::format("{}\n"
+                       "{}\n"
+                       "{}\n"
+                       "{}\n"
+                       "{}\n"
+                       "{}\n"
+                       "{}",
+                       general_samples_.generate_yaml_string(),
+                       clock_samples_.generate_yaml_string(),
+                       power_samples_.generate_yaml_string(),
+                       memory_samples_.generate_yaml_string(),
+                       temperature_samples_.generate_yaml_string(),
+                       gfx_samples_.generate_yaml_string(),
+                       idle_state_samples_.generate_yaml_string());
 }
 
 std::ostream &operator<<(std::ostream &out, const cpu_hardware_sampler &sampler) {

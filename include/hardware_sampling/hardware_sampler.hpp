@@ -14,12 +14,13 @@
 
 #include "hardware_sampling/event.hpp"  // hws::event
 
-#include <atomic>   // std::atomic
-#include <chrono>   // std::chrono::{steady_clock::time_point, milliseconds}
-#include <cstddef>  // std::size_t
-#include <string>   // std::string
-#include <thread>   // std::thread
-#include <vector>   // std::vector
+#include <atomic>      // std::atomic
+#include <chrono>      // std::chrono::{steady_clock::time_point, milliseconds}
+#include <cstddef>     // std::size_t
+#include <filesystem>  // std::filesystem::path
+#include <string>      // std::string
+#include <thread>      // std::thread
+#include <vector>      // std::vector
 
 namespace hws {
 
@@ -143,11 +144,39 @@ class hardware_sampler {
      */
     [[nodiscard]] std::chrono::milliseconds sampling_interval() const noexcept { return sampling_interval_; }
 
+    /**
+     * @brief Dump the hardware samples to the YAML file with @p filename.
+     * @param[in] filename the YAML file to append the hardware samples to
+     */
+    void dump_yaml(const char *filename);
+    /**
+     * @copydoc hws::hardware_sampler::dump_yaml(const char *)
+     */
+    void dump_yaml(const std::string &filename);
+    /**
+     * @copydoc hws::hardware_sampler::dump_yaml(const char *)
+     */
+    void dump_yaml(const std::filesystem::path &filename);
+
   protected:
     /**
      * @brief Getter the hardware samples. Called in another std::thread.
      */
     virtual void sampling_loop() = 0;
+
+    /**
+     * @brief Return the unique device identification. Can be used as unique key in the YAML string.
+     * @return the unique device identification (`[[nodiscard]]`)
+     */
+    [[nodiscard]] virtual std::string device_identification() const = 0;
+
+    /**
+     * @brief Assemble the YAML string containing all hardware samples.
+     * @param[in] start_time_point the reference time point the hardware samples occurred relative to
+     * @throws std::runtime_error if sampling is still running
+     * @return the YAML string (`[[nodiscard]]`)
+     */
+    [[nodiscard]] virtual std::string generate_yaml_string() const = 0;
 
     /**
      * @brief Add a new time point to this hardware sampler. Called during the sampling loop.

@@ -7,11 +7,14 @@
 
 #include "hardware_sampling/hardware_sampler.hpp"
 
-#include "hardware_sampling/event.hpp"  // hws::event
+#include "hardware_sampling/event.hpp"    // hws::event
+#include "hardware_sampling/utility.hpp"  // hws::detail::{durations_from_reference_time, join}
 
 #include <chrono>     // std::chrono::{steady_clock, duration_cast, milliseconds}
 #include <cstddef>    // std::size_t
 #include <exception>  // std::exception
+#include <format>     // std::format
+#include <fstream>    // std::ofstream
 #include <iostream>   // std::cerr, std::endl
 #include <stdexcept>  // std::runtime_error, std::out_of_range
 #include <thread>     // std::thread
@@ -107,6 +110,30 @@ event hardware_sampler::get_event(const std::size_t idx) const {
     }
 
     return events_[idx];
+}
+
+void hardware_sampler::dump_yaml(const char *filename) {
+    std::ofstream file{ filename, std::ios_base::app };
+
+    // begin a new YAML document (only with "---" multiple YAML documents in a single file are allowed)
+    file << "---\n\n";
+
+    // set the device identification
+    file << std::format("device_identification: {}\n\n", this->device_identification());
+    file << std::format("sampling_interval: {}\n"
+                        "time_points: [{}]\n"
+                        "{}\n\n",
+                        this->sampling_interval(),
+                        detail::join(detail::durations_from_reference_time(this->sampling_time_points(), this->get_event(0).time_point), ", "),
+                        this->generate_yaml_string());
+}
+
+void hardware_sampler::dump_yaml(const std::string &filename) {
+    this->dump_yaml(filename.c_str());
+}
+
+void hardware_sampler::dump_yaml(const std::filesystem::path &filename) {
+    this->dump_yaml(filename.string().c_str());
 }
 
 }  // namespace hws

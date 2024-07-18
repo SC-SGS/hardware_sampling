@@ -34,6 +34,13 @@ class nvml_general_samples {
     friend class gpu_nvidia_hardware_sampler;
 
   public:
+    /**
+     * @brief Assemble the YAML string containing all available general hardware samples.
+     * @details Hardware samples that are not supported by the current device are omitted in the YAML output.
+     * @return the YAML string (`[[nodiscard]]`)
+     */
+    [[nodiscard]] std::string generate_yaml_string() const;
+
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, name)        // the name of the device
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(bool, persistence_mode)   // the persistence mode: if true, the driver is always loaded reducing the latency for the first API call
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(unsigned int, num_cores)  // the number of CUDA cores
@@ -64,6 +71,13 @@ class nvml_clock_samples {
     friend class gpu_nvidia_hardware_sampler;
 
   public:
+    /**
+     * @brief Assemble the YAML string containing all available general hardware samples.
+     * @details Hardware samples that are not supported by the current device are omitted in the YAML output.
+     * @return the YAML string (`[[nodiscard]]`)
+     */
+    [[nodiscard]] std::string generate_yaml_string() const;
+
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(unsigned int, adaptive_clock_status)  // true if clock boosting is currently enabled
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(unsigned int, clock_graph_min)        // the minimum possible graphics clock frequency in MHz
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(unsigned int, clock_graph_max)        // the maximum possible graphics clock frequency in MHz
@@ -99,6 +113,13 @@ class nvml_power_samples {
     friend class gpu_nvidia_hardware_sampler;
 
   public:
+    /**
+     * @brief Assemble the YAML string containing all available general hardware samples.
+     * @details Hardware samples that are not supported by the current device are omitted in the YAML output.
+     * @return the YAML string (`[[nodiscard]]`)
+     */
+    [[nodiscard]] std::string generate_yaml_string() const;
+
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(bool, power_management_mode)           // true if power management algorithms are supported and active
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(unsigned int, power_management_limit)  // if the GPU draws more power (mW) than the power management limit, the GPU may throttle
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(unsigned int, power_enforced_limit)    // the actually enforced power limit, may be different from power management limit if external limiters are set
@@ -129,6 +150,13 @@ class nvml_memory_samples {
     friend class gpu_nvidia_hardware_sampler;
 
   public:
+    /**
+     * @brief Assemble the YAML string containing all available general hardware samples.
+     * @details Hardware samples that are not supported by the current device are omitted in the YAML output.
+     * @return the YAML string (`[[nodiscard]]`)
+     */
+    [[nodiscard]] std::string generate_yaml_string() const;
+
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(unsigned long, memory_total)             // the total available memory in Byte
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(unsigned int, pcie_link_max_speed)       // the maximum PCIe link speed in MBPS
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(unsigned int, memory_bus_width)          // the memory bus with in Bit
@@ -162,6 +190,13 @@ class nvml_temperature_samples {
     friend class gpu_nvidia_hardware_sampler;
 
   public:
+    /**
+     * @brief Assemble the YAML string containing all available general hardware samples.
+     * @details Hardware samples that are not supported by the current device are omitted in the YAML output.
+     * @return the YAML string (`[[nodiscard]]`)
+     */
+    [[nodiscard]] std::string generate_yaml_string() const;
+
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(unsigned int, num_fans)                       // the number of fans (if any)
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(unsigned int, min_fan_speed)                  // the minimum fan speed the user can set in %
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(unsigned int, max_fan_speed)                  // the maximum fan speed the user can set in %

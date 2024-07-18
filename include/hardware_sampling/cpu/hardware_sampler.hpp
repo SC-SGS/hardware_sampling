@@ -106,6 +106,16 @@ class cpu_hardware_sampler : public hardware_sampler {
      */
     void sampling_loop() final;
 
+    /**
+     * @copydoc hws::hardware_sampler::device_identification
+     */
+    std::string device_identification() const final;
+
+    /**
+     * @copydoc hws::hardware_sampler::generate_yaml_string
+     */
+    std::string generate_yaml_string() const final;
+
     /// The general CPU samples.
     cpu_general_samples general_samples_{};
     /// The clock related CPU samples.

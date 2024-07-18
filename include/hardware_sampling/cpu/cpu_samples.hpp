@@ -35,6 +35,13 @@ class cpu_general_samples {
     friend class cpu_hardware_sampler;
 
   public:
+    /**
+     * @brief Assemble the YAML string containing all available general hardware samples.
+     * @details Hardware samples that are not supported by the current device are omitted in the YAML output.
+     * @return the YAML string (`[[nodiscard]]`)
+     */
+    [[nodiscard]] std::string generate_yaml_string() const;
+
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, architecture)        // the CPU architecture (e.g., x86_64)
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, byte_order)          // the byte order (e.g., little/big endian)
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(unsigned int, num_threads)        // the number of threads of the CPU(s) including potential hyper-threads
@@ -75,6 +82,13 @@ class cpu_clock_samples {
     friend class cpu_hardware_sampler;
 
   public:
+    /**
+     * @brief Assemble the YAML string containing all available general hardware samples.
+     * @details Hardware samples that are not supported by the current device are omitted in the YAML output.
+     * @return the YAML string (`[[nodiscard]]`)
+     */
+    [[nodiscard]] std::string generate_yaml_string() const;
+
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(bool, frequency_boost)  // true if frequency boosting is enabled
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(double, min_frequency)  // the minimum possible CPU frequency in MHz
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(double, max_frequency)  // the maximum possible CPU frequency in MHz
@@ -105,6 +119,13 @@ class cpu_power_samples {
     friend class cpu_hardware_sampler;
 
   public:
+    /**
+     * @brief Assemble the YAML string containing all available general hardware samples.
+     * @details Hardware samples that are not supported by the current device are omitted in the YAML output.
+     * @return the YAML string (`[[nodiscard]]`)
+     */
+    [[nodiscard]] std::string generate_yaml_string() const;
+
     HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, package_watt)                   // the currently consumed power of the package of the CPU in W
     HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, core_watt)                      // the currently consumed power of the core part of the CPU in W
     HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, ram_watt)                       // the currently consumed power of the RAM part of the CPU in W
@@ -133,6 +154,13 @@ class cpu_memory_samples {
     friend class cpu_hardware_sampler;
 
   public:
+    /**
+     * @brief Assemble the YAML string containing all available general hardware samples.
+     * @details Hardware samples that are not supported by the current device are omitted in the YAML output.
+     * @return the YAML string (`[[nodiscard]]`)
+     */
+    [[nodiscard]] std::string generate_yaml_string() const;
+
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, l1d_cache)                 // the size of the L1 data cache
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, l1i_cache)                 // the size of the L1 instruction cache
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, l2_cache)                  // the size of the L2 cache
@@ -167,6 +195,13 @@ class cpu_temperature_samples {
     friend class cpu_hardware_sampler;
 
   public:
+    /**
+     * @brief Assemble the YAML string containing all available general hardware samples.
+     * @details Hardware samples that are not supported by the current device are omitted in the YAML output.
+     * @return the YAML string (`[[nodiscard]]`)
+     */
+    [[nodiscard]] std::string generate_yaml_string() const;
+
     HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(unsigned int, core_temperature)  // the current temperature of the core part of the CPU in °C
     HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, core_throttle_percent)   // the percent of time the CPU has throttled
     HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, package_temperature)     // the current temperature of the whole package in °C
@@ -193,6 +228,13 @@ class cpu_gfx_samples {
     friend class cpu_hardware_sampler;
 
   public:
+    /**
+     * @brief Assemble the YAML string containing all available general hardware samples.
+     * @details Hardware samples that are not supported by the current device are omitted in the YAML output.
+     * @return the YAML string (`[[nodiscard]]`)
+     */
+    [[nodiscard]] std::string generate_yaml_string() const;
+
     HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(unsigned int, gfx_render_state_percent)  // the percent of time the iGPU was in the render state
     HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(unsigned int, gfx_frequency)             // the current iGPU power consumption in W
     HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, average_gfx_frequency)           // the average iGPU frequency in MHz
@@ -224,6 +266,13 @@ class cpu_idle_states_samples {
     using map_type = std::unordered_map<std::string, std::vector<double>>;
 
   public:
+    /**
+     * @brief Assemble the YAML string containing all available general hardware samples.
+     * @details Hardware samples that are not supported by the current device are omitted in the YAML output.
+     * @return the YAML string (`[[nodiscard]]`)
+     */
+    [[nodiscard]] std::string generate_yaml_string() const;
+
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(map_type, idle_states)                            // the map of additional CPU idle states
     HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, all_cpus_state_c0_percent)             // the percent of time all CPUs were in idle state c0
     HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, any_cpu_state_c0_percent)              // the percent of time any CPU was in the idle state c0

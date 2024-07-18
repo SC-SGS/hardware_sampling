@@ -51,6 +51,7 @@ void init_hardware_sampler(py::module_ &m) {
         .def("get_event", &hws::hardware_sampler::get_event, "get a specific event")
         .def("time_points", &hws::hardware_sampler::sampling_time_points, "get the time points of the respective hardware samples")
         .def("sampling_interval", &hws::hardware_sampler::sampling_interval, "get the sampling interval of this hardware sampler (in ms)")
+        .def("dump_yaml", py::overload_cast<const std::string &>(&hws::hardware_sampler::dump_yaml), "dump all hardware samples to the given YAML file")
         .def("__repr__", [](const hws::hardware_sampler &self) {
 #if defined(HWS_FOR_CPUS_ENABLED)
             if (dynamic_cast<const hws::cpu_hardware_sampler *>(&self)) {

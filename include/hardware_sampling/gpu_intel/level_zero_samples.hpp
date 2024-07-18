@@ -36,6 +36,13 @@ class level_zero_general_samples {
     friend class gpu_intel_hardware_sampler;
 
   public:
+    /**
+     * @brief Assemble the YAML string containing all available general hardware samples.
+     * @details Hardware samples that are not supported by the current device are omitted in the YAML output.
+     * @return the YAML string (`[[nodiscard]]`)
+     */
+    [[nodiscard]] std::string generate_yaml_string() const;
+
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, name)                  // the model name of the device
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, standby_mode)          // the enabled standby mode (power saving or never)
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::uint32_t, num_threads_per_eu)  // the number of threads per EU unit
@@ -63,6 +70,13 @@ class level_zero_clock_samples {
     friend class gpu_intel_hardware_sampler;
 
   public:
+    /**
+     * @brief Assemble the YAML string containing all available general hardware samples.
+     * @details Hardware samples that are not supported by the current device are omitted in the YAML output.
+     * @return the YAML string (`[[nodiscard]]`)
+     */
+    [[nodiscard]] std::string generate_yaml_string() const;
+
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(double, clock_gpu_min)                      // the minimum possible GPU clock frequency in MHz
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(double, clock_gpu_max)                      // the maximum possible GPU clock frequency in MHz
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::vector<double>, available_clocks_gpu)  // the available GPU clock frequencies in MHz (slowest to fastest)
@@ -99,6 +113,13 @@ class level_zero_power_samples {
     friend class gpu_intel_hardware_sampler;
 
   public:
+    /**
+     * @brief Assemble the YAML string containing all available general hardware samples.
+     * @details Hardware samples that are not supported by the current device are omitted in the YAML output.
+     * @return the YAML string (`[[nodiscard]]`)
+     */
+    [[nodiscard]] std::string generate_yaml_string() const;
+
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(bool, energy_threshold_enabled)  // true if the energy threshold is enabled
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(double, energy_threshold)        // the energy threshold in J
 
@@ -133,6 +154,13 @@ class level_zero_memory_samples {
     using map_type = std::unordered_map<std::string, T>;
 
   public:
+    /**
+     * @brief Assemble the YAML string containing all available general hardware samples.
+     * @details Hardware samples that are not supported by the current device are omitted in the YAML output.
+     * @return the YAML string (`[[nodiscard]]`)
+     */
+    [[nodiscard]] std::string generate_yaml_string() const;
+
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(map_type<std::uint64_t>, memory_total)              // the total memory size of the different memory modules in Bytes
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(map_type<std::uint64_t>, allocatable_memory_total)  // the total allocatable memory size of the different memory modules in Bytes
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::int64_t, pcie_link_max_speed)                  // the maximum PCIe bandwidth in bytes/sec
@@ -176,6 +204,13 @@ class level_zero_temperature_samples {
     using map_type = std::unordered_map<std::string, T>;
 
   public:
+    /**
+     * @brief Assemble the YAML string containing all available general hardware samples.
+     * @details Hardware samples that are not supported by the current device are omitted in the YAML output.
+     * @return the YAML string (`[[nodiscard]]`)
+     */
+    [[nodiscard]] std::string generate_yaml_string() const;
+
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(map_type<double>, temperature_max)  // the maximum temperature for the sensor in °C
 
     HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(std::int32_t, temperature_psu)            // the temperature of the PSU in °C

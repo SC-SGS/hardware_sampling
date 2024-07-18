@@ -23,6 +23,7 @@
 #include <format>     // std::format
 #include <ios>        // std::ios_base
 #include <iostream>   // std::cerr, std::endl
+#include <stdexcept>  // std::runtime_error
 #include <string>     // std::string
 #include <thread>     // std::this_thread
 #include <utility>    // std::move
@@ -511,6 +512,32 @@ void gpu_intel_hardware_sampler::sampling_loop() {
         // wait for the sampling interval to pass to retrieve the next sample
         std::this_thread::sleep_for(this->sampling_interval());
     }
+}
+
+std::string gpu_intel_hardware_sampler::device_identification() const {
+    // get the level zero handle from the device
+    ze_device_handle_t device = device_.get_impl().device;
+    ze_device_properties_t prop{};
+    HWS_LEVEL_ZERO_ERROR_CHECK(zeDeviceGetProperties(device, &prop));
+    return std::format("gpu_intel_device_{}", prop.deviceId);
+}
+
+std::string gpu_intel_hardware_sampler::generate_yaml_string() const {
+    // check whether it's safe to generate the YAML entry
+    if (this->is_sampling()) {
+        throw std::runtime_error{ "Can't create the final YAML entry if the hardware sampler is still running!" };
+    }
+
+    return std::format("{}\n"
+                       "{}\n"
+                       "{}\n"
+                       "{}\n"
+                       "{}",
+                       general_samples_.generate_yaml_string(),
+                       clock_samples_.generate_yaml_string(),
+                       power_samples_.generate_yaml_string(),
+                       memory_samples_.generate_yaml_string(),
+                       temperature_samples_.generate_yaml_string());
 }
 
 std::ostream &operator<<(std::ostream &out, const gpu_intel_hardware_sampler &sampler) {
