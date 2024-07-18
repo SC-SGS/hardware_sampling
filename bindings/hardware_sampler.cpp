@@ -22,6 +22,7 @@
     #include "hardware_sampling/gpu_nvidia/hardware_sampler.hpp"  // hws::gpu_nvidia_hardware_sampler
 #endif
 
+#include "pybind11/chrono.h"    // bind std::chrono types
 #include "pybind11/pybind11.h"  // py::module_, py::class_
 #include "pybind11/stl.h"       // bind STL types
 
