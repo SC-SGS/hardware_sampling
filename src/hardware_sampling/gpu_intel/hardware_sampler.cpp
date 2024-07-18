@@ -250,7 +250,7 @@ void gpu_intel_hardware_sampler::sampling_loop() {
                     zes_mem_properties_t prop{};
                     if (zesMemoryGetProperties(handle, &prop) == ZE_RESULT_SUCCESS) {
                         // get the memory module name
-                        const std::string memory_module_name = memory_module_to_name(prop.type);
+                        const std::string memory_module_name = detail::memory_module_to_name(prop.type);
 
                         if (prop.physicalSize > 0) {
                             // first value to add -> initialize map
@@ -280,7 +280,7 @@ void gpu_intel_hardware_sampler::sampling_loop() {
                         if (!memory_samples_.location_.has_value()) {
                             memory_samples_.location_ = decltype(memory_samples_.location_)::value_type{};
                         }
-                        memory_samples_.location_.value()[memory_module_name] = memory_location_to_name(prop.location);
+                        memory_samples_.location_.value()[memory_module_name] = detail::memory_location_to_name(prop.location);
 
                         // get current memory information
                         zes_mem_state_t mem_state{};
@@ -356,7 +356,7 @@ void gpu_intel_hardware_sampler::sampling_loop() {
                 for (zes_temp_handle_t handle : temperature_handles) {
                     zes_temp_properties_t prop{};
                     if (zesTemperatureGetProperties(handle, &prop) == ZE_RESULT_SUCCESS) {
-                        const std::string sensor_name = temperature_sensor_type_to_name(prop.type);
+                        const std::string sensor_name = detail::temperature_sensor_type_to_name(prop.type);
                         if (sensor_name.empty()) {
                             // unsupported sensor type
                             continue;
@@ -461,7 +461,7 @@ void gpu_intel_hardware_sampler::sampling_loop() {
                     HWS_LEVEL_ZERO_ERROR_CHECK(zesMemoryGetProperties(handle, &prop));
 
                     // get the memory module name
-                    const std::string memory_module_name = memory_module_to_name(prop.type);
+                    const std::string memory_module_name = detail::memory_module_to_name(prop.type);
 
                     if (memory_samples_.memory_free_.has_value()) {
                         // get current memory information
@@ -503,13 +503,13 @@ void gpu_intel_hardware_sampler::sampling_loop() {
                     zes_temp_properties_t prop{};
                     HWS_LEVEL_ZERO_ERROR_CHECK(zesTemperatureGetProperties(handle, &prop));
 
-                    const std::string sensor_name = temperature_sensor_type_to_name(prop.type);
+                    const std::string sensor_name = detail::temperature_sensor_type_to_name(prop.type);
                     if (sensor_name.empty()) {
                         // unsupported sensor type
                         continue;
                     }
 
-                    if (temperature_samples_.temperature_.has_value() && detail::contains(temperature_samples_.temperature_.value(), sensor_name)) {
+                    if (temperature_samples_.temperature_.has_value() && temperature_samples_.temperature_.value().contains(sensor_name)) {
                         double temp{};
                         HWS_LEVEL_ZERO_ERROR_CHECK(zesTemperatureGetState(handle, &temp));
                         temperature_samples_.temperature_.value()[sensor_name].push_back(temp);
