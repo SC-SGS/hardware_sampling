@@ -13,6 +13,8 @@
 
 int main() {
     hws::cpu_hardware_sampler sampler{};
+    // could also be, e.g.,
+    // hws::gpu_nvidia_hardware_sampler sampler{};
     sampler.start_sampling();
 
     sampler.add_event("init");

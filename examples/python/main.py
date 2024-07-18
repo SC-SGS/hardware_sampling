@@ -12,6 +12,8 @@ import HardwareSampling
 import numpy as np
 
 sampler = HardwareSampling.CpuHardwareSampler()
+# could also be, e.g.,
+# sampler = HardwareSampling.GpuNvidiaHardwareSampler()
 sampler.start()
 
 sampler.add_event("init")
