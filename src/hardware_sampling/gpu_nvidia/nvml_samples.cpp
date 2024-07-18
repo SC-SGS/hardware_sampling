@@ -9,9 +9,8 @@
 
 #include "hardware_sampling/utility.hpp"  // hws::detail::{value_or_default, join}
 
-#include <format>    // std::format
-#include <optional>  // std::optional
-#include <ostream>   // std::ostream
+#include <format>   // std::format
+#include <ostream>  // std::ostream
 
 namespace hws {
 

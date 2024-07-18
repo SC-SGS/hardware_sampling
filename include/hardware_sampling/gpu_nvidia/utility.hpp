@@ -25,12 +25,12 @@ namespace hws::detail {
  * @details Throws an exception if an NVML call returns with an error. Additionally outputs a more concrete error string.
  */
 #if defined(HWS_ERROR_CHECKS_ENABLED)
-    #define HWS_NVML_ERROR_CHECK(nvml_func)                                                                                                                   \
-        {                                                                                                                                                     \
-            const nvmlReturn_t errc = nvml_func;                                                                                                              \
-            if (errc != NVML_SUCCESS) {                                                                                                                       \
-                throw runtime_error{ std::format("Error in NVML function call \"{}\": {} ({})", #nvml_func, nvmlErrorString(errc), static_cast<int>(errc)) }; \
-            }                                                                                                                                                 \
+    #define HWS_NVML_ERROR_CHECK(nvml_func)                                                                                                                        \
+        {                                                                                                                                                          \
+            const nvmlReturn_t errc = nvml_func;                                                                                                                   \
+            if (errc != NVML_SUCCESS) {                                                                                                                            \
+                throw std::runtime_error{ std::format("Error in NVML function call \"{}\": {} ({})", #nvml_func, nvmlErrorString(errc), static_cast<int>(errc)) }; \
+            }                                                                                                                                                      \
         }
 #else
     #define HWS_NVML_ERROR_CHECK(nvml_func) nvml_func;

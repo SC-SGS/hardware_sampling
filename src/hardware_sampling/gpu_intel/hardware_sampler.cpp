@@ -8,6 +8,7 @@
 #include "hardware_sampling/gpu_intel/hardware_sampler.hpp"
 
 #include "hardware_sampling/gpu_intel/level_zero_device_handle_impl.hpp"  // hws::level_zero_device_handle implementation
+#include "hardware_sampling/gpu_intel/level_zero_samples.hpp"             // hws::{level_zero_general_samples, level_zero_clock_samples, level_zero_power_samples, level_zero_memory_samples, level_zero_temperature_samples}
 #include "hardware_sampling/gpu_intel/utility.hpp"                        // HWS_LEVEL_ZERO_ERROR_CHECK
 #include "hardware_sampling/hardware_sampler.hpp"                         // hws::hardware_sampler
 #include "hardware_sampling/utility.hpp"                                  // hws::{durations_from_reference_time, join}
@@ -17,7 +18,6 @@
 
 #include <chrono>     // std::chrono::{steady_clock, duration_cast, milliseconds}
 #include <cstddef>    // std::size_t
-#include <cstdint>    // std::size_t
 #include <cstdint>    // std::int32_t
 #include <exception>  // std::exception, std::terminate
 #include <format>     // std::format

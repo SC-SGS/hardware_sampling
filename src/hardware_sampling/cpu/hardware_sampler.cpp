@@ -18,7 +18,7 @@
 #include <exception>      // std::exception, std::terminate
 #include <format>         // std::format
 #include <ios>            // std::ios_base
-#include <iostream>       // std::cerr << std::endl
+#include <iostream>       // std::cerr, std::endl
 #include <optional>       // std::make_optional
 #include <ostream>        // std::ostream
 #include <regex>          // std::regex, std::regex::extended, std::regex_match, std::regex_replace

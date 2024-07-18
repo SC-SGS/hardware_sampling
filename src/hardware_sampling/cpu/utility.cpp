@@ -9,12 +9,13 @@
 
 #include "hardware_sampling/utility.hpp"  // hws::detail::split_as
 
-#include "subprocess.h"  // subprocess_s, subprocess_create, subprocess_join, subprocess_stdout, subprocess_stderr, subprocess_option_e
+#include "subprocess.h"  // subprocess_s, subprocess_create, subprocess_join, subprocess_stdout, subprocess_option_e
 
 #include <algorithm>    // std::transform
 #include <cstddef>      // std::size_t
 #include <cstdio>       // std::FILE, std::fread
 #include <format>       // std::format
+#include <stdexcept>    // std::runtime_error
 #include <string>       // std::string
 #include <string_view>  // std::string_view
 #include <vector>       // std::vector

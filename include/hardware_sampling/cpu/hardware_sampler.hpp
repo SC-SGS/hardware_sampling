@@ -16,10 +16,9 @@
 #include "hardware_sampling/hardware_sampler.hpp"  // hws::hardware_sampler
 #include "hardware_sampling/utility.hpp"           // hws::detail::ostream_formatter
 
-#include <chrono>  // std::chrono::{steady_clock, milliseconds}, std::chrono_literals namespace
+#include <chrono>  // std::chrono::milliseconds, std::chrono_literals namespace
 #include <format>  // std::formatter
 #include <iosfwd>  // std::ostream forward declaration
-#include <string>  // std::string
 
 namespace hws {
 

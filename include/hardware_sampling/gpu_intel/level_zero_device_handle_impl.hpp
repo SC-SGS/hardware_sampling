@@ -17,9 +17,12 @@
 
 #include "level_zero/ze_api.h"  // Level Zero runtime functions
 
-#include <cstddef>  // std::size_t
-#include <memory>   // std::shared_ptr, std::make_shared
-#include <vector>   // std::vector
+#include <cstddef>    // std::size_t
+#include <cstdint>    // std::uint32_t
+#include <format>     // std::format
+#include <memory>     // std::make_shared
+#include <stdexcept>  // std::runtime_error
+#include <vector>     // std::vector
 
 namespace hws::detail {
 
@@ -39,7 +42,7 @@ struct level_zero_device_handle::level_zero_device_handle_impl {
 
         // check if only the single GPU driver has been found
         if (driver_count > 1) {
-            throw hardware_sampling_exception{ fmt::format("Found too many GPU drivers ({})!", driver_count) };
+            throw std::runtime_error{ std::format("Found too many GPU drivers ({})!", driver_count) };
         }
 
         // get the GPU driver
@@ -51,7 +54,7 @@ struct level_zero_device_handle::level_zero_device_handle_impl {
 
         // check if enough GPUs have been found
         if (driver_count <= device_id) {
-            throw hardware_sampling_exception{ fmt::format("Found only {} GPUs, but GPU with the ID was requested!", device_count, device_id) };
+            throw std::runtime_error{ std::format("Found only {} GPUs, but GPU with the ID was requested!", device_count, device_id) };
         }
 
         // get the GPUs

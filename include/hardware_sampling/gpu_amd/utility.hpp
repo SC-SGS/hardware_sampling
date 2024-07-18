@@ -32,7 +32,7 @@ namespace hws {
                 const char *error_string;                                                                                                          \
                 const rsmi_status_t ret = rsmi_status_string(errc, &error_string);                                                                 \
                 if (ret == RSMI_STATUS_SUCCESS) {                                                                                                  \
-                    throw runtime_error{ std::format("Error in ROCm SMI function call \"{}\": {}", #rocm_smi_func, error_string) };                \
+                    throw std::runtime_error{ std::format("Error in ROCm SMI function call \"{}\": {}", #rocm_smi_func, error_string) };           \
                 } else {                                                                                                                           \
                     throw std::runtime_error{ std::format("Error in ROCm SMI function call \"{}\": {}", #rocm_smi_func, static_cast<int>(errc)) }; \
                 }                                                                                                                                  \

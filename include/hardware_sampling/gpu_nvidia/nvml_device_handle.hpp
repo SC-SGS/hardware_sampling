@@ -67,6 +67,6 @@ class nvml_device_handle {
     std::shared_ptr<nvml_device_handle_impl> impl{};
 };
 
-}  // namespace hws
+}  // namespace hws::detail
 
 #endif  // HARDWARE_SAMPLING_GPU_NVIDIA_NVML_DEVICE_HANDLE_HPP_

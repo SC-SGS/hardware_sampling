@@ -11,12 +11,8 @@
 
 #include "rocm_smi/rocm_smi.h"  // RSMI_MAX_FAN_SPEED
 
-#include <cstddef>   // std::size_t
-#include <format>    // std::format
-#include <optional>  // std::optional
-#include <ostream>   // std::ostream
-#include <string>    // std::string
-#include <vector>    // std::vector
+#include <format>   // std::format
+#include <ostream>  // std::ostream
 
 namespace hws {
 

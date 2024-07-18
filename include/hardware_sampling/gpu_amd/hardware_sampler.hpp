@@ -17,12 +17,11 @@
 #include "hardware_sampling/utility.hpp"                   // hws::detail::ostream_formatter
 
 #include <atomic>   // std::atomic
-#include <chrono>   // std::chrono::{steady_clock, milliseconds}, std::chrono_literals namespace
+#include <chrono>   // std::chrono::milliseconds, std::chrono_literals namespace
 #include <cstddef>  // std::size_t
 #include <cstdint>  // std::uint32_t
 #include <format>   // std::formatter
 #include <iosfwd>   // std::ostream forward declaration
-#include <string>   // std::string
 
 namespace hws {
 

@@ -18,7 +18,7 @@
 #include "nvml.h"  // nvmlDevice_t
 
 #include <cstddef>  // std::size_t
-#include <memory>   // std::shared_ptr, std::make_shared
+#include <memory>   // std::make_shared
 
 namespace hws::detail {
 

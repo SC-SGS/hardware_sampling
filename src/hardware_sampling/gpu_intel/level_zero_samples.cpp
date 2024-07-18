@@ -9,9 +9,7 @@
 
 #include "hardware_sampling/utility.hpp"  // hws::detail::{value_or_default, join}
 
-#include <cstddef>      // std::size_t
 #include <format>       // std::format
-#include <optional>     // std::optional
 #include <ostream>      // std::ostream
 #include <string>       // std::string
 #include <string_view>  // std::string_view
@@ -112,8 +110,8 @@ std::ostream &operator<<(std::ostream &out, const level_zero_power_samples &samp
 std::ostream &operator<<(std::ostream &out, const level_zero_memory_samples &samples) {
     std::string str{};
 
-    append_map_values(str, "memory_total [B]", samples.get_memory_total());
-    append_map_values(str, "allocatable_memory_total [B]", samples.get_allocatable_memory_total());
+    detail::append_map_values(str, "memory_total [B]", samples.get_memory_total());
+    detail::append_map_values(str, "allocatable_memory_total [B]", samples.get_allocatable_memory_total());
 
     str += std::format("pcie_link_max_speed [BPS]: {}\n"
                        "pcie_max_width [int]: {}\n"
@@ -122,10 +120,10 @@ std::ostream &operator<<(std::ostream &out, const level_zero_memory_samples &sam
                        detail::value_or_default(samples.get_pcie_max_width()),
                        detail::value_or_default(samples.get_max_pcie_link_generation()));
 
-    append_map_values(str, "bus_width [Bit]", samples.get_bus_width());
-    append_map_values(str, "num_channels [int]", samples.get_num_channels());
-    append_map_values(str, "location [string]", samples.get_location());
-    append_map_values(str, "memory_free [string]", samples.get_memory_free());
+    detail::append_map_values(str, "bus_width [Bit]", samples.get_bus_width());
+    detail::append_map_values(str, "num_channels [int]", samples.get_num_channels());
+    detail::append_map_values(str, "location [string]", samples.get_location());
+    detail::append_map_values(str, "memory_free [string]", samples.get_memory_free());
 
     str += std::format("pcie_link_speed [MBPS]: [{}]\n"
                        "pcie_link_width [int]: [{}]\n"
@@ -144,12 +142,12 @@ std::ostream &operator<<(std::ostream &out, const level_zero_memory_samples &sam
 std::ostream &operator<<(std::ostream &out, const level_zero_temperature_samples &samples) {
     std::string str{};
 
-    append_map_values(str, "temperature_max [°C]", samples.get_temperature_max());
+    detail::append_map_values(str, "temperature_max [°C]", samples.get_temperature_max());
 
     str += std::format("temperature_psu [°C]: [{}]\n",
-                       detail::join(value_or_default(samples.get_temperature_psu()), ", "));
+                       detail::join(detail::value_or_default(samples.get_temperature_psu()), ", "));
 
-    append_map_values(str, "temperature [°C]", samples.get_temperature());
+    detail::append_map_values(str, "temperature [°C]", samples.get_temperature());
 
     // remove last newline
     str.pop_back();
