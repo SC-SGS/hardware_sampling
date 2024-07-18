@@ -7,6 +7,7 @@
 
 #include "hardware_sampling/event.hpp"  // hws::event
 
+#include "pybind11/chrono.h"    // bind std::chrono types
 #include "pybind11/pybind11.h"  // py::module_
 #include "pybind11/stl.h"       // bind STL types
 
