@@ -414,7 +414,7 @@ std::ostream &operator<<(std::ostream &out, const cpu_hardware_sampler &sampler)
                                   "gfx samples:\n{}\n\n"
                                   "idle state samples:\n{}",
                                   sampler.sampling_interval(),
-                                  detail::join(detail::time_points_to_epoch(sampler.time_points()), ", "),
+                                  detail::join(detail::time_points_to_epoch(sampler.sampling_time_points()), ", "),
                                   sampler.general_samples(),
                                   sampler.clock_samples(),
                                   sampler.power_samples(),

@@ -7,8 +7,9 @@
 
 #include "hardware_sampling/hardware_sampler.hpp"
 
+#include "hardware_sampling/event.hpp"  // hws::event
+
 #include <chrono>     // std::chrono::{steady_clock, duration_cast, milliseconds}
-#include <exception>  // std::exception
 #include <exception>  // std::exception
 #include <iostream>   // std::cerr, std::endl
 #include <stdexcept>  // std::runtime_error
@@ -81,6 +82,22 @@ bool hardware_sampler::is_sampling() const noexcept {
 
 bool hardware_sampler::has_sampling_stopped() const noexcept {
     return sampling_stopped_;
+}
+
+void hardware_sampler::add_event(event e) {
+    events_.push_back(std::move(e));
+}
+
+void hardware_sampler::add_event(decltype(event::time_point) time_point, decltype(event::name) name) {
+    events_.emplace_back(time_point, name);
+}
+
+event hardware_sampler::get_event(const std::size_t idx) const {
+    if (idx >= this->num_events()) {
+        throw std::out_of_range{ std::format("The index {} is out-of-range for the number of events {}!", idx, this->num_events()) };
+    }
+
+    return events_[idx];
 }
 
 }  // namespace hws

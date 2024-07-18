@@ -12,11 +12,14 @@
 #define HARDWARE_SAMPLING_HARDWARE_SAMPLER_HPP_
 #pragma once
 
-#include <atomic>  // std::atomic
-#include <chrono>  // std::chrono::{steady_clock::time_point, milliseconds}
-#include <string>  // std::string
-#include <thread>  // std::thread
-#include <vector>  // std::vector
+#include "hardware_sampling/event.hpp"  // hws::event
+
+#include <atomic>   // std::atomic
+#include <chrono>   // std::chrono::{steady_clock::time_point, milliseconds}
+#include <cstddef>  // std::size_t
+#include <string>   // std::string
+#include <thread>   // std::thread
+#include <vector>   // std::vector
 
 namespace hws {
 
@@ -93,10 +96,41 @@ class hardware_sampler {
     [[nodiscard]] bool has_sampling_stopped() const noexcept;
 
     /**
+     * @brief Add a new event.
+     * @param e the event
+     */
+    void add_event(event e);
+    /**
+     * @brief Add a new event.
+     * @param[in] time_point the time point when the event occurred
+     * @param[in] name the name of the event
+     */
+    void add_event(decltype(event::time_point) time_point, decltype(event::name) name);
+
+    /**
+     * @brief Return the number of recorded events.
+     * @return the number of events (`[[nodiscard]]`)
+     */
+    [[nodiscard]] std::size_t num_events() const noexcept { return events_.size(); }
+
+    /**
+     * @brief Return the number of recorded events.
+     * @return the number of events (`[[nodiscard]]`)
+     */
+    [[nodiscard]] const std::vector<event> &get_events() const noexcept { return events_; }
+
+    /**
+     * @brief Return the number of recorded events.
+     * @throws std::out_of_range the the @p idx is out of bounce
+     * @return the number of events (`[[nodiscard]]`)
+     */
+    [[nodiscard]] event get_event(std::size_t idx) const;
+
+    /**
      * @brief Return the time points the samples of this hardware sampler occurred.
      * @return the time points (`[[nodiscard]]`)
      */
-    [[nodiscard]] std::vector<std::chrono::steady_clock::time_point> time_points() const noexcept { return time_points_; }
+    [[nodiscard]] std::vector<std::chrono::steady_clock::time_point> sampling_time_points() const noexcept { return time_points_; }
 
     /**
      * @brief Return the sampling interval of this hardware sampler.
@@ -123,6 +157,9 @@ class hardware_sampler {
     std::atomic<bool> sampling_stopped_{ false };
     /// A boolean flag indicating whether the sampling is currently running.
     std::atomic<bool> sampling_running_{ false };
+
+    /// The different tracked events.
+    std::vector<event> events_;
 
     /// The std::thread used to getter the hardware samples.
     std::thread sampling_thread_{};

@@ -425,7 +425,7 @@ std::ostream &operator<<(std::ostream &out, const gpu_nvidia_hardware_sampler &s
                                   "memory samples:\n{}\n\n"
                                   "temperature samples:\n{}",
                                   sampler.sampling_interval(),
-                                  detail::join(detail::time_points_to_epoch(sampler.time_points()), ", "),
+                                  detail::join(detail::time_points_to_epoch(sampler.sampling_time_points()), ", "),
                                   sampler.general_samples(),
                                   sampler.clock_samples(),
                                   sampler.power_samples(),

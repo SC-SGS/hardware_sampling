@@ -7,6 +7,8 @@
 
 #include "hardware_sampling/hardware_sampler.hpp"  // hws::hardware_sampler
 
+#include "hardware_sampling/event.hpp"  // hws::event
+
 #if defined(HWS_FOR_CPUS_ENABLED)
     #include "hardware_sampling/cpu/hardware_sampler.hpp"  // hws::cpu_hardware_sampler
 #endif
@@ -42,7 +44,12 @@ void init_hardware_sampler(py::module_ &m) {
         .def("has_started", &hws::hardware_sampler::has_sampling_started, "check whether hardware sampling has already been started")
         .def("is_sampling", &hws::hardware_sampler::is_sampling, "check whether the hardware sampling is currently active")
         .def("has_stopped", &hws::hardware_sampler::has_sampling_stopped, "check whether hardware sampling has already been stopped")
-        .def("time_points", &hws::hardware_sampler::time_points, "get the time points of the respective hardware samples")
+        .def("add_event", py::overload_cast<hws::event>(&hws::hardware_sampler::add_event), "add a new event")
+        .def("add_event", py::overload_cast<decltype(hws::event::time_point), decltype(hws::event::name)>(&hws::hardware_sampler::add_event), "add a new event using a time point and a name")
+        .def("num_events", &hws::hardware_sampler::num_events, "get the number of events")
+        .def("get_events", &hws::hardware_sampler::get_events, "get all events")
+        .def("get_event", &hws::hardware_sampler::get_event, "get a specific event")
+        .def("time_points", &hws::hardware_sampler::sampling_time_points, "get the time points of the respective hardware samples")
         .def("sampling_interval", &hws::hardware_sampler::sampling_interval, "get the sampling interval of this hardware sampler (in ms)")
         .def("__repr__", [](const hws::hardware_sampler &self) {
 #if defined(HWS_FOR_CPUS_ENABLED)
@@ -65,5 +72,6 @@ void init_hardware_sampler(py::module_ &m) {
                 return std::format("<plssvm.detail.tracking.GpuIntelHardwareSampler with\n{}\n>", dynamic_cast<const hws::gpu_intel_hardware_sampler &>(self));
             }
 #endif
+            return std::string{ "unknown" };
         });
 }

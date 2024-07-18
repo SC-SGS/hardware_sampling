@@ -13,7 +13,7 @@ project("HWS - Hardware Sampling for GPUs and CPUs"
 
 # explicitly set library source files
 set(HWS_SOURCES
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/events.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/event.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/hardware_sampler.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/utility.cpp
 )
@@ -244,4 +244,3 @@ endif ()
 
 # TODO: install target
 # TODO: auto detect GPU?
-# TODO: events in sampler
