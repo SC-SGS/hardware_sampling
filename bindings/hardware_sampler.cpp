@@ -42,6 +42,7 @@ void init_hardware_sampler(py::module_ &m) {
         .def("has_stopped", &hws::hardware_sampler::has_sampling_stopped, "check whether hardware sampling has already been stopped")
         .def("add_event", py::overload_cast<hws::event>(&hws::hardware_sampler::add_event), "add a new event")
         .def("add_event", py::overload_cast<decltype(hws::event::time_point), decltype(hws::event::name)>(&hws::hardware_sampler::add_event), "add a new event using a time point and a name")
+        .def("add_event", py::overload_cast<decltype(hws::event::name)>(&hws::hardware_sampler::add_event), "add a new event using a name, the current time is used as time point")
         .def("num_events", &hws::hardware_sampler::num_events, "get the number of events")
         .def("get_events", &hws::hardware_sampler::get_events, "get all events")
         .def("get_event", &hws::hardware_sampler::get_event, "get a specific event")
