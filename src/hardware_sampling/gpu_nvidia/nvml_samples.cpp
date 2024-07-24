@@ -322,7 +322,7 @@ std::string nvml_memory_samples::generate_yaml_string() const {
     // free memory size
     if (this->memory_free_.has_value()) {
         str += std::format("  memory_free:\n"
-                           "    unit \"B\"\n"
+                           "    unit: \"B\"\n"
                            "    values: [{}]\n",
                            detail::join(this->memory_free_.value(), ", "));
     }
@@ -428,7 +428,7 @@ std::string nvml_temperature_samples::generate_yaml_string() const {
     // fan speed
     if (this->fan_speed_.has_value()) {
         str += std::format("  fan_speed:\n"
-                           "    unit \"percentage\"\n"
+                           "    unit: \"percentage\"\n"
                            "    values: [{}]\n",
                            detail::join(this->fan_speed_.value(), ", "));
     }
