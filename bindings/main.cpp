@@ -25,14 +25,28 @@ PYBIND11_MODULE(HardwareSampling, m) {
 
 #if defined(HWS_FOR_CPUS_ENABLED)
     init_cpu_hardware_sampler(m);
+    m.def("has_cpu_hardware_sampler", []{return true;} );
+#else
+    m.def("has_cpu_hardware_sampler", []{return false;} );
 #endif
 #if defined(HWS_FOR_NVIDIA_GPUS_ENABLED)
     init_gpu_nvidia_hardware_sampler(m);
+    m.def("has_gpu_nvidia_hardware_sampler", []{return true;} );
+#else
+    m.def("has_gpu_nvidia_hardware_sampler", []{return false;} );
 #endif
 #if defined(HWS_FOR_AMD_GPUS_ENABLED)
     init_gpu_amd_hardware_sampler(m);
+    m.def("has_gpu_amd_hardware_sampler", []{return true;} );
+#else
+    m.def("has_gpu_amd_hardware_sampler", []{return false;} );
 #endif
+
 #if defined(HWS_FOR_INTEL_GPUS_ENABLED)
     init_gpu_intel_hardware_sampler(m);
+    m.def("has_gpu_intel_hardware_sampler", []{return true;} );
+#else
+    m.def("has_gpu_intel_hardware_sampler", []{return false;} );
 #endif
+
 }
