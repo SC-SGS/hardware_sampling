@@ -53,7 +53,7 @@ std::string level_zero_general_samples::generate_yaml_string() const {
 
     // the model name
     if (this->name_.has_value()) {
-        str += std::format("  model_name:\n"
+        str += std::format("  name:\n"
                            "    unit: \"string\"\n"
                            "    values: \"{}\"\n",
                            this->name_.value());
