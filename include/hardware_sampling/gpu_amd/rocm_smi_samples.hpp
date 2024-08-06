@@ -42,7 +42,8 @@ class rocm_smi_general_samples {
      */
     [[nodiscard]] std::string generate_yaml_string() const;
 
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, name)  // the name of the device
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, byte_order)  // the byte order (e.g., little/big endian)
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, name)        // the name of the device
 
     HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(int, performance_level)          // the performance level: one of rsmi_dev_perf_level_t
     HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(std::uint32_t, utilization_gpu)  // the GPU compute utilization in percent

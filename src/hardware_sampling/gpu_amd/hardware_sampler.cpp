@@ -84,6 +84,9 @@ void gpu_amd_hardware_sampler::sampling_loop() {
     // retrieve initial general information
     {
         // fixed information -> only retrieved once
+        // the byte order is given by AMD directly
+        general_samples_.byte_order_ = "Little Endian";
+
         std::string name(static_cast<std::string::size_type>(1024), '\0');
         if (rsmi_dev_name_get(device_id_, name.data(), name.size()) == RSMI_STATUS_SUCCESS) {
             general_samples_.name_ = name.substr(0, name.find_first_of('\0'));

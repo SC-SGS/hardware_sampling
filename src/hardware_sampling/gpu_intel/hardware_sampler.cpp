@@ -88,6 +88,9 @@ void gpu_intel_hardware_sampler::sampling_loop() {
 
     // retrieve initial general information
     {
+        // the byte order is given by Intel directly
+        general_samples_.byte_order_ = "Little Endian";
+
         ze_device_properties_t ze_device_prop{};
         if (zeDeviceGetProperties(device, &ze_device_prop) == ZE_RESULT_SUCCESS) {
             general_samples_.num_threads_per_eu_ = ze_device_prop.numThreadsPerEU;

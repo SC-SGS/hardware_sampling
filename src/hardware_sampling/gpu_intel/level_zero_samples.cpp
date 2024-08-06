@@ -51,6 +51,13 @@ void append_map_values(std::string &str, const std::string_view entry_name, cons
 std::string level_zero_general_samples::generate_yaml_string() const {
     std::string str{ "general:\n" };
 
+    // device byte order
+    if (this->byte_order_.has_value()) {
+        str += std::format("  byte_order:\n"
+                           "    unit: \"string\"\n"
+                           "    values: \"{}\"\n",
+                           this->byte_order_.value());
+    }
     // the model name
     if (this->name_.has_value()) {
         str += std::format("  model_name:\n"
@@ -87,10 +94,12 @@ std::string level_zero_general_samples::generate_yaml_string() const {
 }
 
 std::ostream &operator<<(std::ostream &out, const level_zero_general_samples &samples) {
-    return out << std::format("name [string]: {}\n"
+    return out << std::format("byte_order [string]: {}\n"
+                              "name [string]: {}\n"
                               "standby_mode [string]: {}\n"
                               "num_threads_per_eu [int]: {}\n"
                               "eu_simd_width [int]: {}",
+                              detail::value_or_default(samples.get_byte_order()),
                               detail::value_or_default(samples.get_name()),
                               detail::value_or_default(samples.get_standby_mode()),
                               detail::value_or_default(samples.get_num_threads_per_eu()),

@@ -31,6 +31,13 @@ std::string nvml_general_samples::generate_yaml_string() const {
                            "    values: \"{}\"\n",
                            this->architecture_.value());
     }
+    // device byte order
+    if (this->byte_order_.has_value()) {
+        str += std::format("  byte_order:\n"
+                           "    unit: \"string\"\n"
+                           "    values: \"{}\"\n",
+                           this->byte_order_.value());
+    }
     // device name
     if (this->name_.has_value()) {
         str += std::format("  name:\n"
@@ -84,6 +91,7 @@ std::string nvml_general_samples::generate_yaml_string() const {
 
 std::ostream &operator<<(std::ostream &out, const nvml_general_samples &samples) {
     return out << std::format("architecture [string]: {}\n"
+                              "byte_order [string]: {}\n"
                               "name [string]: {}\n"
                               "persistence_mode [bool]: {}\n"
                               "num_cores [int]: {}\n"
@@ -91,6 +99,7 @@ std::ostream &operator<<(std::ostream &out, const nvml_general_samples &samples)
                               "utilization_gpu [%]: [{}]\n"
                               "utilization_mem [%]: [{}]",
                               detail::value_or_default(samples.get_architecture()),
+                              detail::value_or_default(samples.get_byte_order()),
                               detail::value_or_default(samples.get_name()),
                               detail::value_or_default(samples.get_persistence_mode()),
                               detail::value_or_default(samples.get_num_cores()),
