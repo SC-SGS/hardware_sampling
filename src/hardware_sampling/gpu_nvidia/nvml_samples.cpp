@@ -24,6 +24,13 @@ namespace hws {
 std::string nvml_general_samples::generate_yaml_string() const {
     std::string str{ "general:\n" };
 
+    // device architecture
+    if (this->architecture_.has_value()) {
+        str += std::format("  architecture:\n"
+                           "    unit: \"string\"\n"
+                           "    values: \"{}\"\n",
+                           this->architecture_.value());
+    }
     // device name
     if (this->name_.has_value()) {
         str += std::format("  name:\n"
@@ -76,12 +83,14 @@ std::string nvml_general_samples::generate_yaml_string() const {
 }
 
 std::ostream &operator<<(std::ostream &out, const nvml_general_samples &samples) {
-    return out << std::format("name [string]: {}\n"
+    return out << std::format("architecture [string]: {}\n"
+                              "name [string]: {}\n"
                               "persistence_mode [bool]: {}\n"
                               "num_cores [int]: {}\n"
                               "performance_state [int]: [{}]\n"
                               "utilization_gpu [%]: [{}]\n"
                               "utilization_mem [%]: [{}]",
+                              detail::value_or_default(samples.get_architecture()),
                               detail::value_or_default(samples.get_name()),
                               detail::value_or_default(samples.get_persistence_mode()),
                               detail::value_or_default(samples.get_num_cores()),

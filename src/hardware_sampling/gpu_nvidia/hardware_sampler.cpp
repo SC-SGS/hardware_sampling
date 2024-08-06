@@ -89,6 +89,64 @@ void gpu_nvidia_hardware_sampler::sampling_loop() {
     // retrieve initial general information
     {
         // fixed information -> only retrieved once
+        nvmlDeviceArchitecture_t device_arch{};
+        if (nvmlDeviceGetArchitecture(device, &device_arch) == NVML_SUCCESS) {
+            switch (device_arch) {
+#if defined(NVML_DEVICE_ARCH_KEPLER)
+                case NVML_DEVICE_ARCH_KEPLER:
+                    general_samples_.architecture_ = "Kepler";
+                    break;
+#endif
+#if defined(NVML_DEVICE_ARCH_MAXWELL)
+                case NVML_DEVICE_ARCH_MAXWELL:
+                    general_samples_.architecture_ = "Maxwell";
+                    break;
+#endif
+#if defined(NVML_DEVICE_ARCH_PASCAL)
+                case NVML_DEVICE_ARCH_PASCAL:
+                    general_samples_.architecture_ = "Pascal";
+                    break;
+#endif
+#if defined(NVML_DEVICE_ARCH_VOLTA)
+                case NVML_DEVICE_ARCH_VOLTA:
+                    general_samples_.architecture_ = "Volta";
+                    break;
+#endif
+#if defined(NVML_DEVICE_ARCH_TURING)
+                case NVML_DEVICE_ARCH_TURING:
+                    general_samples_.architecture_ = "Turing";
+                    break;
+#endif
+#if defined(NVML_DEVICE_ARCH_AMPERE)
+                case NVML_DEVICE_ARCH_AMPERE:
+                    general_samples_.architecture_ = "Ampere";
+                    break;
+#endif
+#if defined(NVML_DEVICE_ARCH_ADA)
+                case NVML_DEVICE_ARCH_ADA:
+                    general_samples_.architecture_ = "Ada";
+                    break;
+#endif
+#if defined(NVML_DEVICE_ARCH_HOPPER)
+                case NVML_DEVICE_ARCH_HOPPER:
+                    general_samples_.architecture_ = "Hopper";
+                    break;
+#endif
+#if defined(NVML_DEVICE_ARCH_BLACKWELL)
+                case NVML_DEVICE_ARCH_BLACKWELL:
+                    general_samples_.architecture_ = "Blackwell";
+                    break;
+#endif
+#if defined(NVML_DEVICE_ARCH_T23X)
+                case NVML_DEVICE_ARCH_T23X:
+                    general_samples_.architecture_ = "Orin";
+                    break;
+#endif
+                default:
+                    break;
+            }
+        }
+
         std::string name(NVML_DEVICE_NAME_V2_BUFFER_SIZE, '\0');
         if (nvmlDeviceGetName(device, name.data(), name.size()) == NVML_SUCCESS) {
             general_samples_.name_ = name.substr(0, name.find_first_of('\0'));
