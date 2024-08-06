@@ -58,7 +58,14 @@ std::string level_zero_general_samples::generate_yaml_string() const {
                            "    values: \"{}\"\n",
                            this->byte_order_.value());
     }
-    // the model name
+    // the vendor specific ID
+    if (this->vendor_id_.has_value()) {
+        str += std::format("  vendor_id:\n"
+                           "    unit: \"string\"\n"
+                           "    values: \"{}\"\n",
+                           this->vendor_id_.value());
+    }
+    // device name
     if (this->name_.has_value()) {
         str += std::format("  model_name:\n"
                            "    unit: \"string\"\n"
@@ -95,11 +102,13 @@ std::string level_zero_general_samples::generate_yaml_string() const {
 
 std::ostream &operator<<(std::ostream &out, const level_zero_general_samples &samples) {
     return out << std::format("byte_order [string]: {}\n"
+                              "vendor_id [string]: {}\n"
                               "name [string]: {}\n"
                               "standby_mode [string]: {}\n"
                               "num_threads_per_eu [int]: {}\n"
                               "eu_simd_width [int]: {}",
                               detail::value_or_default(samples.get_byte_order()),
+                              detail::value_or_default(samples.get_vendor_id()),
                               detail::value_or_default(samples.get_name()),
                               detail::value_or_default(samples.get_standby_mode()),
                               detail::value_or_default(samples.get_num_threads_per_eu()),

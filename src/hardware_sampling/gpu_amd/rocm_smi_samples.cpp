@@ -31,6 +31,13 @@ std::string rocm_smi_general_samples::generate_yaml_string() const {
                            "    values: \"{}\"\n",
                            this->byte_order_.value());
     }
+    // the vendor specific ID
+    if (this->vendor_id_.has_value()) {
+        str += std::format("  vendor_id:\n"
+                           "    unit: \"string\"\n"
+                           "    values: \"{}\"\n",
+                           this->vendor_id_.value());
+    }
     // device name
     if (this->name_.has_value()) {
         str += std::format("  name:\n"
@@ -69,11 +76,13 @@ std::string rocm_smi_general_samples::generate_yaml_string() const {
 
 std::ostream &operator<<(std::ostream &out, const rocm_smi_general_samples &samples) {
     return out << std::format("byte_order [string]: {}\n"
+                              "vendor_id [string]: {}\n"
                               "name [string]: {}\n"
                               "performance_level [int]: [{}]\n"
                               "utilization_gpu [%]: [{}]\n"
                               "utilization_mem [%]: [{}]",
                               detail::value_or_default(samples.get_byte_order()),
+                              detail::value_or_default(samples.get_vendor_id()),
                               detail::value_or_default(samples.get_name()),
                               detail::join(detail::value_or_default(samples.get_performance_level()), ", "),
                               detail::join(detail::value_or_default(samples.get_utilization_gpu()), ", "),

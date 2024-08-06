@@ -43,6 +43,7 @@ class nvml_general_samples {
 
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, architecture)  // the architecture name of the device
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, byte_order)    // the byte order (e.g., little/big endian)
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, vendor_id)     // the vendor ID
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, name)          // the name of the device
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(bool, persistence_mode)     // the persistence mode: if true, the driver is always loaded reducing the latency for the first API call
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(unsigned int, num_cores)    // the number of CUDA cores

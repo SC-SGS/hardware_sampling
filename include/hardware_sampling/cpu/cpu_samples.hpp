@@ -49,7 +49,7 @@ class cpu_general_samples {
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(unsigned int, cores_per_socket)   // the number of physical cores per socket
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(unsigned int, num_sockets)        // the number of sockets
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(unsigned int, numa_nodes)         // the number of NUMA nodes
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, vendor_id)           // the vendor ID (e.g. GenuineIntel)
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, vendor_id)           // the vendor ID (e.g., GenuineIntel)
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, name)                // the name of the CPU
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::vector<std::string>, flags)  // potential CPU flags (e.g., sse4_1, avx, avx, etc)
 

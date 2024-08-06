@@ -93,6 +93,7 @@ void gpu_intel_hardware_sampler::sampling_loop() {
 
         ze_device_properties_t ze_device_prop{};
         if (zeDeviceGetProperties(device, &ze_device_prop) == ZE_RESULT_SUCCESS) {
+            general_samples_.vendor_id_ = std::format("{:x}", ze_device_prop.vendorId);  // TODO: PCI configuration ID to name?
             general_samples_.num_threads_per_eu_ = ze_device_prop.numThreadsPerEU;
             general_samples_.eu_simd_width_ = ze_device_prop.physicalEUSimdWidth;
         }
