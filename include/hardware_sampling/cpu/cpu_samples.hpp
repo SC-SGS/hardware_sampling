@@ -53,12 +53,12 @@ class cpu_general_samples {
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, name)                // the name of the CPU
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::vector<std::string>, flags)  // potential CPU flags (e.g., sse4_1, avx, avx, etc)
 
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, busy_percent)  // the percent the CPU was busy doing work
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, ipc)           // the instructions-per-cycle count
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(unsigned int, irq)     // the number of interrupts
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(unsigned int, smi)     // the number of system management interrupts
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(unsigned int, poll)    // the number of times the CPU was in the polling state
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, poll_percent)  // the percent of the CPU was in the polling state
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, compute_utilization)  // the percent the CPU was busy doing work
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, ipc)                  // the instructions-per-cycle count
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(unsigned int, irq)            // the number of interrupts
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(unsigned int, smi)            // the number of system management interrupts
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(unsigned int, poll)           // the number of times the CPU was in the polling state
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, poll_percent)         // the percent of the CPU was in the polling state
 };
 
 /**

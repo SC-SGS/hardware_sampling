@@ -46,9 +46,9 @@ class rocm_smi_general_samples {
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, vendor_id)   // the vendor ID
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, name)        // the name of the device
 
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(int, performance_level)          // the performance level: one of rsmi_dev_perf_level_t
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(std::uint32_t, utilization_gpu)  // the GPU compute utilization in percent
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(std::uint32_t, utilization_mem)  // the GPU memory utilization in percent
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(std::uint32_t, compute_utilization)  // the GPU compute utilization in percent
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(std::uint32_t, memory_utilization)   // the GPU memory utilization in percent
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(int, performance_level)              // the performance level: one of rsmi_dev_perf_level_t
 };
 
 /**

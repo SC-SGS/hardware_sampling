@@ -99,12 +99,12 @@ std::string cpu_general_samples::generate_yaml_string() const {
     }
 
     // the percent the CPU was busy
-    if (this->busy_percent_.has_value()) {
-        str += std::format("  utilization:\n"
+    if (this->compute_utilization_.has_value()) {
+        str += std::format("  compute_utilization:\n"
                            "    turbostat_name: \"Busy%\"\n"
                            "    unit: \"percentage\"\n"
                            "    values: [{}]\n",
-                           detail::join(this->busy_percent_.value(), ", "));
+                           detail::join(this->compute_utilization_.value(), ", "));
     }
     // the instructions per cycle count
     if (this->ipc_.has_value()) {
@@ -164,7 +164,7 @@ std::ostream &operator<<(std::ostream &out, const cpu_general_samples &samples) 
                                   "vendor_id [string]: {}\n"
                                   "name [string]: {}\n"
                                   "flags [string]: [{}]\n"
-                                  "busy_percent [%]: [{}]\n"
+                                  "compute_utilization [%]: [{}]\n"
                                   "ipc [float]: [{}]\n"
                                   "irq [int]: [{}]\n"
                                   "smi [int]: [{}]\n"
@@ -180,7 +180,7 @@ std::ostream &operator<<(std::ostream &out, const cpu_general_samples &samples) 
                                   detail::value_or_default(samples.get_vendor_id()),
                                   detail::value_or_default(samples.get_name()),
                                   detail::join(detail::value_or_default(samples.get_flags()), ", "),
-                                  detail::join(detail::value_or_default(samples.get_busy_percent()), ", "),
+                                  detail::join(detail::value_or_default(samples.get_compute_utilization()), ", "),
                                   detail::join(detail::value_or_default(samples.get_ipc()), ", "),
                                   detail::join(detail::value_or_default(samples.get_irq()), ", "),
                                   detail::join(detail::value_or_default(samples.get_smi()), ", "),

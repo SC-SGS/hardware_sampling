@@ -176,8 +176,8 @@ void gpu_nvidia_hardware_sampler::sampling_loop() {
 
         nvmlUtilization_t util{};
         if (nvmlDeviceGetUtilizationRates(device, &util) == NVML_SUCCESS) {
-            general_samples_.utilization_gpu_ = decltype(general_samples_.utilization_gpu_)::value_type{ util.gpu };
-            general_samples_.utilization_mem_ = decltype(general_samples_.utilization_gpu_)::value_type{ util.memory };
+            general_samples_.compute_utilization_ = decltype(general_samples_.compute_utilization_)::value_type{ util.gpu };
+            general_samples_.memory_utilization_ = decltype(general_samples_.memory_utilization_)::value_type{ util.memory };
         }
     }
 
@@ -380,11 +380,11 @@ void gpu_nvidia_hardware_sampler::sampling_loop() {
                     general_samples_.performance_state_->push_back(static_cast<decltype(general_samples_.performance_state_)::value_type::value_type>(pstate));
                 }
 
-                if (general_samples_.utilization_gpu_.has_value() && general_samples_.utilization_mem_.has_value()) {
+                if (general_samples_.compute_utilization_.has_value() && general_samples_.memory_utilization_.has_value()) {
                     nvmlUtilization_t util{};
                     HWS_NVML_ERROR_CHECK(nvmlDeviceGetUtilizationRates(device, &util));
-                    general_samples_.utilization_gpu_->push_back(util.gpu);
-                    general_samples_.utilization_mem_->push_back(util.memory);
+                    general_samples_.compute_utilization_->push_back(util.gpu);
+                    general_samples_.memory_utilization_->push_back(util.memory);
                 }
             }
 

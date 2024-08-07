@@ -48,9 +48,9 @@ class nvml_general_samples {
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(bool, persistence_mode)     // the persistence mode: if true, the driver is always loaded reducing the latency for the first API call
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(unsigned int, num_cores)    // the number of CUDA cores
 
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(int, performance_state)         // the performance state: 0 - 15 where 0 is the maximum performance and 15 the minimum performance
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(unsigned int, utilization_gpu)  // the GPU compute utilization in percent
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(unsigned int, utilization_mem)  // the GPU memory utilization in percent
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(unsigned int, compute_utilization)  // the GPU compute utilization in percent
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(unsigned int, memory_utilization)   // the GPU memory utilization in percent
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(int, performance_state)             // the performance state: 0 - 15 where 0 is the maximum performance and 15 the minimum performance
 };
 
 /**

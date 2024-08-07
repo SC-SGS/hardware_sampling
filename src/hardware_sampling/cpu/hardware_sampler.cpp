@@ -161,8 +161,8 @@ void cpu_hardware_sampler::sampling_loop() {
                 using vector_type = decltype(clock_samples_.average_frequency_)::value_type;
                 clock_samples_.average_frequency_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
             } else if (header[i] == "Busy%") {
-                using vector_type = decltype(general_samples_.busy_percent_)::value_type;
-                general_samples_.busy_percent_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
+                using vector_type = decltype(general_samples_.compute_utilization_)::value_type;
+                general_samples_.compute_utilization_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
             } else if (header[i] == "Bzy_MHz") {
                 using vector_type = decltype(clock_samples_.average_non_idle_frequency_)::value_type;
                 clock_samples_.average_non_idle_frequency_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
@@ -306,8 +306,8 @@ void cpu_hardware_sampler::sampling_loop() {
                         using vector_type = decltype(clock_samples_.average_frequency_)::value_type;
                         clock_samples_.average_frequency_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
                     } else if (header[i] == "Busy%") {
-                        using vector_type = decltype(general_samples_.busy_percent_)::value_type;
-                        general_samples_.busy_percent_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
+                        using vector_type = decltype(general_samples_.compute_utilization_)::value_type;
+                        general_samples_.compute_utilization_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
                     } else if (header[i] == "Bzy_MHz") {
                         using vector_type = decltype(clock_samples_.average_non_idle_frequency_)::value_type;
                         clock_samples_.average_non_idle_frequency_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));

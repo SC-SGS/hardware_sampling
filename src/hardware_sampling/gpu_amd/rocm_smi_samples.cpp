@@ -46,26 +46,26 @@ std::string rocm_smi_general_samples::generate_yaml_string() const {
                            this->name_.value());
     }
 
+    // device compute utilization
+    if (this->compute_utilization_.has_value()) {
+        str += std::format("  compute_utilization:\n"
+                           "    unit: \"percentage\"\n"
+                           "    values: [{}]\n",
+                           detail::join(this->compute_utilization_.value(), ", "));
+    }
+    // device memory utilization
+    if (this->memory_utilization_.has_value()) {
+        str += std::format("  memory_utilization:\n"
+                           "    unit: \"percentage\"\n"
+                           "    values: [{}]\n",
+                           detail::join(this->memory_utilization_.value(), ", "));
+    }
     // performance state
     if (this->performance_level_.has_value()) {
         str += std::format("  performance_state:\n"
                            "    unit: \"int - see rsmi_dev_perf_level_t\"\n"
                            "    values: [{}]\n",
                            detail::join(this->performance_level_.value(), ", "));
-    }
-    // device compute utilization
-    if (this->utilization_gpu_.has_value()) {
-        str += std::format("  utilization_gpu:\n"
-                           "    unit: \"percentage\"\n"
-                           "    values: [{}]\n",
-                           detail::join(this->utilization_gpu_.value(), ", "));
-    }
-    // device memory utilization
-    if (this->utilization_mem_.has_value()) {
-        str += std::format("  utilization_mem:\n"
-                           "    unit: \"percentage\"\n"
-                           "    values: [{}]\n",
-                           detail::join(this->utilization_mem_.value(), ", "));
     }
 
     // remove last newline
@@ -78,15 +78,15 @@ std::ostream &operator<<(std::ostream &out, const rocm_smi_general_samples &samp
     return out << std::format("byte_order [string]: {}\n"
                               "vendor_id [string]: {}\n"
                               "name [string]: {}\n"
-                              "performance_level [int]: [{}]\n"
-                              "utilization_gpu [%]: [{}]\n"
-                              "utilization_mem [%]: [{}]",
+                              "compute_utilization [%]: [{}]\n"
+                              "memory_utilization [%]: [{}]\n"
+                              "performance_level [int]: [{}]",
                               detail::value_or_default(samples.get_byte_order()),
                               detail::value_or_default(samples.get_vendor_id()),
                               detail::value_or_default(samples.get_name()),
-                              detail::join(detail::value_or_default(samples.get_performance_level()), ", "),
-                              detail::join(detail::value_or_default(samples.get_utilization_gpu()), ", "),
-                              detail::join(detail::value_or_default(samples.get_utilization_mem()), ", "));
+                              detail::join(detail::value_or_default(samples.get_compute_utilization()), ", "),
+                              detail::join(detail::value_or_default(samples.get_memory_utilization()), ", "),
+                              detail::join(detail::value_or_default(samples.get_performance_level()), ", "));
 }
 
 //*************************************************************************************************************************************//

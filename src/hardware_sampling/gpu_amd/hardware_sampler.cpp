@@ -103,14 +103,14 @@ void gpu_amd_hardware_sampler::sampling_loop() {
             general_samples_.performance_level_ = decltype(general_samples_.performance_level_)::value_type{ static_cast<decltype(general_samples_.performance_level_)::value_type::value_type>(pstate) };
         }
 
-        decltype(general_samples_.utilization_gpu_)::value_type::value_type utilization_gpu{};
+        decltype(general_samples_.compute_utilization_)::value_type::value_type utilization_gpu{};
         if (rsmi_dev_busy_percent_get(device_id_, &utilization_gpu) == RSMI_STATUS_SUCCESS) {
-            general_samples_.utilization_gpu_ = decltype(general_samples_.utilization_gpu_)::value_type{ utilization_gpu };
+            general_samples_.compute_utilization_ = decltype(general_samples_.compute_utilization_)::value_type{ utilization_gpu };
         }
 
-        decltype(general_samples_.utilization_mem_)::value_type::value_type utilization_mem{};
+        decltype(general_samples_.memory_utilization_)::value_type::value_type utilization_mem{};
         if (rsmi_dev_memory_busy_percent_get(device_id_, &utilization_mem) == RSMI_STATUS_SUCCESS) {
-            general_samples_.utilization_mem_ = decltype(general_samples_.utilization_mem_)::value_type{ utilization_mem };
+            general_samples_.memory_utilization_ = decltype(general_samples_.memory_utilization_)::value_type{ utilization_mem };
         }
     }
 
@@ -441,16 +441,16 @@ void gpu_amd_hardware_sampler::sampling_loop() {
                     general_samples_.performance_level_->push_back(static_cast<decltype(general_samples_.performance_level_)::value_type::value_type>(pstate));
                 }
 
-                if (general_samples_.utilization_gpu_.has_value()) {
-                    decltype(general_samples_.utilization_gpu_)::value_type::value_type value{};
+                if (general_samples_.compute_utilization_.has_value()) {
+                    decltype(general_samples_.compute_utilization_)::value_type::value_type value{};
                     HWS_ROCM_SMI_ERROR_CHECK(rsmi_dev_busy_percent_get(device_id_, &value));
-                    general_samples_.utilization_gpu_->push_back(value);
+                    general_samples_.compute_utilization_->push_back(value);
                 }
 
-                if (general_samples_.utilization_mem_.has_value()) {
-                    decltype(general_samples_.utilization_mem_)::value_type::value_type value{};
+                if (general_samples_.memory_utilization_.has_value()) {
+                    decltype(general_samples_.memory_utilization_)::value_type::value_type value{};
                     HWS_ROCM_SMI_ERROR_CHECK(rsmi_dev_memory_busy_percent_get(device_id_, &value));
-                    general_samples_.utilization_mem_->push_back(value);
+                    general_samples_.memory_utilization_->push_back(value);
                 }
             }
 

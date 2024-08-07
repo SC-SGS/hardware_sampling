@@ -67,27 +67,27 @@ std::string nvml_general_samples::generate_yaml_string() const {
                            this->num_cores_.value());
     }
 
+    // device compute utilization
+    if (this->compute_utilization_.has_value()) {
+        str += std::format("  compute_utilization:\n"
+                           "    unit: \"percentage\"\n"
+                           "    values: [{}]\n",
+                           detail::join(this->compute_utilization_.value(), ", "));
+    }
+
+    // device memory utilization
+    if (this->memory_utilization_.has_value()) {
+        str += std::format("  memory_utilization:\n"
+                           "    unit: \"percentage\"\n"
+                           "    values: [{}]\n",
+                           detail::join(this->memory_utilization_.value(), ", "));
+    }
     // performance state
     if (this->performance_state_.has_value()) {
         str += std::format("  performance_state:\n"
                            "    unit: \"0 - maximum performance; 15 - minimum performance; 32 - unknown\"\n"
                            "    values: [{}]\n",
                            detail::join(this->performance_state_.value(), ", "));
-    }
-    // device compute utilization
-    if (this->utilization_gpu_.has_value()) {
-        str += std::format("  utilization_gpu:\n"
-                           "    unit: \"percentage\"\n"
-                           "    values: [{}]\n",
-                           detail::join(this->utilization_gpu_.value(), ", "));
-    }
-
-    // device compute utilization
-    if (this->utilization_mem_.has_value()) {
-        str += std::format("  utilization_mem:\n"
-                           "    unit: \"percentage\"\n"
-                           "    values: [{}]\n",
-                           detail::join(this->utilization_mem_.value(), ", "));
     }
 
     // remove last newline
@@ -103,18 +103,18 @@ std::ostream &operator<<(std::ostream &out, const nvml_general_samples &samples)
                               "name [string]: {}\n"
                               "persistence_mode [bool]: {}\n"
                               "num_cores [int]: {}\n"
-                              "performance_state [int]: [{}]\n"
-                              "utilization_gpu [%]: [{}]\n"
-                              "utilization_mem [%]: [{}]",
+                              "compute_utilization [%]: [{}]\n"
+                              "memory_utilization [%]: [{}]\n"
+                              "performance_state [int]: [{}]",
                               detail::value_or_default(samples.get_architecture()),
                               detail::value_or_default(samples.get_byte_order()),
                               detail::value_or_default(samples.get_vendor_id()),
                               detail::value_or_default(samples.get_name()),
                               detail::value_or_default(samples.get_persistence_mode()),
                               detail::value_or_default(samples.get_num_cores()),
-                              detail::join(detail::value_or_default(samples.get_performance_state()), ", "),
-                              detail::join(detail::value_or_default(samples.get_utilization_gpu()), ", "),
-                              detail::join(detail::value_or_default(samples.get_utilization_mem()), ", "));
+                              detail::join(detail::value_or_default(samples.get_compute_utilization()), ", "),
+                              detail::join(detail::value_or_default(samples.get_memory_utilization()), ", "),
+                              detail::join(detail::value_or_default(samples.get_performance_state()), ", "));
 }
 
 //*************************************************************************************************************************************//
