@@ -171,7 +171,7 @@ void gpu_nvidia_hardware_sampler::sampling_loop() {
         // queried samples -> retrieved every iteration if available
         nvmlPstates_t pstate{};
         if (nvmlDeviceGetPerformanceState(device, &pstate) == NVML_SUCCESS) {
-            general_samples_.performance_state_ = decltype(general_samples_.performance_state_)::value_type{ static_cast<decltype(general_samples_.performance_state_)::value_type::value_type>(pstate) };
+            general_samples_.performance_level_ = decltype(general_samples_.performance_level_)::value_type{ static_cast<decltype(general_samples_.performance_level_)::value_type::value_type>(pstate) };
         }
 
         nvmlUtilization_t util{};
@@ -374,10 +374,10 @@ void gpu_nvidia_hardware_sampler::sampling_loop() {
 
             // retrieve general samples
             {
-                if (general_samples_.performance_state_.has_value()) {
+                if (general_samples_.performance_level_.has_value()) {
                     nvmlPstates_t pstate{};
                     HWS_NVML_ERROR_CHECK(nvmlDeviceGetPerformanceState(device, &pstate));
-                    general_samples_.performance_state_->push_back(static_cast<decltype(general_samples_.performance_state_)::value_type::value_type>(pstate));
+                    general_samples_.performance_level_->push_back(static_cast<decltype(general_samples_.performance_level_)::value_type::value_type>(pstate));
                 }
 
                 if (general_samples_.compute_utilization_.has_value() && general_samples_.memory_utilization_.has_value()) {

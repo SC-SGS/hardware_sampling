@@ -50,7 +50,7 @@ class nvml_general_samples {
 
     HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(unsigned int, compute_utilization)  // the GPU compute utilization in percent
     HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(unsigned int, memory_utilization)   // the GPU memory utilization in percent
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(int, performance_state)             // the performance state: 0 - 15 where 0 is the maximum performance and 15 the minimum performance
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(int, performance_level)             // the performance state: 0 - 15 where 0 is the maximum performance and 15 the minimum performance
 };
 
 /**

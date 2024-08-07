@@ -83,11 +83,11 @@ std::string nvml_general_samples::generate_yaml_string() const {
                            detail::join(this->memory_utilization_.value(), ", "));
     }
     // performance state
-    if (this->performance_state_.has_value()) {
-        str += std::format("  performance_state:\n"
+    if (this->performance_level_.has_value()) {
+        str += std::format("  performance_level:\n"
                            "    unit: \"0 - maximum performance; 15 - minimum performance; 32 - unknown\"\n"
                            "    values: [{}]\n",
-                           detail::join(this->performance_state_.value(), ", "));
+                           detail::join(this->performance_level_.value(), ", "));
     }
 
     // remove last newline
@@ -105,7 +105,7 @@ std::ostream &operator<<(std::ostream &out, const nvml_general_samples &samples)
                               "num_cores [int]: {}\n"
                               "compute_utilization [%]: [{}]\n"
                               "memory_utilization [%]: [{}]\n"
-                              "performance_state [int]: [{}]",
+                              "performance_level [int]: [{}]",
                               detail::value_or_default(samples.get_architecture()),
                               detail::value_or_default(samples.get_byte_order()),
                               detail::value_or_default(samples.get_vendor_id()),
@@ -114,7 +114,7 @@ std::ostream &operator<<(std::ostream &out, const nvml_general_samples &samples)
                               detail::value_or_default(samples.get_num_cores()),
                               detail::join(detail::value_or_default(samples.get_compute_utilization()), ", "),
                               detail::join(detail::value_or_default(samples.get_memory_utilization()), ", "),
-                              detail::join(detail::value_or_default(samples.get_performance_state()), ", "));
+                              detail::join(detail::value_or_default(samples.get_performance_level()), ", "));
 }
 
 //*************************************************************************************************************************************//
