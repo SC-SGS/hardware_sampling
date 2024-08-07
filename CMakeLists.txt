@@ -237,7 +237,7 @@ endif ()
 ####################################################################################################################
 ##                                             enable Python bindings                                             ##
 ####################################################################################################################
-option(HWS_ENABLE_PYTHON_BINDINGS "Build langauge bindings for Python." ON)
+option(HWS_ENABLE_PYTHON_BINDINGS "Build language bindings for Python." ON)
 
 if (HWS_ENABLE_PYTHON_BINDINGS)
     add_subdirectory(bindings)
