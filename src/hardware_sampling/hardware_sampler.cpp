@@ -10,7 +10,7 @@
 #include "hardware_sampling/event.hpp"    // hws::event
 #include "hardware_sampling/utility.hpp"  // hws::detail::{durations_from_reference_time, join}
 
-#include <chrono>     // std::chrono::{steady_clock, duration_cast, milliseconds}
+#include <chrono>     // std::chrono::{system_clock, steady_clock, duration_cast, milliseconds}
 #include <cstddef>    // std::size_t
 #include <exception>  // std::exception
 #include <format>     // std::format
@@ -32,6 +32,9 @@ void hardware_sampler::start_sampling() {
     if (this->has_sampling_started()) {
         throw std::runtime_error{ "Can start every hardware sampler only once!" };
     }
+
+    // record start time
+    start_date_time_ = std::chrono::system_clock::now();
 
     // start sampling loop
     sampling_started_ = true;
@@ -120,6 +123,9 @@ void hardware_sampler::dump_yaml(const char *filename) {
 
     // set the device identification
     file << std::format("device_identification: {}\n\n", this->device_identification());
+
+    // output the start date time of this hardware sampling
+    file << std::format("start_time: \"{:%Y-%m-%d %X}\"\n\n", std::chrono::current_zone()->to_local(start_date_time_));
 
     // output the event information
     std::vector<decltype(event::time_point)> event_time_points{};
