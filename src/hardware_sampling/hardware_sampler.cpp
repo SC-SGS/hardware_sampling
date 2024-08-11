@@ -116,6 +116,10 @@ event hardware_sampler::get_event(const std::size_t idx) const {
 }
 
 void hardware_sampler::dump_yaml(const char *filename) {
+    if (!this->has_sampling_stopped()) {
+        throw std::runtime_error{ "Can dump samples to the YAML file only after the sampling has been stopped!" };
+    }
+
     std::ofstream file{ filename, std::ios_base::app };
 
     // begin a new YAML document (only with "---" multiple YAML documents in a single file are allowed)
