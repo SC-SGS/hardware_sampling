@@ -15,7 +15,7 @@
 #include "hardware_sampling/event.hpp"  // hws::event
 
 #include <atomic>      // std::atomic
-#include <chrono>      // std::chrono::{steady_clock::time_point, milliseconds}
+#include <chrono>      // std::chrono::{system_clock::time_point, steady_clock::time_point, milliseconds}
 #include <cstddef>     // std::size_t
 #include <filesystem>  // std::filesystem::path
 #include <string>      // std::string
@@ -192,8 +192,11 @@ class hardware_sampler {
     /// A boolean flag indicating whether the sampling is currently running.
     std::atomic<bool> sampling_running_{ false };
 
+    /// The wallclock time where the hardware sampling started.
+    std::chrono::system_clock::time_point start_date_time_{};
+
     /// The different tracked events.
-    std::vector<event> events_;
+    std::vector<event> events_{};
 
     /// The std::thread used to getter the hardware samples.
     std::thread sampling_thread_{};

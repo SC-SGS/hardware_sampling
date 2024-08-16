@@ -92,9 +92,9 @@ void cpu_hardware_sampler::sampling_loop() {
             } else if (line.starts_with("Frequency boost")) {
                 clock_samples_.frequency_boost_ = value == "enabled";
             } else if (line.starts_with("CPU max MHz")) {
-                clock_samples_.min_frequency_ = detail::convert_to<decltype(clock_samples_.min_frequency_)::value_type>(value);
-            } else if (line.starts_with("CPU min MHz")) {
                 clock_samples_.max_frequency_ = detail::convert_to<decltype(clock_samples_.max_frequency_)::value_type>(value);
+            } else if (line.starts_with("CPU min MHz")) {
+                clock_samples_.min_frequency_ = detail::convert_to<decltype(clock_samples_.min_frequency_)::value_type>(value);
             } else if (line.starts_with("L1d cache")) {
                 memory_samples_.l1d_cache_ = detail::convert_to<decltype(memory_samples_.l1d_cache_)::value_type>(value);
             } else if (line.starts_with("L1i cache")) {
