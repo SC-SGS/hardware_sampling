@@ -41,6 +41,13 @@ std::string cpu_general_samples::generate_yaml_string() const {
                            "    values: \"{}\"\n",
                            this->byte_order_.value());
     }
+    // number of cores
+    if (this->num_cores_.has_value()) {
+        str += std::format("  num_cores:\n"
+                           "    unit: \"int\"\n"
+                           "    values: {}\n",
+                           this->num_cores_.value());
+    }
     // number of threads including hyper-threads
     if (this->num_threads_.has_value()) {
         str += std::format("  num_threads:\n"
@@ -156,6 +163,7 @@ std::string cpu_general_samples::generate_yaml_string() const {
 std::ostream &operator<<(std::ostream &out, const cpu_general_samples &samples) {
     std::string str = std::format("architecture [string]: {}\n"
                                   "byte_order [string]: {}\n"
+                                  "num_cores [int]: {}\n"
                                   "num_threads [int]: {}\n"
                                   "threads_per_core [int]: {}\n"
                                   "cores_per_socket [int]: {}\n"
@@ -172,6 +180,7 @@ std::ostream &operator<<(std::ostream &out, const cpu_general_samples &samples) 
                                   "poll_percent [%]: [{}]",
                                   detail::value_or_default(samples.get_architecture()),
                                   detail::value_or_default(samples.get_byte_order()),
+                                  detail::value_or_default(samples.get_num_cores()),
                                   detail::value_or_default(samples.get_num_threads()),
                                   detail::value_or_default(samples.get_threads_per_core()),
                                   detail::value_or_default(samples.get_cores_per_socket()),

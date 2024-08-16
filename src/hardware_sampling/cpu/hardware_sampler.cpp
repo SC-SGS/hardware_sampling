@@ -105,6 +105,11 @@ void cpu_hardware_sampler::sampling_loop() {
                 memory_samples_.l3_cache_ = detail::convert_to<decltype(memory_samples_.l3_cache_)::value_type>(value);
             }
         }
+
+        // check if the number of cores can be derived from the otherwise found values
+        if (general_samples_.num_threads_.has_value() && general_samples_.threads_per_core_.has_value()) {
+            general_samples_.num_cores_ = general_samples_.num_threads_.value() / general_samples_.threads_per_core_.value();
+        }
     }
 #endif
 

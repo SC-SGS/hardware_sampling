@@ -74,6 +74,7 @@ export PYTHONPATH=${CMAKE_INSTALL_PREFIX}/lib:${PYTHONPATH}
 | compute_utilization |   %   |      %      |     %     |      ?       |
 | memory_utilization  |   -   |      %      |     %     |      ?       |
 | performance_level   |       |     int     |    int    |              |
+| num_cores           |  int  |     int     |     -     |              |
 | num_threads         |  int  |             |           |              |
 | threads_per_core    |  int  |             |           |              |
 | cores_per_socket    |  int  |             |           |              |
@@ -86,7 +87,6 @@ export PYTHONPATH=${CMAKE_INSTALL_PREFIX}/lib:${PYTHONPATH}
 | poll                |  int  |      -      |     -     |      -       |
 | poll_percent        |   %   |      -      |     -     |      -       |
 | persistence_mode    |       |    bool     |           |              |
-| num_cores           |       |     int     |           |              |
 | standby_mode        |       |             |           |     str      |
 | num_threads_per_eu  |       |             |           |     int      |
 | eu_simd_width       |       |             |           |     int      |

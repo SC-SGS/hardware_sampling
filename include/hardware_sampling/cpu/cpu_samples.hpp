@@ -44,6 +44,7 @@ class cpu_general_samples {
 
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, architecture)        // the CPU architecture (e.g., x86_64)
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, byte_order)          // the byte order (e.g., little/big endian)
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(unsigned int, num_cores)          // the total number of cores of the CPU(s)
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(unsigned int, num_threads)        // the number of threads of the CPU(s) including potential hyper-threads
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(unsigned int, threads_per_core)   // the number of hyper-threads per core
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(unsigned int, cores_per_socket)   // the number of physical cores per socket
