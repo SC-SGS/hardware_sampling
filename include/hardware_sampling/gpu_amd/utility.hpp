@@ -38,8 +38,18 @@ namespace hws {
                 }                                                                                                                                  \
             }                                                                                                                                      \
         }
+
+    #define HWS_HIP_ERROR_CHECK(hip_func)                                                                                             \
+        {                                                                                                                             \
+            const hiperror_t errc = hip_func;                                                                                         \
+            if (errc != hipSuccess) {                                                                                                 \
+                throw std::runtime_error{ std::format("Error in HIP function call \"{}\": {}", #hip_func, hipGetErrorString(errc)) }; \
+            }                                                                                                                         \
+        }
+
 #else
     #define HWS_ROCM_SMI_ERROR_CHECK(rocm_smi_func) rocm_smi_func;
+    #define HWS_HIP_ERROR_CHECK(hip_func) hip_func;
 #endif
 
 }  // namespace hws

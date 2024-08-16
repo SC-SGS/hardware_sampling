@@ -190,7 +190,8 @@ endif ()
 ## try finding ROCm SMI
 find_package(rocm_smi QUIET)
 if (rocm_smi_FOUND)
-    target_link_libraries(${HWS_LIBRARY_NAME} PRIVATE -lrocm_smi64)
+    find_package(HIP REQUIRED)
+    target_link_libraries(${HWS_LIBRARY_NAME} PRIVATE -lrocm_smi64 hip::host)
     target_include_directories(${HWS_LIBRARY_NAME} PRIVATE ${ROCM_SMI_INCLUDE_DIR})
 
     message(STATUS "Enable sampling of AMD GPU information using ROCm SMI.")

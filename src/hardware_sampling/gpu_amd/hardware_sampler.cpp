@@ -12,7 +12,8 @@
 #include "hardware_sampling/hardware_sampler.hpp"          // hws::hardware_sampler
 #include "hardware_sampling/utility.hpp"                   // hws::detail::{time_points_to_epoch, join}
 
-#include "rocm_smi/rocm_smi.h"  // ROCm SMI runtime functions
+#include "hip/hip_runtime_api.h"  // HIP runtime functions
+#include "rocm_smi/rocm_smi.h"    // ROCm SMI runtime functions
 
 #include <chrono>     // std::chrono::{steady_clock, duration_cast, milliseconds}
 #include <cstddef>    // std::size_t
@@ -86,6 +87,12 @@ void gpu_amd_hardware_sampler::sampling_loop() {
         // fixed information -> only retrieved once
         // the byte order is given by AMD directly
         general_samples_.byte_order_ = "Little Endian";
+
+        hipDeviceProp_t prop{};
+        if (hipGetDeviceProperties(&prop, device_id_) == hipSuccess) {
+            std::string architecture{ prop.gcnArchName };
+            general_samples_.architecture_ = architecture.substr(0, architecture.find_first_of('\0'));
+        }
 
         std::string vendor_id(static_cast<std::string::size_type>(1024), '\0');
         if (rsmi_dev_vendor_name_get(device_id_, vendor_id.data(), vendor_id.size()) == RSMI_STATUS_SUCCESS) {

@@ -79,7 +79,7 @@ IncludeBlocks: Regroup
 IncludeCategories:
   - Regex: '^"hardware_sampling/'
     Priority: 1
-  - Regex: '^"(pybind|nvml|rocm_smi|level_zero|subprocess)'
+  - Regex: '^"(pybind|nvml|cuda|rocm_smi|hip|level_zero|subprocess)'
     Priority: 2
   - Regex: '^.*'
     Priority: 3

@@ -24,6 +24,13 @@ namespace hws {
 std::string rocm_smi_general_samples::generate_yaml_string() const {
     std::string str{ "general:\n" };
 
+    // device architecture
+    if (this->architecture_.has_value()) {
+        str += std::format("  architecture:\n"
+                           "    unit: \"string\"\n"
+                           "    values: \"{}\"\n",
+                           this->architecture_.value());
+    }
     // device byte order
     if (this->byte_order_.has_value()) {
         str += std::format("  byte_order:\n"
@@ -75,12 +82,14 @@ std::string rocm_smi_general_samples::generate_yaml_string() const {
 }
 
 std::ostream &operator<<(std::ostream &out, const rocm_smi_general_samples &samples) {
-    return out << std::format("byte_order [string]: {}\n"
+    return out << std::format("architecture [string]: {}\n"
+                              "byte_order [string]: {}\n"
                               "vendor_id [string]: {}\n"
                               "name [string]: {}\n"
                               "compute_utilization [%]: [{}]\n"
                               "memory_utilization [%]: [{}]\n"
                               "performance_level [int]: [{}]",
+                              detail::value_or_default(samples.get_architecture()),
                               detail::value_or_default(samples.get_byte_order()),
                               detail::value_or_default(samples.get_vendor_id()),
                               detail::value_or_default(samples.get_name()),
