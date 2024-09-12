@@ -14,6 +14,7 @@
 
 #include <charconv>      // std::from_chars
 #include <chrono>        // std::chrono::{milliseconds, duration_cast}
+#include <cmath>         // std::trunc
 #include <cstddef>       // std::size_t
 #include <format>        // std::format, std::formatter, std::basic_format_context, std::format_to
 #include <iterator>      // std::back_inserter, std::next, std::prev
@@ -54,19 +55,18 @@ namespace hws::detail {
     std::optional<std::vector<sample_type>> sample_name##_{};
 
 /**
- * @brief Convert all time points to their duration passed since the @p reference time point.
- * @tparam Duration the duration type to return
+ * @brief Convert all time points to their duration in seconds (using double) truncated to three decimal places passed since the @p reference time point.
  * @tparam TimePoint the type if the time points
  * @param[in] time_points the time points
  * @param[in] reference the reference time point
- * @return the duration passed since the @p reference time point (`[[nodiscard]]`)
+ * @return the duration passed in seconds since the @p reference time point (`[[nodiscard]]`)
  */
-template <typename Duration = std::chrono::milliseconds, typename TimePoint>
-[[nodiscard]] inline std::vector<Duration> durations_from_reference_time(const std::vector<TimePoint> &time_points, const TimePoint &reference) {
-    std::vector<Duration> durations(time_points.size());
+template <typename TimePoint>
+[[nodiscard]] inline std::vector<double> durations_from_reference_time(const std::vector<TimePoint> &time_points, const TimePoint &reference) {
+    std::vector<double> durations(time_points.size());
 
     for (std::size_t i = 0; i < durations.size(); ++i) {
-        durations[i] = std::chrono::duration_cast<Duration>(time_points[i] - reference);
+        durations[i] = std::trunc(std::chrono::duration<double>(time_points[i] - reference).count() * 1000.0) / 1000.0;
     }
 
     return durations;

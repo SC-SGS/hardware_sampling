@@ -139,14 +139,18 @@ void hardware_sampler::dump_yaml(const char *filename) {
         event_names.push_back(name);
     }
     file << std::format("events:\n"
-                        "  time_points: [{}]\n"
+                        "  time_points:\n"
+                        "    unit: \"s\"\n"
+                        "    values: [{}]\n"
                         "  names: [{}]\n\n",
                         detail::join(detail::durations_from_reference_time(event_time_points, this->get_event(0).time_point), ", "),
                         detail::join(event_names, ", "));
 
     // output the sampling information
     file << std::format("sampling_interval: {}\n"
-                        "time_points: [{}]\n"
+                        "time_points:\n"
+                        "  unit: \"s\"\n"
+                        "  values: [{}]\n"
                         "{}\n\n",
                         this->sampling_interval(),
                         detail::join(detail::durations_from_reference_time(this->sampling_time_points(), this->get_event(0).time_point), ", "),
