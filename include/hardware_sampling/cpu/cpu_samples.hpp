@@ -127,11 +127,14 @@ class cpu_power_samples {
      */
     [[nodiscard]] std::string generate_yaml_string() const;
 
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, package_watt)                   // the currently consumed power of the package of the CPU in W
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, core_watt)                      // the currently consumed power of the core part of the CPU in W
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, ram_watt)                       // the currently consumed power of the RAM part of the CPU in W
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, package_rapl_throttle_percent)  // the percent of time the package throttled due to RAPL limiters
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, dram_rapl_throttle_percent)     // the percent of time the DRAM throttled due to RAPL limiters
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, power_measurement_type)  // the type of the power readings: always "instant/current"
+
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, power_usage)                     // the currently consumed power of the package of the CPU in W
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, power_total_energy_consumption)  // the total power consumption in J
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, core_watt)                       // the currently consumed power of the core part of the CPU in W
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, ram_watt)                        // the currently consumed power of the RAM part of the CPU in W
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, package_rapl_throttle_percent)   // the percent of time the package throttled due to RAPL limiters
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, dram_rapl_throttle_percent)      // the percent of time the DRAM throttled due to RAPL limiters
 };
 
 /**

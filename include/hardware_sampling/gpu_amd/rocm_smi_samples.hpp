@@ -122,14 +122,14 @@ class rocm_smi_power_samples {
      */
     [[nodiscard]] std::string generate_yaml_string() const;
 
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::uint64_t, power_default_cap)                    // the default power cap, may be different from power cap
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::uint64_t, power_cap)                            // if the GPU draws more power (μW) than the power cap, the GPU may throttle
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, power_type)                             // the type of the power management: either current power draw or average power draw
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(double, power_management_limit)                      // the default power cap (W), may be different from power cap
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(double, power_enforced_limit)                        // if the GPU draws more power (W) than the power cap, the GPU may throttle
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, power_measurement_type)                 // the type of the power readings: either current power draw or average power draw
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::vector<std::string>, available_power_profiles)  // a list of the available power profiles
 
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(std::uint64_t, power_usage)                     // the current GPU socket power draw in μW
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(std::uint64_t, power_total_energy_consumption)  // the total power consumption since the last driver reload in μJ
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(std::string, power_profile)                     // the current active power profile; one of 'available_power_profiles'
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, power_usage)                     // the current GPU socket power draw in W
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, power_total_energy_consumption)  // the total power consumption since the last driver reload in J
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(std::string, power_profile)              // the current active power profile; one of 'available_power_profiles'
 };
 
 /**

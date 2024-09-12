@@ -224,26 +224,26 @@ std::ostream &operator<<(std::ostream &out, const rocm_smi_clock_samples &sample
 std::string rocm_smi_power_samples::generate_yaml_string() const {
     std::string str{ "power:\n" };
 
-    // default power cap
-    if (this->power_default_cap_.has_value()) {
+    // power management limit
+    if (this->power_management_limit_.has_value()) {
         str += std::format("  power_management_limit:\n"
-                           "    unit: \"muW\"\n"
+                           "    unit: \"W\"\n"
                            "    values: {}\n",
-                           this->power_default_cap_.value());
+                           this->power_management_limit_.value());
     }
-    // power cap
-    if (this->power_cap_.has_value()) {
+    // power enforced limit
+    if (this->power_enforced_limit_.has_value()) {
         str += std::format("  power_enforced_limit:\n"
-                           "    unit: \"muW\"\n"
+                           "    unit: \"W\"\n"
                            "    values: {}\n",
-                           this->power_cap_.value());
+                           this->power_enforced_limit_.value());
     }
     // power measurement type
-    if (this->power_type_.has_value()) {
+    if (this->power_measurement_type_.has_value()) {
         str += std::format("  power_measurement_type:\n"
                            "    unit: \"string\"\n"
-                           "    values: {}\n",
-                           this->power_type_.value());
+                           "    values: \"{}\"\n",
+                           this->power_measurement_type_.value());
     }
     // available power levels
     if (this->available_power_profiles_.has_value()) {
@@ -256,20 +256,16 @@ std::string rocm_smi_power_samples::generate_yaml_string() const {
     // current power usage
     if (this->power_usage_.has_value()) {
         str += std::format("  power_usage:\n"
-                           "    unit: \"muW\"\n"
+                           "    unit: \"W\"\n"
                            "    values: [{}]\n",
                            detail::join(this->power_usage_.value(), ", "));
     }
     // total energy consumed
     if (this->power_total_energy_consumption_.has_value()) {
-        decltype(rocm_smi_power_samples::power_total_energy_consumption_)::value_type consumed_energy(this->power_total_energy_consumption_->size());
-        for (std::size_t i = 0; i < consumed_energy.size(); ++i) {
-            consumed_energy[i] = this->power_total_energy_consumption_.value()[i] - this->power_total_energy_consumption_->front();
-        }
         str += std::format("  power_total_energy_consumed:\n"
-                           "    unit: \"muJ\"\n"
+                           "    unit: \"J\"\n"
                            "    values: [{}]\n",
-                           detail::join(consumed_energy, ", "));
+                           detail::join(this->power_total_energy_consumption_.value(), ", "));
     }
     // current power level
     if (this->power_profile_.has_value()) {
@@ -286,16 +282,16 @@ std::string rocm_smi_power_samples::generate_yaml_string() const {
 }
 
 std::ostream &operator<<(std::ostream &out, const rocm_smi_power_samples &samples) {
-    return out << std::format("power_default_cap [muW]: {}\n"
-                              "power_cap [muW]: {}\n"
-                              "power_type [string]: {}\n"
+    return out << std::format("power_management_limit [W]: {}\n"
+                              "power_enforced_limit [W]: {}\n"
+                              "power_measurement_type [string]: {}\n"
                               "available_power_profiles [string]: [{}]\n"
-                              "power_usage [muW]: [{}]\n"
-                              "power_total_energy_consumption [muJ]: [{}]\n"
+                              "power_usage [W]: [{}]\n"
+                              "power_total_energy_consumption [J]: [{}]\n"
                               "power_profile [string]: [{}]",
-                              detail::value_or_default(samples.get_power_default_cap()),
-                              detail::value_or_default(samples.get_power_cap()),
-                              detail::value_or_default(samples.get_power_type()),
+                              detail::value_or_default(samples.get_power_management_limit()),
+                              detail::value_or_default(samples.get_power_enforced_limit()),
+                              detail::value_or_default(samples.get_power_measurement_type()),
                               detail::join(detail::value_or_default(samples.get_available_power_profiles()), ", "),
                               detail::join(detail::value_or_default(samples.get_power_usage()), ", "),
                               detail::join(detail::value_or_default(samples.get_power_total_energy_consumption()), ", "),

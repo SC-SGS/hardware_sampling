@@ -82,6 +82,8 @@ void gpu_amd_hardware_sampler::sampling_loop() {
 
     this->add_time_point(std::chrono::steady_clock::now());
 
+    std::uint64_t initial_power_usage{};
+
     // retrieve initial general information
     {
         // fixed information -> only retrieved once
@@ -174,33 +176,32 @@ void gpu_amd_hardware_sampler::sampling_loop() {
 
     // retrieve initial power related information
     {
-        decltype(power_samples_.power_default_cap_)::value_type power_default_cap{};
+        std::uint64_t power_default_cap{};
         if (rsmi_dev_power_cap_default_get(device_id_, &power_default_cap) == RSMI_STATUS_SUCCESS) {
-            power_samples_.power_default_cap_ = power_default_cap;
+            power_samples_.power_management_limit_ = static_cast<decltype(power_samples_.power_management_limit_)::value_type>(power_default_cap) / 1000.0 / 1000.0;
         }
 
-        decltype(power_samples_.power_cap_)::value_type power_cap{};
+        std::uint64_t power_cap{};
         if (rsmi_dev_power_cap_get(device_id_, std::uint32_t{ 0 }, &power_cap) == RSMI_STATUS_SUCCESS) {
-            power_samples_.power_cap_ = power_cap;
+            power_samples_.power_enforced_limit_ = static_cast<decltype(power_samples_.power_enforced_limit_)::value_type>(power_cap) / 1000.0 / 1000.0;
         }
 
         {
-            decltype(power_samples_.power_usage_)::value_type::value_type power_usage{};
             RSMI_POWER_TYPE power_type{};
-            if (rsmi_dev_power_get(device_id_, &power_usage, &power_type) == RSMI_STATUS_SUCCESS) {
+            if (rsmi_dev_power_get(device_id_, &initial_power_usage, &power_type) == RSMI_STATUS_SUCCESS) {
                 switch (power_type) {
                     case RSMI_POWER_TYPE::RSMI_AVERAGE_POWER:
-                        power_samples_.power_type_ = "average";
+                        power_samples_.power_measurement_type_ = "average";
                         break;
                     case RSMI_POWER_TYPE::RSMI_CURRENT_POWER:
-                        power_samples_.power_type_ = "current/instant";
+                        power_samples_.power_measurement_type_ = "current/instant";
                         break;
                     case RSMI_POWER_TYPE::RSMI_INVALID_POWER:
-                        power_samples_.power_type_ = "invalid/undetected";
+                        power_samples_.power_measurement_type_ = "invalid/undetected";
                         break;
                 }
-                // queried samples -> retrieved every iteration if available
-                power_samples_.power_usage_ = decltype(power_samples_.power_usage_)::value_type{ power_usage };
+                // report power usage since the first sample
+                power_samples_.power_usage_ = decltype(power_samples_.power_usage_)::value_type{ static_cast<decltype(power_samples_.power_usage_)::value_type::value_type>(0) };
             }
         }
 
@@ -263,10 +264,11 @@ void gpu_amd_hardware_sampler::sampling_loop() {
         // queried samples -> retrieved every iteration if available
         [[maybe_unused]] std::uint64_t timestamp{};
         float resolution{};
-        decltype(power_samples_.power_total_energy_consumption_)::value_type::value_type power_total_energy_consumption{};
-        if (rsmi_dev_energy_count_get(device_id_, &power_total_energy_consumption, &resolution, &timestamp) == RSMI_STATUS_SUCCESS) {  // TODO: returns the same value for all invocations
-            const double scaled_value = static_cast<double>(power_total_energy_consumption) * static_cast<double>(resolution);
-            power_samples_.power_total_energy_consumption_ = decltype(power_samples_.power_total_energy_consumption_)::value_type{ static_cast<decltype(power_total_energy_consumption)>(scaled_value) };
+        std::uint64_t power_total_energy_consumption{};
+        if (rsmi_dev_energy_count_get(device_id_, &power_total_energy_consumption, &resolution, &timestamp) == RSMI_STATUS_SUCCESS) {
+            const auto scaled_value = static_cast<decltype(power_samples_.power_total_energy_consumption_)::value_type::value_type>(power_total_energy_consumption) *
+                                      static_cast<decltype(power_samples_.power_total_energy_consumption_)::value_type::value_type>(resolution);
+            power_samples_.power_total_energy_consumption_ = decltype(power_samples_.power_total_energy_consumption_)::value_type{ scaled_value / 1000.0 / 1000.0 };
         }
     }
 
@@ -514,18 +516,19 @@ void gpu_amd_hardware_sampler::sampling_loop() {
             {
                 if (power_samples_.power_usage_.has_value()) {
                     [[maybe_unused]] RSMI_POWER_TYPE power_type{};
-                    decltype(power_samples_.power_usage_)::value_type::value_type value{};
+                    std::uint64_t value{};
                     HWS_ROCM_SMI_ERROR_CHECK(rsmi_dev_power_get(device_id_, &value, &power_type));
-                    power_samples_.power_usage_->push_back(value);
+                    power_samples_.power_usage_->push_back(static_cast<decltype(power_samples_.power_usage_)::value_type::value_type>(value - initial_power_usage) / 1000.0 / 1000.0);
                 }
 
                 if (power_samples_.power_total_energy_consumption_.has_value()) {
                     [[maybe_unused]] std::uint64_t timestamp{};
                     float resolution{};
-                    decltype(power_samples_.power_total_energy_consumption_)::value_type::value_type value{};
-                    HWS_ROCM_SMI_ERROR_CHECK(rsmi_dev_energy_count_get(device_id_, &value, &resolution, &timestamp));  // TODO: returns the same value for all invocations
-                    const double scaled_value = static_cast<double>(value) * static_cast<double>(resolution);
-                    power_samples_.power_total_energy_consumption_->push_back(static_cast<decltype(value)>(scaled_value));
+                    std::uint64_t value{};
+                    HWS_ROCM_SMI_ERROR_CHECK(rsmi_dev_energy_count_get(device_id_, &value, &resolution, &timestamp));
+                    const auto scaled_value = static_cast<decltype(power_samples_.power_total_energy_consumption_)::value_type::value_type>(value) *
+                                              static_cast<decltype(power_samples_.power_total_energy_consumption_)::value_type::value_type>(resolution);
+                    power_samples_.power_total_energy_consumption_->push_back(scaled_value / 1000.0);
                 }
 
                 if (power_samples_.power_profile_.has_value()) {

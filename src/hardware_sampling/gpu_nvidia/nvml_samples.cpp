@@ -241,6 +241,27 @@ std::ostream &operator<<(std::ostream &out, const nvml_clock_samples &samples) {
 std::string nvml_power_samples::generate_yaml_string() const {
     std::string str{ "power:\n" };
 
+    // power management limit
+    if (this->power_management_limit_.has_value()) {
+        str += std::format("  power_management_limit:\n"
+                           "    unit: \"W\"\n"
+                           "    values: {}\n",
+                           this->power_management_limit_.value());
+    }
+    // power enforced limit
+    if (this->power_enforced_limit_.has_value()) {
+        str += std::format("  power_enforced_limit:\n"
+                           "    unit: \"W\"\n"
+                           "    values: {}\n",
+                           this->power_enforced_limit_.value());
+    }
+    // power measurement type
+    if (this->power_measurement_type_.has_value()) {
+        str += std::format("  power_measurement_type:\n"
+                           "    unit: \"string\"\n"
+                           "    values: \"{}\"\n",
+                           this->power_measurement_type_.value());
+    }
     // the power management mode
     if (this->power_management_mode_.has_value()) {
         str += std::format("  power_management_mode:\n"
@@ -248,45 +269,34 @@ std::string nvml_power_samples::generate_yaml_string() const {
                            "    values: {}\n",
                            this->power_management_mode_.value());
     }
-    // power management limit
-    if (this->power_management_limit_.has_value()) {
-        str += std::format("  power_management_limit:\n"
-                           "    unit: \"mW\"\n"
-                           "    values: {}\n",
-                           this->power_management_limit_.value());
-    }
-    // power enforced limit
-    if (this->power_enforced_limit_.has_value()) {
-        str += std::format("  power_enforced_limit:\n"
-                           "    unit: \"mW\"\n"
-                           "    values: {}\n",
-                           this->power_enforced_limit_.value());
+    // available power levels
+    if (this->available_power_profiles_.has_value()) {
+        str += std::format("  available_power_profiles:\n"
+                           "    unit: \"int\"\n"
+                           "    values: [{}]\n",
+                           detail::join(this->available_power_profiles_.value(), ", "));
     }
 
-    // power state
-    if (this->power_state_.has_value()) {
-        str += std::format("  power_state:\n"
-                           "    unit: \"0 - maximum performance; 15 - minimum performance; 32 - unknown\"\n"
-                           "    values: [{}]\n",
-                           detail::join(this->power_state_.value(), ", "));
-    }
     // current power usage
     if (this->power_usage_.has_value()) {
         str += std::format("  power_usage:\n"
-                           "    unit: \"mW\"\n"
+                           "    unit: \"W\"\n"
                            "    values: [{}]\n",
                            detail::join(this->power_usage_.value(), ", "));
     }
     // total energy consumed
     if (this->power_total_energy_consumption_.has_value()) {
-        decltype(nvml_power_samples::power_total_energy_consumption_)::value_type consumed_energy(this->power_total_energy_consumption_->size());
-        for (std::size_t i = 0; i < consumed_energy.size(); ++i) {
-            consumed_energy[i] = this->power_total_energy_consumption_.value()[i] - this->power_total_energy_consumption_->front();
-        }
         str += std::format("  power_total_energy_consumed:\n"
                            "    unit: \"J\"\n"
                            "    values: [{}]\n",
-                           detail::join(consumed_energy, ", "));
+                           detail::join(this->power_total_energy_consumption_.value(), ", "));
+    }
+    // power state
+    if (this->power_profile_.has_value()) {
+        str += std::format("  power_profile:\n"
+                           "    unit: \"int\"\n"
+                           "    values: [{}]\n",
+                           detail::join(this->power_profile_.value(), ", "));
     }
 
     // remove last newline
@@ -296,18 +306,22 @@ std::string nvml_power_samples::generate_yaml_string() const {
 }
 
 std::ostream &operator<<(std::ostream &out, const nvml_power_samples &samples) {
-    return out << std::format("power_management_mode [bool]: {}\n"
-                              "power_management_limit [mW]: {}\n"
-                              "power_enforced_limit [mW]: {}\n"
-                              "power_state [int]: [{}]\n"
-                              "power_usage [mW]: [{}]\n"
-                              "power_total_energy_consumption [J]: [{}]",
-                              detail::value_or_default(samples.get_power_management_mode()),
+    return out << std::format("power_management_limit [W]: {}\n"
+                              "power_enforced_limit [W]: {}\n"
+                              "power_measurement_type [string]: {}\n"
+                              "power_management_mode [bool]: {}\n"
+                              "available_power_profiles [int]: [{}]\n"
+                              "power_usage [W]: [{}]\n"
+                              "power_total_energy_consumption [J]: [{}]"
+                              "power_profile [int]: [{}]\n",
                               detail::value_or_default(samples.get_power_management_limit()),
                               detail::value_or_default(samples.get_power_enforced_limit()),
-                              detail::join(detail::value_or_default(samples.get_power_state()), ", "),
+                              detail::value_or_default(samples.get_power_measurement_type()),
+                              detail::value_or_default(samples.get_power_management_mode()),
+                              detail::join(detail::value_or_default(samples.get_available_power_profiles()), ", "),
                               detail::join(detail::value_or_default(samples.get_power_usage()), ", "),
-                              detail::join(detail::value_or_default(samples.get_power_total_energy_consumption()), ", "));
+                              detail::join(detail::value_or_default(samples.get_power_total_energy_consumption()), ", "),
+                              detail::join(detail::value_or_default(samples.get_power_profile()), ", "));
 }
 
 //*************************************************************************************************************************************//

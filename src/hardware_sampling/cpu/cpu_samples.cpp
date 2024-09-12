@@ -284,14 +284,30 @@ std::ostream &operator<<(std::ostream &out, const cpu_clock_samples &samples) {
 std::string cpu_power_samples::generate_yaml_string() const {
     std::string str{ "power:\n" };
 
+    // power measurement type
+    if (this->power_measurement_type_.has_value()) {
+        str += std::format("  power_measurement_type:\n"
+                           "    unit: \"string\"\n"
+                           "    values: \"{}\"\n",
+                           this->power_measurement_type_.value());
+    }
+
     // the package Watt
-    if (this->package_watt_.has_value()) {
-        str += std::format("  package_power:\n"
+    if (this->power_usage_.has_value()) {
+        str += std::format("  power_usage:\n"
                            "    turbostat_name: \"PkgWatt\"\n"
                            "    unit: \"W\"\n"
                            "    values: [{}]\n",
-                           detail::join(this->package_watt_.value(), ", "));
+                           detail::join(this->power_usage_.value(), ", "));
     }
+    // total energy consumed
+    if (this->power_total_energy_consumption_.has_value()) {
+        str += std::format("  power_total_energy_consumed:\n"
+                           "    unit: \"J\"\n"
+                           "    values: [{}]\n",
+                           detail::join(this->power_total_energy_consumption_.value(), ", "));
+    }
+
     // the core Watt
     if (this->core_watt_.has_value()) {
         str += std::format("  core_power:\n"
@@ -332,12 +348,16 @@ std::string cpu_power_samples::generate_yaml_string() const {
 }
 
 std::ostream &operator<<(std::ostream &out, const cpu_power_samples &samples) {
-    return out << std::format("package_watt [W]: [{}]\n"
+    return out << std::format("power_measurement_type [string]: {}\n"
+                              "power_usage [W]: [{}]\n"
+                              "power_total_energy_consumption [J]: [{}]\n"
                               "core_watt [W]: [{}]\n"
                               "ram_watt [W]: [{}]\n"
                               "package_rapl_throttle_percent [%]: [{}]\n"
                               "dram_rapl_throttle_percent [%]: [{}]",
-                              detail::join(detail::value_or_default(samples.get_package_watt()), ", "),
+                              detail::value_or_default(samples.get_power_measurement_type()),
+                              detail::join(detail::value_or_default(samples.get_power_usage()), ", "),
+                              detail::join(detail::value_or_default(samples.get_power_total_energy_consumption()), ", "),
                               detail::join(detail::value_or_default(samples.get_core_watt()), ", "),
                               detail::join(detail::value_or_default(samples.get_ram_watt()), ", "),
                               detail::join(detail::value_or_default(samples.get_package_rapl_throttle_percent()), ", "),

@@ -123,13 +123,15 @@ class nvml_power_samples {
      */
     [[nodiscard]] std::string generate_yaml_string() const;
 
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(bool, power_management_mode)           // true if power management algorithms are supported and active
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(unsigned int, power_management_limit)  // if the GPU draws more power (mW) than the power management limit, the GPU may throttle
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(unsigned int, power_enforced_limit)    // the actually enforced power limit, may be different from power management limit if external limiters are set
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(double, power_management_limit)              // if the GPU draws more power (W) than the power management limit, the GPU may throttle
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(double, power_enforced_limit)                // the actually enforced power limit (W), may be different from power management limit if external limiters are set
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, power_measurement_type)         // the type of the power readings: either current power draw or average power draw
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(bool, power_management_mode)                 // true if power management algorithms are supported and active
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::vector<int>, available_power_profiles)  // a list of the available power profiles
 
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(int, power_state)                                    // the current GPU power state: 0 - 15 where 0 is the maximum power and 15 the minimum power
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(unsigned int, power_usage)                           // the current power draw of the GPU and its related circuity (e.g., memory) in mW
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(unsigned long long, power_total_energy_consumption)  // the total power consumption since the last driver reload in mJ
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, power_usage)                     // the current power draw of the GPU and its related circuity (e.g., memory) in W
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, power_total_energy_consumption)  // the total power consumption since the last driver reload in J
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(int, power_profile)                      // the current GPU power state: 0 - 15 where 0 is the maximum power and 15 the minimum power; 32 indicates unknown
 };
 
 /**

@@ -22,6 +22,7 @@
 #include <format>     // std::format
 #include <ios>        // std::ios_base
 #include <iostream>   // std::cerr, std::endl
+#include <numeric>    // std::iota
 #include <optional>   // std::optional
 #include <ostream>    // std::ostream
 #include <stdexcept>  // std::runtime_error
@@ -85,6 +86,8 @@ void gpu_nvidia_hardware_sampler::sampling_loop() {
     //
 
     this->add_time_point(std::chrono::steady_clock::now());
+
+    unsigned int initial_power_usage{};
 
     // retrieve initial general information
     {
@@ -258,30 +261,49 @@ void gpu_nvidia_hardware_sampler::sampling_loop() {
             power_samples_.power_management_mode_ = mode == NVML_FEATURE_ENABLED;
         }
 
-        decltype(power_samples_.power_management_limit_)::value_type power_management_limit{};
+        unsigned int power_management_limit{};
         if (nvmlDeviceGetPowerManagementLimit(device, &power_management_limit) == NVML_SUCCESS) {
-            power_samples_.power_management_limit_ = power_management_limit;
+            power_samples_.power_management_limit_ = static_cast<decltype(power_samples_.power_management_limit_)::value_type>(power_management_limit) / 1000.0;
         }
 
-        decltype(power_samples_.power_enforced_limit_)::value_type power_enforced_limit{};
+        unsigned int power_enforced_limit{};
         if (nvmlDeviceGetEnforcedPowerLimit(device, &power_enforced_limit) == NVML_SUCCESS) {
-            power_samples_.power_enforced_limit_ = power_enforced_limit;
+            power_samples_.power_enforced_limit_ = static_cast<decltype(power_samples_.power_enforced_limit_)::value_type>(power_enforced_limit) / 1000.0;
         }
+
+        if (general_samples_.architecture_.has_value()) {
+            // based on https://docs.nvidia.com/deploy/nvml-api/group__nvmlDeviceQueries.html#group__nvmlDeviceQueries_1gf754f109beca3a4a8c8c1cd650d7d66c
+            if (general_samples_.architecture_ == "Kepler" || general_samples_.architecture_ == "Maxwell" || general_samples_.architecture_ == "Pascal" || general_samples_.architecture_ == "Volta" || general_samples_.architecture_ == "Turing") {
+                power_samples_.power_measurement_type_ = "current/instant";
+            } else if (general_samples_.architecture_ == "Ampere" || general_samples_.architecture_ == "Ada" || general_samples_.architecture_ == "Hopper" || general_samples_.architecture_ == "Blackwell" || general_samples_.architecture_ == "Orin") {
+                if (general_samples_.name_.has_value() && general_samples_.name_.value().find("A100") != std::string::npos) {
+                    // GA100 also has instant power draw measurements
+                    power_samples_.power_measurement_type_ = "current/instant";
+                } else {
+                    power_samples_.power_measurement_type_ = "average";
+                }
+            } else {
+                power_samples_.power_measurement_type_ = "invalid/undetected";
+            }
+        }
+
+        decltype(power_samples_.available_power_profiles_)::value_type power_states(17, 32);  // 17 power states, value 32 = unknown
+        std::iota(power_states.begin(), power_states.end() - 1, decltype(power_samples_.available_power_profiles_)::value_type::value_type{ 0 });
+        power_samples_.available_power_profiles_ = power_states;
 
         // queried samples -> retrieved every iteration if available
+        if (nvmlDeviceGetPowerUsage(device, &initial_power_usage) == NVML_SUCCESS) {
+            power_samples_.power_usage_ = decltype(power_samples_.power_usage_)::value_type{ static_cast<decltype(power_samples_.power_usage_)::value_type::value_type>(0) };
+        }
+
+        unsigned long long power_total_energy_consumption{};
+        if (nvmlDeviceGetTotalEnergyConsumption(device, &power_total_energy_consumption) == NVML_SUCCESS) {
+            power_samples_.power_total_energy_consumption_ = decltype(power_samples_.power_total_energy_consumption_)::value_type{ static_cast<decltype(power_samples_.power_total_energy_consumption_)::value_type::value_type>(power_total_energy_consumption) / 1000.0 };
+        }
+
         nvmlPstates_t pstate{};
         if (nvmlDeviceGetPowerState(device, &pstate) == NVML_SUCCESS) {
-            power_samples_.power_state_ = decltype(power_samples_.power_state_)::value_type{ static_cast<decltype(power_samples_.power_state_)::value_type::value_type>(pstate) };
-        }
-
-        decltype(power_samples_.power_usage_)::value_type::value_type power_usage{};
-        if (nvmlDeviceGetPowerUsage(device, &power_usage) == NVML_SUCCESS) {
-            power_samples_.power_usage_ = decltype(power_samples_.power_usage_)::value_type{ power_usage };
-        }
-
-        decltype(power_samples_.power_total_energy_consumption_)::value_type::value_type power_total_energy_consumption{};
-        if (nvmlDeviceGetTotalEnergyConsumption(device, &power_total_energy_consumption) == NVML_SUCCESS) {
-            power_samples_.power_total_energy_consumption_ = decltype(power_samples_.power_total_energy_consumption_)::value_type{ power_total_energy_consumption };
+            power_samples_.power_profile_ = decltype(power_samples_.power_profile_)::value_type{ static_cast<decltype(power_samples_.power_profile_)::value_type::value_type>(pstate) };
         }
     }
 
@@ -424,22 +446,22 @@ void gpu_nvidia_hardware_sampler::sampling_loop() {
 
             // retrieve power related information
             {
-                if (power_samples_.power_state_.has_value()) {
+                if (power_samples_.power_profile_.has_value()) {
                     nvmlPstates_t pstate{};
                     HWS_NVML_ERROR_CHECK(nvmlDeviceGetPowerState(device, &pstate));
-                    power_samples_.power_state_->push_back(static_cast<decltype(power_samples_.power_state_)::value_type::value_type>(pstate));
+                    power_samples_.power_profile_->push_back(static_cast<decltype(power_samples_.power_profile_)::value_type::value_type>(pstate));
                 }
 
                 if (power_samples_.power_usage_.has_value()) {
-                    decltype(power_samples_.power_usage_)::value_type::value_type value{};
+                    unsigned int value{};
                     HWS_NVML_ERROR_CHECK(nvmlDeviceGetPowerUsage(device, &value));
-                    power_samples_.power_usage_->push_back(value);
+                    power_samples_.power_usage_->push_back(static_cast<decltype(power_samples_.power_usage_)::value_type::value_type>(value - initial_power_usage) / 1000.0);
                 }
 
                 if (power_samples_.power_total_energy_consumption_.has_value()) {
-                    decltype(power_samples_.power_total_energy_consumption_)::value_type::value_type value{};
+                    unsigned long long value{};
                     HWS_NVML_ERROR_CHECK(nvmlDeviceGetTotalEnergyConsumption(device, &value));
-                    power_samples_.power_total_energy_consumption_->push_back(value);
+                    power_samples_.power_total_energy_consumption_->push_back(static_cast<decltype(power_samples_.power_total_energy_consumption_)::value_type::value_type>(value) / 1000.0);
                 }
             }
 

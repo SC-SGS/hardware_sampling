@@ -229,8 +229,10 @@ void cpu_hardware_sampler::sampling_loop() {
                 using vector_type = decltype(idle_state_samples_.package_low_power_idle_state_percent_)::value_type;
                 idle_state_samples_.package_low_power_idle_state_percent_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
             } else if (header[i] == "PkgWatt") {
-                using vector_type = decltype(power_samples_.package_watt_)::value_type;
-                power_samples_.package_watt_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
+                using vector_type = decltype(power_samples_.power_usage_)::value_type;
+                power_samples_.power_usage_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
+                power_samples_.power_measurement_type_ = "current/instant";
+                power_samples_.power_total_energy_consumption_ = decltype(power_samples_.power_total_energy_consumption_)::value_type{ 0 };
             } else if (header[i] == "CorWatt") {
                 using vector_type = decltype(power_samples_.core_watt_)::value_type;
                 power_samples_.core_watt_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
@@ -374,8 +376,14 @@ void cpu_hardware_sampler::sampling_loop() {
                         using vector_type = decltype(idle_state_samples_.package_low_power_idle_state_percent_)::value_type;
                         idle_state_samples_.package_low_power_idle_state_percent_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
                     } else if (header[i] == "PkgWatt") {
-                        using vector_type = decltype(power_samples_.package_watt_)::value_type;
-                        power_samples_.package_watt_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
+                        using vector_type = decltype(power_samples_.power_usage_)::value_type;
+                        power_samples_.power_usage_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
+                        // calculate total energy consumption
+                        using value_type = decltype(power_samples_.power_total_energy_consumption_)::value_type::value_type;
+                        const std::size_t num_time_points = this->sampling_time_points().size();
+                        const value_type time_difference = std::chrono::duration<value_type>(this->sampling_time_points()[num_time_points - 1] - this->sampling_time_points()[num_time_points - 2]).count();
+                        const auto current = power_samples_.power_usage_->back() * time_difference;
+                        power_samples_.power_total_energy_consumption_->push_back(power_samples_.power_total_energy_consumption_->back() + current);
                     } else if (header[i] == "CorWatt") {
                         using vector_type = decltype(power_samples_.core_watt_)::value_type;
                         power_samples_.core_watt_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));

@@ -75,10 +75,11 @@ export PYTHONPATH=${CMAKE_INSTALL_PREFIX}/lib:${PYTHONPATH}
 | memory_utilization  |   -   |      %      |     %     |      ?       |
 | performance_level   |       |     int     |    int    |              |
 | num_cores           |  int  |     int     |     -     |              |
-| num_threads         |  int  |             |           |              |
-| threads_per_core    |  int  |             |           |              |
-| cores_per_socket    |  int  |             |           |              |
-| num_sockets         |  int  |             |           |              |
+| num_compute_units   |   -   |     int     |    int    |      ?       | TODO
+| num_threads         |  int  |      -      |     -     |      -       |
+| threads_per_core    |  int  |      -      |     -     |      -       |
+| cores_per_socket    |  int  |      -      |     -     |      -       |
+| num_sockets         |  int  |      -      |     -     |      -       |
 | numa_nodes          |  int  |             |           |              |
 | flags               |  str  |             |           |              |
 | ipc                 | float |      -      |     -     |      -       |
@@ -122,24 +123,22 @@ export PYTHONPATH=${CMAKE_INSTALL_PREFIX}/lib:${PYTHONPATH}
 
 ### power-related samples
 
-| sample                      | CPUs | NVIDIA GPUs | AMD GPUs | Intel GPUs |
-|:----------------------------|:----:|:-----------:|:--------:|:----------:|
-| package_power               |  W   |             |          |            |
-| core_watt                   |  W   |             |          |            |
-| dram_watt                   |  W   |             |          |            |
-| package_rapl_throttling     |  %   |             |          |            |
-| dram_rapl_throttling        |  %   |             |          |            |
-| power_management_limit      |      |     mW      |   muW    |            |
-| power_enforced_limit        |      |     mW      |   muW    |            |
-| power_measurement_type      |      |             |   str    |            |
-| available_power_profiles    |      |             |   str    |            |
-| power_usage                 |      |     mW      |   muW    |            |
-| power_total_energy_consumed |      |      J      |   muJ    |     J      |
-| power_profile               |      |             |   str    |            |
-| energy_threshold_enabled    |      |             |   bool   |            |
-| energy_threshold            |      |             |    J     |            |
-| power_management_mode       |      |    bool     |          |            |
-| power_state                 |      |     int     |          |            |
+| sample                      |   CPUs    | NVIDIA GPUs |  AMD GPUs   | Intel GPUs |
+|:----------------------------|:---------:|:-----------:|:-----------:|:----------:|
+| power_management_limit      |     -     |      W      |      W      |            |
+| power_enforced_limit        |     -     |      W      |      W      |            |
+| power_measurement_type      | str (fix) |     str     |     str     |            |
+| power_management_mode       |     -     |    bool     |      -      |            |
+| available_power_profiles    |     -     | list of int | list of str |            |
+| power_usage                 |     W     |      W      |      W      |            |
+| core_watt                   |     W     |      -      |      -      |     -      |
+| dram_watt                   |     W     |      -      |      -      |     -      |
+| package_rapl_throttling     |     %     |      -      |      -      |     -      |
+| dram_rapl_throttling        |     %     |      -      |      -      |     -      |
+| power_total_energy_consumed |     J     |      J      |      J      |     J      |
+| power_profile               |     -     |     int     |     str     |            |
+| energy_threshold_enabled    |           |             |             |    bool    |
+| energy_threshold            |           |             |             |     J      |
 
 ### memory-related samples
 
