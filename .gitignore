@@ -36,6 +36,7 @@ Prerequisites
 # CMake ================================
 bin/
 build*/
+install*/
 cmake-build*/
 CMakeLists.txt.user
 CMakeCache.txt
