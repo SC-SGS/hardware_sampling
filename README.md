@@ -123,22 +123,22 @@ export PYTHONPATH=${CMAKE_INSTALL_PREFIX}/lib:${PYTHONPATH}
 
 ### power-related samples
 
-| sample                      |   CPUs    | NVIDIA GPUs |  AMD GPUs   | Intel GPUs |
-|:----------------------------|:---------:|:-----------:|:-----------:|:----------:|
-| power_management_limit      |     -     |      W      |      W      |            |
-| power_enforced_limit        |     -     |      W      |      W      |            |
-| power_measurement_type      | str (fix) |     str     |     str     |            |
-| power_management_mode       |     -     |    bool     |      -      |            |
-| available_power_profiles    |     -     | list of int | list of str |            |
-| power_usage                 |     W     |      W      |      W      |            |
-| core_watt                   |     W     |      -      |      -      |     -      |
-| dram_watt                   |     W     |      -      |      -      |     -      |
-| package_rapl_throttling     |     %     |      -      |      -      |     -      |
-| dram_rapl_throttling        |     %     |      -      |      -      |     -      |
-| power_total_energy_consumed |     J     |      J      |      J      |     J      |
-| power_profile               |     -     |     int     |     str     |            |
-| energy_threshold_enabled    |           |             |             |    bool    |
-| energy_threshold            |           |             |             |     J      |
+| sample                      |               CPUs                | NVIDIA GPUs |  AMD GPUs   | Intel GPUs |
+|:----------------------------|:---------------------------------:|:-----------:|:-----------:|:----------:|
+| power_management_limit      |                 -                 |      W      |      W      |            |
+| power_enforced_limit        |                 -                 |      W      |      W      |            |
+| power_measurement_type      |             str (fix)             |     str     |     str     |            |
+| power_management_mode       |                 -                 |    bool     |      -      |            |
+| available_power_profiles    |                 -                 | list of int | list of str |            |
+| power_usage                 |                 W                 |      W      |      W      |            |
+| core_watt                   |                 W                 |      -      |      -      |     -      |
+| dram_watt                   |                 W                 |      -      |      -      |     -      |
+| package_rapl_throttling     |                 %                 |      -      |      -      |     -      |
+| dram_rapl_throttling        |                 %                 |      -      |      -      |     -      |
+| power_total_energy_consumed | J<br>(calculated via power_usage) |      J      |      J      |     J      |
+| power_profile               |                 -                 |     int     |     str     |            |
+| energy_threshold_enabled    |                                   |             |             |    bool    |
+| energy_threshold            |                                   |             |             |     J      |
 
 ### memory-related samples
 
