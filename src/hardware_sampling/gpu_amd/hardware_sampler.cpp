@@ -127,38 +127,50 @@ void gpu_amd_hardware_sampler::sampling_loop() {
     {
         rsmi_frequencies_t frequency_info{};
         if (rsmi_dev_gpu_clk_freq_get(device_id_, RSMI_CLK_TYPE_SYS, &frequency_info) == RSMI_STATUS_SUCCESS) {
-            clock_samples_.clock_system_min_ = frequency_info.frequency[0];
-            clock_samples_.clock_system_max_ = frequency_info.frequency[frequency_info.num_supported - 1];
+            clock_samples_.clock_frequency_min_ = static_cast<decltype(clock_samples_.clock_frequency_min_)::value_type>(frequency_info.frequency[0]) / 1000.0 / 1000.0;
+            clock_samples_.clock_frequency_max_ = static_cast<decltype(clock_samples_.clock_frequency_max_)::value_type>(frequency_info.frequency[frequency_info.num_supported - 1]) / 1000.0 / 1000.0;
+            decltype(clock_samples_.available_clock_frequencies_)::value_type frequencies{};
+            for (std::size_t i = 0; i < frequency_info.num_supported; ++i) {
+                frequencies.push_back(static_cast<decltype(frequencies)::value_type>(frequency_info.frequency[i]) / 1000.0 / 1000.0);
+            }
+            clock_samples_.available_clock_frequencies_ = frequencies;
+
             // queried samples -> retrieved every iteration if available
-            clock_samples_.clock_system_ = decltype(clock_samples_.clock_system_)::value_type{};
+            clock_samples_.clock_frequency_ = decltype(clock_samples_.clock_frequency_)::value_type{};
             if (frequency_info.current < RSMI_MAX_NUM_FREQUENCIES) {
-                clock_samples_.clock_system_->push_back(frequency_info.frequency[frequency_info.current]);
+                clock_samples_.clock_frequency_->push_back(static_cast<decltype(clock_samples_.clock_frequency_)::value_type::value_type>(frequency_info.frequency[frequency_info.current]) / 1000.0 / 1000.0);
             } else {
-                clock_samples_.clock_system_->push_back(0);
+                clock_samples_.clock_frequency_->push_back(0);
             }
         }
 
         if (rsmi_dev_gpu_clk_freq_get(device_id_, RSMI_CLK_TYPE_SOC, &frequency_info) == RSMI_STATUS_SUCCESS) {
-            clock_samples_.clock_socket_min_ = frequency_info.frequency[0];
-            clock_samples_.clock_socket_max_ = frequency_info.frequency[frequency_info.num_supported - 1];
+            clock_samples_.socket_clock_frequency_min_ = static_cast<decltype(clock_samples_.socket_clock_frequency_min_)::value_type>(frequency_info.frequency[0]) / 1000.0 / 1000.0;
+            clock_samples_.socket_clock_frequency_max_ = static_cast<decltype(clock_samples_.socket_clock_frequency_max_)::value_type>(frequency_info.frequency[frequency_info.num_supported - 1]) / 1000.0 / 1000.0;
             // queried samples -> retrieved every iteration if available
-            clock_samples_.clock_socket_ = decltype(clock_samples_.clock_socket_)::value_type{};
+            clock_samples_.socket_clock_frequency_ = decltype(clock_samples_.socket_clock_frequency_)::value_type{};
             if (frequency_info.current < RSMI_MAX_NUM_FREQUENCIES) {
-                clock_samples_.clock_socket_->push_back(frequency_info.frequency[frequency_info.current]);
+                clock_samples_.socket_clock_frequency_->push_back(static_cast<decltype(clock_samples_.socket_clock_frequency_)::value_type::value_type>(frequency_info.frequency[frequency_info.current]) / 1000.0 / 1000.0);
             } else {
-                clock_samples_.clock_socket_->push_back(0);
+                clock_samples_.socket_clock_frequency_->push_back(0);
             }
         }
 
         if (rsmi_dev_gpu_clk_freq_get(device_id_, RSMI_CLK_TYPE_MEM, &frequency_info) == RSMI_STATUS_SUCCESS) {
-            clock_samples_.clock_memory_min_ = frequency_info.frequency[0];
-            clock_samples_.clock_memory_max_ = frequency_info.frequency[frequency_info.num_supported - 1];
+            clock_samples_.memory_clock_frequency_min_ = static_cast<decltype(clock_samples_.memory_clock_frequency_min_)::value_type>(frequency_info.frequency[0]) / 1000.0 / 1000.0;
+            clock_samples_.memory_clock_frequency_max_ = static_cast<decltype(clock_samples_.memory_clock_frequency_max_)::value_type>(frequency_info.frequency[frequency_info.num_supported - 1]) / 1000.0 / 1000.0;
+            decltype(clock_samples_.available_memory_clock_frequencies_)::value_type frequencies{};
+            for (std::size_t i = 0; i < frequency_info.num_supported; ++i) {
+                frequencies.push_back(static_cast<decltype(frequencies)::value_type>(frequency_info.frequency[i]) / 1000.0 / 1000.0);
+            }
+            clock_samples_.available_memory_clock_frequencies_ = frequencies;
+
             // queried samples -> retrieved every iteration if available
-            clock_samples_.clock_memory_ = decltype(clock_samples_.clock_memory_)::value_type{};
+            clock_samples_.memory_clock_frequency_ = decltype(clock_samples_.memory_clock_frequency_)::value_type{};
             if (frequency_info.current < RSMI_MAX_NUM_FREQUENCIES) {
-                clock_samples_.clock_memory_->push_back(frequency_info.frequency[frequency_info.current]);
+                clock_samples_.memory_clock_frequency_->push_back(static_cast<decltype(clock_samples_.memory_clock_frequency_)::value_type::value_type>(frequency_info.frequency[frequency_info.current]) / 1000.0 / 1000.0);
             } else {
-                clock_samples_.clock_memory_->push_back(0);
+                clock_samples_.memory_clock_frequency_->push_back(0);
             }
         }
 
@@ -466,36 +478,36 @@ void gpu_amd_hardware_sampler::sampling_loop() {
 
             // retrieve clock related samples
             {
-                if (clock_samples_.clock_system_.has_value()) {
+                if (clock_samples_.clock_frequency_.has_value()) {
                     rsmi_frequencies_t frequency_info{};
                     HWS_ROCM_SMI_ERROR_CHECK(rsmi_dev_gpu_clk_freq_get(device_id_, RSMI_CLK_TYPE_SYS, &frequency_info));
                     if (frequency_info.current < RSMI_MAX_NUM_FREQUENCIES) {
-                        clock_samples_.clock_system_->push_back(frequency_info.frequency[frequency_info.current]);
+                        clock_samples_.clock_frequency_->push_back(static_cast<decltype(clock_samples_.clock_frequency_)::value_type::value_type>(frequency_info.frequency[frequency_info.current]) / 1000.0 / 1000.0);
                     } else {
                         // the current index is (somehow) wrong
-                        clock_samples_.clock_system_->push_back(0);
+                        clock_samples_.clock_frequency_->push_back(0);
                     }
                 }
 
-                if (clock_samples_.clock_socket_.has_value()) {
+                if (clock_samples_.socket_clock_frequency_.has_value()) {
                     rsmi_frequencies_t frequency_info{};
                     HWS_ROCM_SMI_ERROR_CHECK(rsmi_dev_gpu_clk_freq_get(device_id_, RSMI_CLK_TYPE_SOC, &frequency_info));
                     if (frequency_info.current < RSMI_MAX_NUM_FREQUENCIES) {
-                        clock_samples_.clock_socket_->push_back(frequency_info.frequency[frequency_info.current]);
+                        clock_samples_.socket_clock_frequency_->push_back(static_cast<decltype(clock_samples_.socket_clock_frequency_)::value_type::value_type>(frequency_info.frequency[frequency_info.current]) / 1000.0 / 1000.0);
                     } else {
                         // the current index is (somehow) wrong
-                        clock_samples_.clock_socket_->push_back(0);
+                        clock_samples_.socket_clock_frequency_->push_back(0);
                     }
                 }
 
-                if (clock_samples_.clock_memory_.has_value()) {
+                if (clock_samples_.memory_clock_frequency_.has_value()) {
                     rsmi_frequencies_t frequency_info{};
                     HWS_ROCM_SMI_ERROR_CHECK(rsmi_dev_gpu_clk_freq_get(device_id_, RSMI_CLK_TYPE_MEM, &frequency_info));
                     if (frequency_info.current < RSMI_MAX_NUM_FREQUENCIES) {
-                        clock_samples_.clock_memory_->push_back(frequency_info.frequency[frequency_info.current]);
+                        clock_samples_.memory_clock_frequency_->push_back(static_cast<decltype(clock_samples_.memory_clock_frequency_)::value_type::value_type>(frequency_info.frequency[frequency_info.current]) / 1000.0 / 1000.0);
                     } else {
                         // the current index is (somehow) wrong
-                        clock_samples_.clock_memory_->push_back(0);
+                        clock_samples_.memory_clock_frequency_->push_back(0);
                     }
                 }
 

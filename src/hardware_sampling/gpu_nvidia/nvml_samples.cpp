@@ -7,9 +7,7 @@
 
 #include "hardware_sampling/gpu_nvidia/nvml_samples.hpp"
 
-#include "hardware_sampling/utility.hpp"  // hws::detail::{value_or_default, join}
-
-#include "nvml.h"  // NVML_ADAPTIVE_CLOCKING_INFO_STATUS_ENABLED
+#include "hardware_sampling/utility.hpp"  // hws::detail::{value_or_default, join, map_entry_to_string}
 
 #include <format>   // std::format
 #include <ostream>  // std::ostream
@@ -125,82 +123,98 @@ std::string nvml_clock_samples::generate_yaml_string() const {
     std::string str{ "clock:\n" };
 
     // adaptive clock status
-    if (this->adaptive_clock_status_.has_value()) {
-        str += std::format("  adaptive_clock_status:\n"
+    if (this->auto_boosted_clock_enabled_.has_value()) {
+        str += std::format("  auto_boosted_clock_enabled:\n"
                            "    unit: \"bool\"\n"
                            "    values: {}\n",
-                           this->adaptive_clock_status_.value() == NVML_ADAPTIVE_CLOCKING_INFO_STATUS_ENABLED);
-    }
-    // maximum SM clock
-    if (this->clock_sm_max_.has_value()) {
-        str += std::format("  clock_sm_max:\n"
-                           "    unit: \"MHz\"\n"
-                           "    values: {}\n",
-                           this->clock_sm_max_.value());
-    }
-    // minimum memory clock
-    if (this->clock_mem_min_.has_value()) {
-        str += std::format("  clock_mem_min:\n"
-                           "    unit: \"MHz\"\n"
-                           "    values: {}\n",
-                           this->clock_mem_min_.value());
-    }
-    // maximum memory clock
-    if (this->clock_mem_max_.has_value()) {
-        str += std::format("  clock_mem_max:\n"
-                           "    unit: \"MHz\"\n"
-                           "    values: {}\n",
-                           this->clock_mem_max_.value());
+                           this->auto_boosted_clock_enabled_.value());
     }
     // minimum graph clock
-    if (this->clock_graph_min_.has_value()) {
-        str += std::format("  clock_gpu_min:\n"
+    if (this->clock_frequency_min_.has_value()) {
+        str += std::format("  clock_frequency_min:\n"
                            "    unit: \"MHz\"\n"
                            "    values: {}\n",
-                           this->clock_graph_min_.value());
+                           this->clock_frequency_min_.value());
     }
     // maximum graph clock
-    if (this->clock_graph_max_.has_value()) {
-        str += std::format("  clock_gpu_max:\n"
+    if (this->clock_frequency_max_.has_value()) {
+        str += std::format("  clock_frequency_max:\n"
                            "    unit: \"MHz\"\n"
                            "    values: {}\n",
-                           this->clock_graph_max_.value());
+                           this->clock_frequency_max_.value());
+    }
+    // minimum memory clock
+    if (this->memory_clock_frequency_min_.has_value()) {
+        str += std::format("  memory_clock_frequency_min:\n"
+                           "    unit: \"MHz\"\n"
+                           "    values: {}\n",
+                           this->memory_clock_frequency_min_.value());
+    }
+    // maximum memory clock
+    if (this->memory_clock_frequency_max_.has_value()) {
+        str += std::format("  memory_clock_frequency_max:\n"
+                           "    unit: \"MHz\"\n"
+                           "    values: {}\n",
+                           this->memory_clock_frequency_max_.value());
+    }
+    // maximum SM clock
+    if (this->sm_clock_frequency_max_.has_value()) {
+        str += std::format("  sm_clock_frequency_max:\n"
+                           "    unit: \"MHz\"\n"
+                           "    values: {}\n",
+                           this->sm_clock_frequency_max_.value());
+    }
+    // the available clock frequencies
+    if (this->available_clock_frequencies_.has_value()) {
+        str += std::format("  available_clock_frequencies:\n"
+                           "    unit: \"MHz\"\n"
+                           "    values:\n");
+        for (const auto &[key, value] : this->available_clock_frequencies_.value()) {
+            str += std::format("      {}: [{}]\n", key, detail::join(value, ", "));
+        }
+    }
+    // the available memory clock frequencies
+    if (this->available_memory_clock_frequencies_.has_value()) {
+        str += std::format("  available_memory_clock_frequencies:\n"
+                           "    unit: \"MHz\"\n"
+                           "    values: [{}]\n",
+                           detail::join(this->available_memory_clock_frequencies_.value(), ", "));
     }
 
-    // SM clock
-    if (this->clock_sm_.has_value()) {
-        str += std::format("  clock_sm:\n"
+    // graph clock
+    if (this->clock_frequency_.has_value()) {
+        str += std::format("  clock_frequency:\n"
                            "    unit: \"MHz\"\n"
                            "    values: [{}]\n",
-                           detail::join(this->clock_sm_.value(), ", "));
+                           detail::join(this->clock_frequency_.value(), ", "));
     }
     // memory clock
-    if (this->clock_mem_.has_value()) {
-        str += std::format("  clock_mem:\n"
+    if (this->memory_clock_frequency_.has_value()) {
+        str += std::format("  memory_clock_frequency:\n"
                            "    unit: \"MHz\"\n"
                            "    values: [{}]\n",
-                           detail::join(this->clock_mem_.value(), ", "));
+                           detail::join(this->memory_clock_frequency_.value(), ", "));
     }
-    // graph clock
-    if (this->clock_graph_.has_value()) {
-        str += std::format("  clock_gpu:\n"
+    // SM clock
+    if (this->sm_clock_frequency_.has_value()) {
+        str += std::format("  sm_clock_frequency:\n"
                            "    unit: \"MHz\"\n"
                            "    values: [{}]\n",
-                           detail::join(this->clock_graph_.value(), ", "));
+                           detail::join(this->sm_clock_frequency_.value(), ", "));
     }
     // clock throttle reason
-    if (this->clock_throttle_reason_.has_value()) {
-        str += std::format("  clock_throttle_reason:\n"
-                           "    unit: \"bitmask\"\n"
+    if (this->throttle_reason_.has_value()) {
+        str += std::format("  throttle_reason:\n"
+                           "    unit: \"string\"\n"
                            "    values: [{}]\n",
-                           detail::join(this->clock_throttle_reason_.value(), ", "));
+                           detail::join(this->throttle_reason_.value(), ", "));
     }
     // clock is auto-boosted
-    if (this->auto_boosted_clocks_.has_value()) {
-        str += std::format("  auto_boosted_clocks:\n"
+    if (this->auto_boosted_clock_.has_value()) {
+        str += std::format("  auto_boosted_clock:\n"
                            "    unit: \"bool\"\n"
                            "    values: [{}]\n",
-                           detail::join(this->auto_boosted_clocks_.value(), ", "));
+                           detail::join(this->auto_boosted_clock_.value(), ", "));
     }
 
     // remove last newline
@@ -210,28 +224,32 @@ std::string nvml_clock_samples::generate_yaml_string() const {
 }
 
 std::ostream &operator<<(std::ostream &out, const nvml_clock_samples &samples) {
-    return out << std::format("adaptive_clock_status [int]: {}\n"
-                              "clock_graph_min [MHz]: {}\n"
-                              "clock_graph_max [MHz]: {}\n"
-                              "clock_sm_max [MHz]: {}\n"
-                              "clock_mem_min [MHz]: {}\n"
-                              "clock_mem_max [MHz]: {}\n"
-                              "clock_graph [MHz]: [{}]\n"
-                              "clock_sm [MHz]: [{}]\n"
-                              "clock_mem [MHz]: [{}]\n"
-                              "clock_throttle_reason [bitmask]: [{}]\n"
-                              "auto_boosted_clocks [bool]: [{}]",
-                              detail::value_or_default(samples.get_adaptive_clock_status()),
-                              detail::value_or_default(samples.get_clock_graph_min()),
-                              detail::value_or_default(samples.get_clock_graph_max()),
-                              detail::value_or_default(samples.get_clock_sm_max()),
-                              detail::value_or_default(samples.get_clock_mem_min()),
-                              detail::value_or_default(samples.get_clock_mem_max()),
-                              detail::join(detail::value_or_default(samples.get_clock_graph()), ", "),
-                              detail::join(detail::value_or_default(samples.get_clock_sm()), ", "),
-                              detail::join(detail::value_or_default(samples.get_clock_mem()), ", "),
-                              detail::join(detail::value_or_default(samples.get_clock_throttle_reason()), ", "),
-                              detail::join(detail::value_or_default(samples.get_auto_boosted_clocks()), ", "));
+    return out << std::format("auto_boosted_clock_enabled [bool]: {}\n"
+                              "clock_frequency_min [MHz]: {}\n"
+                              "clock_frequency_max [MHz]: {}\n"
+                              "memory_clock_frequency_min [MHz]: {}\n"
+                              "memory_clock_frequency_max [MHz]: {}\n"
+                              "sm_clock_frequency_max [MHz]: {}\n"
+                              "available_clock_frequencies [MHz]: [{}]\n"
+                              "available_memory_clock_frequencies [MHz]: [{}]\n"
+                              "clock_frequency [MHz]: [{}]\n"
+                              "memory_clock_frequency [MHz]: [{}]\n"
+                              "sm_clock_frequency [MHz]: [{}]\n"
+                              "throttle_reason [string]: [{}]\n"
+                              "auto_boosted_clock [bool]: [{}]",
+                              detail::value_or_default(samples.get_auto_boosted_clock_enabled()),
+                              detail::value_or_default(samples.get_clock_frequency_min()),
+                              detail::value_or_default(samples.get_clock_frequency_max()),
+                              detail::value_or_default(samples.get_memory_clock_frequency_min()),
+                              detail::value_or_default(samples.get_memory_clock_frequency_max()),
+                              detail::value_or_default(samples.get_sm_clock_frequency_max()),
+                              detail::map_entry_to_string(samples.get_available_clock_frequencies()),
+                              detail::join(detail::value_or_default(samples.get_available_memory_clock_frequencies()), ", "),
+                              detail::join(detail::value_or_default(samples.get_clock_frequency()), ", "),
+                              detail::join(detail::value_or_default(samples.get_memory_clock_frequency()), ", "),
+                              detail::join(detail::value_or_default(samples.get_sm_clock_frequency()), ", "),
+                              detail::join(detail::value_or_default(samples.get_throttle_reason()), ", "),
+                              detail::join(detail::value_or_default(samples.get_auto_boosted_clock()), ", "));
 }
 
 //*************************************************************************************************************************************//

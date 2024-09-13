@@ -94,32 +94,31 @@ export PYTHONPATH=${CMAKE_INSTALL_PREFIX}/lib:${PYTHONPATH}
 
 ### clock-related samples
 
-| sample                     | CPUs | NVIDIA GPUs | AMD GPUs | Intel GPUs |
-|:---------------------------|:----:|:-----------:|:--------:|:----------:|
-| frequency_boost            | bool |             |          |            |
-| min_cpu_frequency          | MHz  |             |          |            |
-| max_cpu_frequency          | MHz  |             |          |            |
-| average_frequency          | MHz  |             |          |            |
-| average_non_idle_frequency | MHz  |             |          |            |
-| time_stamp_counter         | MHz  |             |          |            |
-| clock_socket_min           |      |             |    Hz    |            |
-| clock_socket_max           |      |             |    Hz    |            |
-| clock_memory_min           |      |             |    Hz    |            |
-| clock_memory_max           |      |             |    Hz    |            |
-| clock_gpu_min              |      |     MHz     |    Hz    |    MHz     |
-| clock_gpu_max              |      |     MHz     |    Hz    |    MHz     |
-| clock_socket               |      |             |    Hz    |            |
-| clock_memory               |      |             |    Hz    |            |
-| clock_gpu                  |      |     MHz     |    Hz    |    MHz     |
-| overdrive_level            |      |             |    %     |            |
-| memory_overdrive_level     |      |             |    %     |            |
-| available_clocks_gpu       |      |             |          |    MHz     |
-| clock_mem_min              |      |     MHz     |          |    MHz     |
-| clock_mem_max              |      |     MHz     |          |    MHz     |
-| available_clocks_mem       |      |             |          |    MHz     |
-| tdp_frequency_limit_gpu    |      |             |          |    MHz     |
-| throttle_reason_gpu        |      |             |          |  bitmask   |
-| tdp_frequency_limit_mem    |      |             |          |    MHz     |
+| sample                             | CPUs |   NVIDIA GPUs    | AMD GPUs | Intel GPUs |
+|:-----------------------------------|:----:|:----------------:|:--------:|:----------:|
+| auto_boosted_clock_enabled         | bool |       bool       |    -     |            |
+| clock_frequency_min                | MHz  |       MHz        |   MHz    |            |
+| clock_frequency_max                | MHz  |       MHz        |   MHz    |            |
+| memory_clock_frequency_min         |  -   |       MHz        |   MHz    |            |
+| memory_clock_frequency_max         |  -   |       MHz        |   MHz    |            |
+| socket_clock_frequency_min         |  -   |        -         |   MHz    |     -      |
+| socket_clock_frequency_min         |  -   |        -         |   MHz    |     -      |
+| sm_clock_frequency_max             |  -   |       MHz        |    -     |     -      |
+| available_clock_frequencies        |  -   |       MHz        |   MHz    |            |
+| available_memory_clock_frequencies |  -   |       MHz        |   MHz    |            |
+| clock_frequency                    | MHz  |       MHz        |   MHz    |            |
+| average_non_idle_frequency         | MHz  |        -         |    -     |     -      |
+| time_stamp_counter                 | MHz  |        -         |    -     |     -      |
+| memory_clock_frequency             |  -   |       MHz        |   MHz    |            |
+| socket_clock_frequency             |  -   |        -         |   MHz    |     -      |
+| sm_clock_frequency                 |  -   |       MHz        |    -     |     -      |
+| overdrive_level                    |  -   |        -         |    %     |     -      |
+| memory_overdrive_level             |  -   |        -         |    %     |     -      |
+| throttle_reason                    |  -   | string (bitmask) |    -     |            |
+| memory_throttle_reason             |  -   |        -         |    -     |            |
+| auto_boosted_clock                 |  -   |       bool       |    -     |     -      |
+| tdp_frequency_limit                |  -   |        -         |    -     |            |
+| memory_tdp_frequency_limit         |  -   |        -         |    -     |            |
 
 ### power-related samples
 

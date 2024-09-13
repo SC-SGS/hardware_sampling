@@ -15,7 +15,7 @@
 
 #include "nvml.h"  // NVML runtime functions
 
-#include <algorithm>  // std::min_element
+#include <algorithm>  // std::min_element, std::sort, std::transform
 #include <chrono>     // std::chrono::{steady_clock, duration_cast, milliseconds}
 #include <cstddef>    // std::size_t
 #include <exception>  // std::exception, std::terminate
@@ -187,24 +187,24 @@ void gpu_nvidia_hardware_sampler::sampling_loop() {
     // retrieve initial clock related information
     {
         // fixed information -> only retrieved once
-        decltype(clock_samples_.adaptive_clock_status_)::value_type adaptive_clock_status{};
+        unsigned int adaptive_clock_status{};
         if (nvmlDeviceGetAdaptiveClockInfoStatus(device, &adaptive_clock_status) == NVML_SUCCESS) {
-            clock_samples_.adaptive_clock_status_ = adaptive_clock_status;
+            clock_samples_.auto_boosted_clock_enabled_ = adaptive_clock_status == NVML_ADAPTIVE_CLOCKING_INFO_STATUS_ENABLED;
         }
 
-        decltype(clock_samples_.clock_graph_max_)::value_type clock_graph_max{};
+        unsigned int clock_graph_max{};
         if (nvmlDeviceGetMaxClockInfo(device, NVML_CLOCK_GRAPHICS, &clock_graph_max) == NVML_SUCCESS) {
-            clock_samples_.clock_graph_max_ = clock_graph_max;
+            clock_samples_.clock_frequency_max_ = static_cast<decltype(clock_samples_.clock_frequency_max_)::value_type>(clock_graph_max);
         }
 
-        decltype(clock_samples_.clock_sm_max_)::value_type clock_sm_max{};
+        unsigned int clock_sm_max{};
         if (nvmlDeviceGetMaxClockInfo(device, NVML_CLOCK_SM, &clock_sm_max) == NVML_SUCCESS) {
-            clock_samples_.clock_sm_max_ = clock_sm_max;
+            clock_samples_.sm_clock_frequency_max_ = static_cast<decltype(clock_samples_.sm_clock_frequency_max_)::value_type>(clock_sm_max);
         }
 
-        decltype(clock_samples_.clock_mem_max_)::value_type clock_mem_max{};
+        unsigned int clock_mem_max{};
         if (nvmlDeviceGetMaxClockInfo(device, NVML_CLOCK_MEM, &clock_mem_max) == NVML_SUCCESS) {
-            clock_samples_.clock_mem_max_ = clock_mem_max;
+            clock_samples_.memory_clock_frequency_max_ = static_cast<decltype(clock_samples_.memory_clock_frequency_max_)::value_type>(clock_mem_max);
         }
 
         {
@@ -212,44 +212,67 @@ void gpu_nvidia_hardware_sampler::sampling_loop() {
             std::vector<unsigned int> supported_clocks(clock_count);
             if (nvmlDeviceGetSupportedMemoryClocks(device, &clock_count, supported_clocks.data()) == NVML_SUCCESS) {
                 supported_clocks.resize(clock_count);
-                clock_samples_.clock_mem_min_ = *std::min_element(supported_clocks.cbegin(), supported_clocks.cend());
+                clock_samples_.memory_clock_frequency_min_ = static_cast<decltype(clock_samples_.memory_clock_frequency_min_)::value_type>(*std::min_element(supported_clocks.cbegin(), supported_clocks.cend()));
+
+                decltype(clock_samples_.available_memory_clock_frequencies_)::value_type available_memory_clock_frequencies(supported_clocks.size());
+                // convert unsigned int values to double values
+                std::transform(supported_clocks.cbegin(), supported_clocks.cend(), available_memory_clock_frequencies.begin(), [](const unsigned int c) { return static_cast<decltype(clock_samples_.available_memory_clock_frequencies_)::value_type::value_type>(c); });
+                // we want to report all supported memory clocks in ascending order
+                std::sort(available_memory_clock_frequencies.begin(), available_memory_clock_frequencies.end());
+                clock_samples_.available_memory_clock_frequencies_ = available_memory_clock_frequencies;
             }
         }
 
         {
             unsigned int clock_count{ 128 };
             std::vector<unsigned int> supported_clocks(clock_count);
-            if (clock_samples_.clock_mem_min_.has_value() && nvmlDeviceGetSupportedGraphicsClocks(device, clock_samples_.clock_mem_min_.value(), &clock_count, supported_clocks.data()) == NVML_SUCCESS) {
-                supported_clocks.resize(clock_count);
-                clock_samples_.clock_graph_min_ = *std::min_element(supported_clocks.cbegin(), supported_clocks.cend());
+            if (clock_samples_.memory_clock_frequency_min_.has_value() && nvmlDeviceGetSupportedGraphicsClocks(device, clock_samples_.memory_clock_frequency_min_.value(), &clock_count, supported_clocks.data()) == NVML_SUCCESS) {
+                clock_samples_.clock_frequency_min_ = static_cast<decltype(clock_samples_.clock_frequency_min_)::value_type>(*std::min_element(supported_clocks.cbegin(), supported_clocks.cbegin() + clock_count));
+            }
+
+            if (clock_samples_.available_memory_clock_frequencies_.has_value()) {
+                for (const auto value : clock_samples_.available_memory_clock_frequencies_.value()) {
+                    if (nvmlDeviceGetSupportedGraphicsClocks(device, static_cast<unsigned int>(value), &clock_count, supported_clocks.data()) == NVML_SUCCESS) {
+                        decltype(clock_samples_.available_clock_frequencies_)::value_type::mapped_type available_clock_frequencies(clock_count);
+                        // convert unsigned int values to double values
+                        std::transform(supported_clocks.cbegin(), supported_clocks.cbegin() + clock_count, available_clock_frequencies.begin(), [](const unsigned int c) { return static_cast<decltype(clock_samples_.available_clock_frequencies_)::value_type::mapped_type::value_type>(c); });
+                        // we want to report all supported memory clocks in ascending order
+                        std::sort(available_clock_frequencies.begin(), available_clock_frequencies.end());
+                        // if no map exists, default construct an empty map
+                        if (!clock_samples_.available_clock_frequencies_.has_value()) {
+                            clock_samples_.available_clock_frequencies_ = decltype(clock_samples_)::map_type{};
+                        }
+                        clock_samples_.available_clock_frequencies_->emplace(value, available_clock_frequencies);
+                    }
+                }
             }
         }
 
         // queried samples -> retrieved every iteration if available
-        decltype(clock_samples_.clock_graph_)::value_type::value_type clock_graph{};
+        unsigned int clock_graph{};
         if (nvmlDeviceGetClockInfo(device, NVML_CLOCK_GRAPHICS, &clock_graph) == NVML_SUCCESS) {
-            clock_samples_.clock_graph_ = decltype(clock_samples_.clock_graph_)::value_type{ clock_graph };
+            clock_samples_.clock_frequency_ = decltype(clock_samples_.clock_frequency_)::value_type{ static_cast<decltype(clock_samples_.clock_frequency_)::value_type::value_type>(clock_graph) };
         }
 
-        decltype(clock_samples_.clock_sm_)::value_type::value_type clock_sm{};
+        unsigned int clock_sm{};
         if (nvmlDeviceGetClockInfo(device, NVML_CLOCK_SM, &clock_sm) == NVML_SUCCESS) {
-            clock_samples_.clock_sm_ = decltype(clock_samples_.clock_sm_)::value_type{ clock_sm };
+            clock_samples_.sm_clock_frequency_ = decltype(clock_samples_.sm_clock_frequency_)::value_type{ static_cast<decltype(clock_samples_.sm_clock_frequency_)::value_type::value_type>(clock_sm) };
         }
 
-        decltype(clock_samples_.clock_mem_)::value_type::value_type clock_mem{};
+        unsigned int clock_mem{};
         if (nvmlDeviceGetClockInfo(device, NVML_CLOCK_MEM, &clock_mem) == NVML_SUCCESS) {
-            clock_samples_.clock_mem_ = decltype(clock_samples_.clock_mem_)::value_type{ clock_mem };
+            clock_samples_.memory_clock_frequency_ = decltype(clock_samples_.memory_clock_frequency_)::value_type{ static_cast<decltype(clock_samples_.memory_clock_frequency_)::value_type::value_type>(clock_mem) };
         }
 
-        decltype(clock_samples_.clock_throttle_reason_)::value_type::value_type clock_throttle_reason{};
-        if (nvmlDeviceGetCurrentClocksThrottleReasons(device, &clock_throttle_reason) == NVML_SUCCESS) {
-            clock_samples_.clock_throttle_reason_ = decltype(clock_samples_.clock_throttle_reason_)::value_type{ clock_throttle_reason };
+        unsigned long long clock_throttle_reason{};
+        if (nvmlDeviceGetCurrentClocksEventReasons(device, &clock_throttle_reason) == NVML_SUCCESS) {
+            clock_samples_.throttle_reason_ = decltype(clock_samples_.throttle_reason_)::value_type{ detail::throttle_event_reason_to_string(clock_throttle_reason) };
         }
 
         nvmlEnableState_t mode{};
         nvmlEnableState_t default_mode{};
         if (nvmlDeviceGetAutoBoostedClocksEnabled(device, &mode, &default_mode) == NVML_SUCCESS) {
-            clock_samples_.auto_boosted_clocks_ = decltype(clock_samples_.auto_boosted_clocks_)::value_type{ mode == NVML_FEATURE_ENABLED };
+            clock_samples_.auto_boosted_clock_ = decltype(clock_samples_.auto_boosted_clock_)::value_type{ mode == NVML_FEATURE_ENABLED };
         }
     }
 
@@ -412,35 +435,35 @@ void gpu_nvidia_hardware_sampler::sampling_loop() {
 
             // retrieve clock related samples
             {
-                if (clock_samples_.clock_graph_.has_value()) {
-                    decltype(clock_samples_.clock_graph_)::value_type::value_type value{};
+                if (clock_samples_.clock_frequency_.has_value()) {
+                    unsigned int value{};
                     HWS_NVML_ERROR_CHECK(nvmlDeviceGetClockInfo(device, NVML_CLOCK_GRAPHICS, &value));
-                    clock_samples_.clock_graph_->push_back(value);
+                    clock_samples_.clock_frequency_->push_back(static_cast<decltype(clock_samples_.clock_frequency_)::value_type::value_type>(value));
                 }
 
-                if (clock_samples_.clock_sm_.has_value()) {
-                    decltype(clock_samples_.clock_sm_)::value_type::value_type value{};
+                if (clock_samples_.sm_clock_frequency_.has_value()) {
+                    unsigned int value{};
                     HWS_NVML_ERROR_CHECK(nvmlDeviceGetClockInfo(device, NVML_CLOCK_SM, &value));
-                    clock_samples_.clock_sm_->push_back(value);
+                    clock_samples_.sm_clock_frequency_->push_back(static_cast<decltype(clock_samples_.sm_clock_frequency_)::value_type::value_type>(value));
                 }
 
-                if (clock_samples_.clock_mem_.has_value()) {
-                    decltype(clock_samples_.clock_mem_)::value_type::value_type value{};
+                if (clock_samples_.memory_clock_frequency_.has_value()) {
+                    unsigned int value{};
                     HWS_NVML_ERROR_CHECK(nvmlDeviceGetClockInfo(device, NVML_CLOCK_MEM, &value));
-                    clock_samples_.clock_mem_->push_back(value);
+                    clock_samples_.memory_clock_frequency_->push_back(static_cast<decltype(clock_samples_.memory_clock_frequency_)::value_type::value_type>(value));
                 }
 
-                if (clock_samples_.clock_throttle_reason_.has_value()) {
-                    decltype(clock_samples_.clock_throttle_reason_)::value_type::value_type value{};
-                    HWS_NVML_ERROR_CHECK(nvmlDeviceGetCurrentClocksThrottleReasons(device, &value));
-                    clock_samples_.clock_throttle_reason_->push_back(value);
+                if (clock_samples_.throttle_reason_.has_value()) {
+                    unsigned long long value{};
+                    HWS_NVML_ERROR_CHECK(nvmlDeviceGetCurrentClocksEventReasons(device, &value));
+                    clock_samples_.throttle_reason_->push_back(detail::throttle_event_reason_to_string(value));
                 }
 
-                if (clock_samples_.auto_boosted_clocks_.has_value()) {
+                if (clock_samples_.auto_boosted_clock_.has_value()) {
                     nvmlEnableState_t mode{};
                     nvmlEnableState_t default_mode{};
                     HWS_NVML_ERROR_CHECK(nvmlDeviceGetAutoBoostedClocksEnabled(device, &mode, &default_mode));
-                    clock_samples_.auto_boosted_clocks_->push_back(mode == NVML_FEATURE_ENABLED);
+                    clock_samples_.auto_boosted_clock_->push_back(mode == NVML_FEATURE_ENABLED);
                 }
             }
 

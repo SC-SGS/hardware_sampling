@@ -80,16 +80,18 @@ class rocm_smi_clock_samples {
      */
     [[nodiscard]] std::string generate_yaml_string() const;
 
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::uint64_t, clock_system_min)  // the minimum possible system clock frequency in Hz
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::uint64_t, clock_system_max)  // the maximum possible system clock frequency in Hz
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::uint64_t, clock_socket_min)  // the minimum possible socket clock frequency in Hz
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::uint64_t, clock_socket_max)  // the maximum possible socket clock frequency in Hz
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::uint64_t, clock_memory_min)  // the minimum possible memory clock frequency in Hz
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::uint64_t, clock_memory_max)  // the maximum possible memory clock frequency in Hz
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(double, clock_frequency_min)                              // the minimum possible system clock frequency in MHz
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(double, clock_frequency_max)                              // the maximum possible system clock frequency in MHz
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(double, memory_clock_frequency_min)                       // the minimum possible memory clock frequency in MHz
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(double, memory_clock_frequency_max)                       // the maximum possible memory clock frequency in MHz
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(double, socket_clock_frequency_min)                       // the minimum possible socket clock frequency in MHz
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(double, socket_clock_frequency_max)                       // the maximum possible socket clock frequency in MHz
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::vector<double>, available_clock_frequencies)         // the available clock frequencies in MHz (slowest to fastest)
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::vector<double>, available_memory_clock_frequencies)  // the available memory clock frequencies in MHz (slowest to fastest)
 
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(std::uint64_t, clock_system)            // the current system clock frequency in Hz
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(std::uint64_t, clock_socket)            // the current socket clock frequency in Hz
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(std::uint64_t, clock_memory)            // the current memory clock frequency in Hz
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, clock_frequency)                // the current system clock frequency in MHz
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, memory_clock_frequency)         // the current memory clock frequency in MHz
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, socket_clock_frequency)         // the current socket clock frequency in MHz
     HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(std::uint32_t, overdrive_level)         // the GPU overdrive percentage
     HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(std::uint32_t, memory_overdrive_level)  // the GPU memory overdrive percentage
 };

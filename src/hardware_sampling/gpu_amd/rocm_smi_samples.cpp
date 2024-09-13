@@ -105,71 +105,83 @@ std::ostream &operator<<(std::ostream &out, const rocm_smi_general_samples &samp
 std::string rocm_smi_clock_samples::generate_yaml_string() const {
     std::string str{ "clock:\n" };
 
-    // socket clock min frequencies
-    if (this->clock_socket_min_.has_value()) {
-        str += std::format("  clock_socket_min:\n"
-                           "    unit: \"Hz\"\n"
-                           "    values: {}\n",
-                           this->clock_socket_min_.value());
-    }
-    // socket clock max frequencies
-    if (this->clock_socket_max_.has_value()) {
-        str += std::format("  clock_socket_max:\n"
-                           "    unit: \"Hz\"\n"
-                           "    values: {}\n",
-                           this->clock_socket_max_.value());
-    }
-
-    // memory clock min frequencies
-    if (this->clock_memory_min_.has_value()) {
-        str += std::format("  clock_memory_min:\n"
-                           "    unit: \"Hz\"\n"
-                           "    values: {}\n",
-                           this->clock_memory_min_.value());
-    }
-    // memory clock max frequencies
-    if (this->clock_memory_max_.has_value()) {
-        str += std::format("  clock_memory_max:\n"
-                           "    unit: \"Hz\"\n"
-                           "    values: {}\n",
-                           this->clock_memory_max_.value());
-    }
-
     // system clock min frequencies
-    if (this->clock_system_min_.has_value()) {
-        str += std::format("  clock_gpu_min:\n"
-                           "    unit: \"Hz\"\n"
+    if (this->clock_frequency_min_.has_value()) {
+        str += std::format("  clock_frequency_min:\n"
+                           "    unit: \"MHz\"\n"
                            "    values: {}\n",
-                           this->clock_system_min_.value());
+                           this->clock_frequency_min_.value());
     }
     // system clock max frequencies
-    if (this->clock_system_max_.has_value()) {
-        str += std::format("  clock_gpu_max:\n"
-                           "    unit: \"Hz\"\n"
+    if (this->clock_frequency_max_.has_value()) {
+        str += std::format("  clock_frequency_max:\n"
+                           "    unit: \"MHz\"\n"
                            "    values: {}\n",
-                           this->clock_system_max_.value());
+                           this->clock_frequency_max_.value());
+    }
+    // memory clock min frequencies
+    if (this->memory_clock_frequency_min_.has_value()) {
+        str += std::format("  memory_clock_frequency_min:\n"
+                           "    unit: \"MHz\"\n"
+                           "    values: {}\n",
+                           this->memory_clock_frequency_min_.value());
+    }
+    // memory clock max frequencies
+    if (this->memory_clock_frequency_max_.has_value()) {
+        str += std::format("  memory_clock_frequency_max:\n"
+                           "    unit: \"MHz\"\n"
+                           "    values: {}\n",
+                           this->memory_clock_frequency_max_.value());
+    }
+    // socket clock min frequencies
+    if (this->socket_clock_frequency_min_.has_value()) {
+        str += std::format("  socket_clock_frequency_min:\n"
+                           "    unit: \"MHz\"\n"
+                           "    values: {}\n",
+                           this->socket_clock_frequency_min_.value());
+    }
+    // socket clock max frequencies
+    if (this->socket_clock_frequency_max_.has_value()) {
+        str += std::format("  socket_clock_frequency_max:\n"
+                           "    unit: \"MHz\"\n"
+                           "    values: {}\n",
+                           this->socket_clock_frequency_max_.value());
+    }
+    // the available clock frequencies
+    if (this->available_clock_frequencies_.has_value()) {
+        str += std::format("  available_clock_frequencies:\n"
+                           "    unit: \"MHz\"\n"
+                           "    values: [{}]\n",
+                           detail::join(this->available_clock_frequencies_.value(), ", "));
+    }
+    // the available memory clock frequencies
+    if (this->available_memory_clock_frequencies_.has_value()) {
+        str += std::format("  available_memory_clock_frequencies:\n"
+                           "    unit: \"MHz\"\n"
+                           "    values: [{}]\n",
+                           detail::join(this->available_memory_clock_frequencies_.value(), ", "));
     }
 
-    // socket clock frequency
-    if (this->clock_socket_.has_value()) {
-        str += std::format("  clock_socket:\n"
-                           "    unit: \"Hz\"\n"
+    // system clock frequency
+    if (this->clock_frequency_.has_value()) {
+        str += std::format("  clock_frequency:\n"
+                           "    unit: \"MHz\"\n"
                            "    values: [{}]\n",
-                           detail::join(this->clock_socket_.value(), ", "));
+                           detail::join(this->clock_frequency_.value(), ", "));
     }
     // memory clock frequency
-    if (this->clock_memory_.has_value()) {
-        str += std::format("  clock_memory:\n"
-                           "    unit: \"Hz\"\n"
+    if (this->memory_clock_frequency_.has_value()) {
+        str += std::format("  memory_clock_frequency:\n"
+                           "    unit: \"MHz\"\n"
                            "    values: [{}]\n",
-                           detail::join(this->clock_memory_.value(), ", "));
+                           detail::join(this->memory_clock_frequency_.value(), ", "));
     }
-    // system clock frequency
-    if (this->clock_system_.has_value()) {
-        str += std::format("  clock_gpu:\n"
-                           "    unit: \"Hz\"\n"
+    // socket clock frequency
+    if (this->socket_clock_frequency_.has_value()) {
+        str += std::format("  socket_clock_frequency:\n"
+                           "    unit: \"MHz\"\n"
                            "    values: [{}]\n",
-                           detail::join(this->clock_system_.value(), ", "));
+                           detail::join(this->socket_clock_frequency_.value(), ", "));
     }
     // overdrive level
     if (this->overdrive_level_.has_value()) {
@@ -193,26 +205,30 @@ std::string rocm_smi_clock_samples::generate_yaml_string() const {
 }
 
 std::ostream &operator<<(std::ostream &out, const rocm_smi_clock_samples &samples) {
-    return out << std::format("clock_system_min [Hz]: {}\n"
-                              "clock_system_max [Hz]: {}\n"
-                              "clock_socket_min [Hz]: {}\n"
-                              "clock_socket_max [Hz]: {}\n"
-                              "clock_memory_min [Hz]: {}\n"
-                              "clock_memory_max [Hz]: {}\n"
-                              "clock_system [Hz]: [{}]\n"
-                              "clock_socket [Hz]: [{}]\n"
-                              "clock_memory [Hz]: [{}]\n"
+    return out << std::format("clock_frequency_min [MHz]: {}\n"
+                              "clock_frequency_max [MHz]: {}\n"
+                              "memory_clock_frequency_min [MHz]: {}\n"
+                              "memory_clock_frequency_max [MHz]: {}\n"
+                              "socket_clock_frequency_min [MHz]: {}\n"
+                              "socket_clock_frequency_max [MHz]: {}\n"
+                              "available_clock_frequencies [MHz]: [{}]\n"
+                              "available_memory_clock_frequencies [MHz]: [{}]\n"
+                              "clock_frequency [MHz]: [{}]\n"
+                              "memory_clock_frequency [MHz]: [{}]\n"
+                              "socket_clock_frequency [MHz]: [{}]\n"
                               "overdrive_level [%]: [{}]\n"
                               "memory_overdrive_level [%]: [{}]",
-                              detail::value_or_default(samples.get_clock_system_min()),
-                              detail::value_or_default(samples.get_clock_system_max()),
-                              detail::value_or_default(samples.get_clock_socket_min()),
-                              detail::value_or_default(samples.get_clock_socket_max()),
-                              detail::value_or_default(samples.get_clock_memory_min()),
-                              detail::value_or_default(samples.get_clock_memory_max()),
-                              detail::join(detail::value_or_default(samples.get_clock_system()), ", "),
-                              detail::join(detail::value_or_default(samples.get_clock_socket()), ", "),
-                              detail::join(detail::value_or_default(samples.get_clock_memory()), ", "),
+                              detail::value_or_default(samples.get_clock_frequency_min()),
+                              detail::value_or_default(samples.get_clock_frequency_max()),
+                              detail::value_or_default(samples.get_memory_clock_frequency_min()),
+                              detail::value_or_default(samples.get_memory_clock_frequency_max()),
+                              detail::value_or_default(samples.get_socket_clock_frequency_min()),
+                              detail::value_or_default(samples.get_socket_clock_frequency_max()),
+                              detail::join(detail::value_or_default(samples.get_available_clock_frequencies()), ", "),
+                              detail::join(detail::value_or_default(samples.get_available_memory_clock_frequencies()), ", "),
+                              detail::join(detail::value_or_default(samples.get_clock_frequency()), ", "),
+                              detail::join(detail::value_or_default(samples.get_memory_clock_frequency()), ", "),
+                              detail::join(detail::value_or_default(samples.get_socket_clock_frequency()), ", "),
                               detail::join(detail::value_or_default(samples.get_overdrive_level()), ", "),
                               detail::join(detail::value_or_default(samples.get_memory_overdrive_level()), ", "));
 }

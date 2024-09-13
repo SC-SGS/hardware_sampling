@@ -90,11 +90,11 @@ class cpu_clock_samples {
      */
     [[nodiscard]] std::string generate_yaml_string() const;
 
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(bool, frequency_boost)  // true if frequency boosting is enabled
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(double, min_frequency)  // the minimum possible CPU frequency in MHz
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(double, max_frequency)  // the maximum possible CPU frequency in MHz
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(bool, auto_boosted_clock_enabled)  // true if frequency boosting is enabled
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(double, clock_frequency_min)       // the minimum possible CPU frequency in MHz
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(double, clock_frequency_max)       // the maximum possible CPU frequency in MHz
 
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(unsigned int, average_frequency)           // the average CPU frequency in MHz including idle cores
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(unsigned int, clock_frequency)             // the average CPU frequency in MHz including idle cores
     HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(unsigned int, average_non_idle_frequency)  // the average CPU frequency in MHz excluding idle cores
     HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(unsigned int, time_stamp_counter)          // the time stamp counter
 };

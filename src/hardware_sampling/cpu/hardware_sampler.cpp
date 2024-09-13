@@ -90,11 +90,11 @@ void cpu_hardware_sampler::sampling_loop() {
             } else if (line.starts_with("Flags")) {
                 general_samples_.flags_ = detail::split_as<decltype(general_samples_.flags_)::value_type::value_type>(value, ' ');
             } else if (line.starts_with("Frequency boost")) {
-                clock_samples_.frequency_boost_ = value == "enabled";
+                clock_samples_.auto_boosted_clock_enabled_ = value == "enabled";
             } else if (line.starts_with("CPU max MHz")) {
-                clock_samples_.max_frequency_ = detail::convert_to<decltype(clock_samples_.max_frequency_)::value_type>(value);
+                clock_samples_.clock_frequency_max_ = detail::convert_to<decltype(clock_samples_.clock_frequency_max_)::value_type>(value);
             } else if (line.starts_with("CPU min MHz")) {
-                clock_samples_.min_frequency_ = detail::convert_to<decltype(clock_samples_.min_frequency_)::value_type>(value);
+                clock_samples_.clock_frequency_min_ = detail::convert_to<decltype(clock_samples_.clock_frequency_min_)::value_type>(value);
             } else if (line.starts_with("L1d cache")) {
                 memory_samples_.l1d_cache_ = detail::convert_to<decltype(memory_samples_.l1d_cache_)::value_type>(value);
             } else if (line.starts_with("L1i cache")) {
@@ -163,8 +163,8 @@ void cpu_hardware_sampler::sampling_loop() {
 
         for (std::size_t i = 0; i < header.size(); ++i) {
             if (header[i] == "Avg_MHz") {
-                using vector_type = decltype(clock_samples_.average_frequency_)::value_type;
-                clock_samples_.average_frequency_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
+                using vector_type = decltype(clock_samples_.clock_frequency_)::value_type;
+                clock_samples_.clock_frequency_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
             } else if (header[i] == "Busy%") {
                 using vector_type = decltype(general_samples_.compute_utilization_)::value_type;
                 general_samples_.compute_utilization_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
@@ -310,8 +310,8 @@ void cpu_hardware_sampler::sampling_loop() {
                 // add values to the respective sample entries
                 for (std::size_t i = 0; i < header.size(); ++i) {
                     if (header[i] == "Avg_MHz") {
-                        using vector_type = decltype(clock_samples_.average_frequency_)::value_type;
-                        clock_samples_.average_frequency_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
+                        using vector_type = decltype(clock_samples_.clock_frequency_)::value_type;
+                        clock_samples_.clock_frequency_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
                     } else if (header[i] == "Busy%") {
                         using vector_type = decltype(general_samples_.compute_utilization_)::value_type;
                         general_samples_.compute_utilization_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));

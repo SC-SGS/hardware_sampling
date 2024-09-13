@@ -210,34 +210,34 @@ std::string cpu_clock_samples::generate_yaml_string() const {
     std::string str{ "clock:\n" };
 
     // true if frequency boost is enabled
-    if (this->frequency_boost_.has_value()) {
-        str += std::format("  frequency_boost:\n"
+    if (this->auto_boosted_clock_enabled_.has_value()) {
+        str += std::format("  auto_boosted_clock_enabled:\n"
                            "    unit: \"bool\"\n"
                            "    values: {}\n",
-                           this->frequency_boost_.value());
+                           this->auto_boosted_clock_enabled_.value());
     }
     // the minimal CPU frequency
-    if (this->min_frequency_.has_value()) {
-        str += std::format("  min_cpu_frequency:\n"
+    if (this->clock_frequency_min_.has_value()) {
+        str += std::format("  clock_frequency_min:\n"
                            "    unit: \"MHz\"\n"
                            "    values: {}\n",
-                           this->min_frequency_.value());
+                           this->clock_frequency_min_.value());
     }
     // the maximum CPU frequency
-    if (this->max_frequency_.has_value()) {
-        str += std::format("  max_cpu_frequency:\n"
+    if (this->clock_frequency_max_.has_value()) {
+        str += std::format("  clock_frequency_max:\n"
                            "    unit: \"MHz\"\n"
                            "    values: {}\n",
-                           this->max_frequency_.value());
+                           this->clock_frequency_max_.value());
     }
 
     // the average CPU frequency
-    if (this->average_frequency_.has_value()) {
-        str += std::format("  average_frequency:\n"
+    if (this->clock_frequency_.has_value()) {
+        str += std::format("  clock_frequency:\n"
                            "    turbostat_name: \"Avg_MHz\"\n"
                            "    unit: \"MHz\"\n"
                            "    values: [{}]\n",
-                           detail::join(this->average_frequency_.value(), ", "));
+                           detail::join(this->clock_frequency_.value(), ", "));
     }
     // the average CPU frequency excluding idle time
     if (this->average_non_idle_frequency_.has_value()) {
@@ -263,16 +263,16 @@ std::string cpu_clock_samples::generate_yaml_string() const {
 }
 
 std::ostream &operator<<(std::ostream &out, const cpu_clock_samples &samples) {
-    return out << std::format("frequency_boost [bool]: {}\n"
-                              "min_frequency [MHz]: {}\n"
-                              "max_frequency [MHz]: {}\n"
-                              "average_frequency [MHz]: [{}]\n"
+    return out << std::format("auto_boosted_clock_enabled [bool]: {}\n"
+                              "clock_frequency_min [MHz]: {}\n"
+                              "clock_frequency_max [MHz]: {}\n"
+                              "clock_frequency [MHz]: [{}]\n"
                               "average_non_idle_frequency [MHz]: [{}]\n"
                               "time_stamp_counter [MHz]: [{}]",
-                              detail::value_or_default(samples.get_frequency_boost()),
-                              detail::value_or_default(samples.get_min_frequency()),
-                              detail::value_or_default(samples.get_max_frequency()),
-                              detail::join(detail::value_or_default(samples.get_average_frequency()), ", "),
+                              detail::value_or_default(samples.get_auto_boosted_clock_enabled()),
+                              detail::value_or_default(samples.get_clock_frequency_min()),
+                              detail::value_or_default(samples.get_clock_frequency_max()),
+                              detail::join(detail::value_or_default(samples.get_clock_frequency()), ", "),
                               detail::join(detail::value_or_default(samples.get_average_non_idle_frequency()), ", "),
                               detail::join(detail::value_or_default(samples.get_time_stamp_counter()), ", "));
 }

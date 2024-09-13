@@ -243,6 +243,38 @@ template <typename Container>
     }
 }
 
+template <typename T>
+struct is_vector : std::false_type { };
+
+template <typename T>
+struct is_vector<std::vector<T>> : std::true_type { };
+
+template <typename T>
+constexpr bool is_vector_v = is_vector<T>::value;
+
+/**
+ * @brief Convert all entries in the map to a single dict-like string.
+ * @details The resulting string is of form "{KEY, VALUE}" or "{KEY, [VALUES]}".
+ * @tparam MapType the type of the map
+ * @param[in] map the map to convert to a string
+ * @return the result string (`[[nodiscard]]`(
+ */
+template <typename MapType>
+[[nodiscard]] inline std::string map_entry_to_string(const std::optional<MapType> &map) {
+    if (map.has_value()) {
+        std::vector<std::string> entries{};
+        for (const auto &[key, value] : map.value()) {
+            if constexpr (is_vector_v<std::remove_cvref_t<decltype(value)>>) {
+                entries.push_back(std::format("{{{}, [{}]}}", key, detail::join(value, ", ")));
+            } else {
+                entries.push_back(std::format("{{{}, {}}}", key, value));
+            }
+        }
+        return detail::join(entries, ", ");
+    }
+    return "";
+}
+
 }  // namespace hws::detail
 
 #endif  // HARDWARE_SAMPLING_UTILITY_HPP_

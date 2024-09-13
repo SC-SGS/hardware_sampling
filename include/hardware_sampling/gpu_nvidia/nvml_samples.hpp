@@ -16,6 +16,7 @@
 
 #include <format>    // std::formatter
 #include <iosfwd>    // std::ostream forward declaration
+#include <map>       // std::map
 #include <optional>  // std::optional
 #include <string>    // std::string
 #include <vector>    // std::vector
@@ -73,6 +74,8 @@ class nvml_clock_samples {
     // befriend hardware sampler class
     friend class gpu_nvidia_hardware_sampler;
 
+    using map_type = std::map<double, std::vector<double>>;
+
   public:
     /**
      * @brief Assemble the YAML string containing all available general hardware samples.
@@ -81,18 +84,20 @@ class nvml_clock_samples {
      */
     [[nodiscard]] std::string generate_yaml_string() const;
 
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(unsigned int, adaptive_clock_status)  // true if clock boosting is currently enabled
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(unsigned int, clock_graph_min)        // the minimum possible graphics clock frequency in MHz
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(unsigned int, clock_graph_max)        // the maximum possible graphics clock frequency in MHz
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(unsigned int, clock_sm_max)           // the maximum possible SM clock frequency in MHz
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(unsigned int, clock_mem_min)          // the minimum possible memory clock frequency in MHz
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(unsigned int, clock_mem_max)          // the maximum possible memory clock frequency in MHz
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(bool, auto_boosted_clock_enabled)                         // true if clock boosting is currently enabled
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(double, clock_frequency_min)                              // the minimum possible graphics clock frequency in MHz
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(double, clock_frequency_max)                              // the maximum possible graphics clock frequency in MHz
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(double, memory_clock_frequency_min)                       // the minimum possible memory clock frequency in MHz
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(double, memory_clock_frequency_max)                       // the maximum possible memory clock frequency in MHz
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(double, sm_clock_frequency_max)                           // the maximum possible SM clock frequency in MHz
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(map_type, available_clock_frequencies)                    // the available clock frequencies in MHz, based on a memory clock frequency (slowest to fastest)
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::vector<double>, available_memory_clock_frequencies)  // the available memory clock frequencies in MHz (slowest to fastest)
 
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(unsigned int, clock_graph)                  // the current graphics clock frequency in MHz
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(unsigned int, clock_sm)                     // the current SM clock frequency in Mhz
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(unsigned int, clock_mem)                    // the current memory clock frequency in MHz
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(unsigned long long, clock_throttle_reason)  // the reason the GPU clock throttled (bitmask)
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(bool, auto_boosted_clocks)                  // true if the clocks are currently auto boosted
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, clock_frequency)         // the current graphics clock frequency in MHz
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, memory_clock_frequency)  // the current memory clock frequency in MHz
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, sm_clock_frequency)      // the current SM clock frequency in Mhz
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(std::string, throttle_reason)    // the reason the GPU clock throttled
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(bool, auto_boosted_clock)        // true if the clocks are currently auto boosted
 };
 
 /**
