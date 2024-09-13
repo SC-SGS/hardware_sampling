@@ -214,25 +214,25 @@ endif ()
 ##                                        Intel GPU sampling via Level Zero                                       ##
 ####################################################################################################################
 # try finding Level Zero
-find_package(level_zero QUIET)
-if (level_zero_FOUND)
-    target_link_libraries(${HWS_LIBRARY_NAME} PRIVATE level_zero)
-
-    message(STATUS "Enable sampling of Intel GPU information using Level Zero.")
-
-    # add source file to source file list
-    target_sources(${HWS_LIBRARY_NAME} PRIVATE
-            $<BUILD_INTERFACE:
-            ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/gpu_intel/hardware_sampler.cpp;
-            ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/gpu_intel/level_zero_samples.cpp;
-            ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/gpu_intel/utility.cpp
-            >)
-
-    # add compile definition
-    target_compile_definitions(${HWS_LIBRARY_NAME} PUBLIC HWS_FOR_INTEL_GPUS_ENABLED)
-else ()
-    message(STATUS "Hardware sampling for Intel GPUs disabled!")
-endif ()
+#find_package(level_zero QUIET)
+#if (level_zero_FOUND)
+#    target_link_libraries(${HWS_LIBRARY_NAME} PRIVATE level_zero)
+#
+#    message(STATUS "Enable sampling of Intel GPU information using Level Zero.")
+#
+#    # add source file to source file list
+#    target_sources(${HWS_LIBRARY_NAME} PRIVATE
+#            $<BUILD_INTERFACE:
+#            ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/gpu_intel/hardware_sampler.cpp;
+#            ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/gpu_intel/level_zero_samples.cpp;
+#            ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/gpu_intel/utility.cpp
+#            >)
+#
+#    # add compile definition
+#    target_compile_definitions(${HWS_LIBRARY_NAME} PUBLIC HWS_FOR_INTEL_GPUS_ENABLED)
+#else ()
+#    message(STATUS "Hardware sampling for Intel GPUs disabled!")
+#endif ()
 
 
 ####################################################################################################################
