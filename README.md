@@ -64,175 +64,174 @@ export PYTHONPATH=${CMAKE_INSTALL_PREFIX}/lib:${PYTHONPATH}
 
 ## Available samples
 
+The sampling type `fixed` denotes samples that are gathered once per hardware samples like maximum clock frequencies or temperatures or the total available memory. 
+The sampling type `sampled` denotes samples that are gathered during the whole hardware sampling process like the current clock frequencies, temperatures, or memory consumption.
+
 ### General samples
 
-| sample              | CPUs  | NVIDIA GPUs | AMD GPUs  |  Intel GPUs   |
-|:--------------------|:-----:|:-----------:|:---------:|:-------------:|
-| architecture        |  str  |     str     |    str    |       ?       |
-| byte_order          |  str  |  str (fix)  | str (fix) |   str (fix)   |
-| num_cores           |  int  |     int     |     -     |               |
-| num_threads         |  int  |      -      |     -     |       -       |
-| threads_per_core    |  int  |      -      |     -     |       -       |
-| cores_per_socket    |  int  |      -      |     -     |       -       |
-| num_sockets         |  int  |      -      |     -     |       -       |
-| numa_nodes          |  int  |      -      |     -     |               |
-| vendor_id           |  str  |  str (fix)  |    str    | str (PCIe ID) |
-| name                |  str  |     str     |    str    |      str      |
-| flags               |  str  |      -      |     -     |               |
-| persistence_mode    |   -   |    bool     |     -     |               |
-| compute_utilization |   %   |      %      |     %     |       ?       |
-| memory_utilization  |   -   |      %      |     %     |       ?       |
-| ipc                 | float |      -      |     -     |       -       |
-| irq                 |  int  |      -      |     -     |       -       |
-| smi                 |  int  |      -      |     -     |       -       |
-| poll                |  int  |      -      |     -     |       -       |
-| poll_percent        |   %   |      -      |     -     |       -       |
-| performance_level   |   -   |     int     |    int    |               |
-| standby_mode        |       |             |           |      str      |
-| num_threads_per_eu  |       |             |           |      int      |
-| eu_simd_width       |       |             |           |      int      |
+| sample              | sample type |    CPUs     | NVIDIA GPUs | AMD GPUs  |  Intel GPUs   |
+|:--------------------|:-----------:|:-----------:|:-----------:|:---------:|:-------------:|
+| architecture        |    fixed    |     str     |     str     |    str    |       ?       |
+| byte_order          |    fixed    |     str     |  str (fix)  | str (fix) |   str (fix)   |
+| num_cores           |    fixed    |     int     |     int     |     -     |               |
+| num_threads         |    fixed    |     int     |      -      |     -     |       -       |
+| threads_per_core    |    fixed    |     int     |      -      |     -     |       -       |
+| cores_per_socket    |    fixed    |     int     |      -      |     -     |       -       |
+| num_sockets         |    fixed    |     int     |      -      |     -     |       -       |
+| numa_nodes          |    fixed    |     int     |      -      |     -     |               |
+| vendor_id           |    fixed    |     str     |  str (fix)  |    str    | str (PCIe ID) |
+| name                |    fixed    |     str     |     str     |    str    |      str      |
+| flags               |    fixed    | list of str |      -      |     -     |               |
+| persistence_mode    |    fixed    |      -      |    bool     |     -     |               |
+| compute_utilization |   sampled   |      %      |      %      |     %     |       ?       |
+| memory_utilization  |   sampled   |      -      |      %      |     %     |       ?       |
+| ipc                 |   sampled   |    float    |      -      |     -     |       -       |
+| irq                 |   sampled   |     int     |      -      |     -     |       -       |
+| smi                 |   sampled   |     int     |      -      |     -     |       -       |
+| poll                |   sampled   |     int     |      -      |     -     |       -       |
+| poll_percent        |   sampled   |      %      |      -      |     -     |       -       |
+| performance_level   |   sampled   |      -      |     int     |    str    |               |
+| standby_mode        |             |             |             |           |      str      |
+| num_threads_per_eu  |             |             |             |           |      int      |
+| eu_simd_width       |             |             |             |           |      int      |
 
 ### clock-related samples
 
-| sample                             | CPUs |   NVIDIA GPUs    | AMD GPUs | Intel GPUs |
-|:-----------------------------------|:----:|:----------------:|:--------:|:----------:|
-| auto_boosted_clock_enabled         | bool |       bool       |    -     |            |
-| clock_frequency_min                | MHz  |       MHz        |   MHz    |            |
-| clock_frequency_max                | MHz  |       MHz        |   MHz    |            |
-| memory_clock_frequency_min         |  -   |       MHz        |   MHz    |            |
-| memory_clock_frequency_max         |  -   |       MHz        |   MHz    |            |
-| socket_clock_frequency_min         |  -   |        -         |   MHz    |     -      |
-| socket_clock_frequency_min         |  -   |        -         |   MHz    |     -      |
-| sm_clock_frequency_max             |  -   |       MHz        |    -     |     -      |
-| available_clock_frequencies        |  -   |       MHz        |   MHz    |            |
-| available_memory_clock_frequencies |  -   |       MHz        |   MHz    |            |
-| clock_frequency                    | MHz  |       MHz        |   MHz    |            |
-| average_non_idle_frequency         | MHz  |        -         |    -     |     -      |
-| time_stamp_counter                 | MHz  |        -         |    -     |     -      |
-| memory_clock_frequency             |  -   |       MHz        |   MHz    |            |
-| socket_clock_frequency             |  -   |        -         |   MHz    |     -      |
-| sm_clock_frequency                 |  -   |       MHz        |    -     |     -      |
-| overdrive_level                    |  -   |        -         |    %     |     -      |
-| memory_overdrive_level             |  -   |        -         |    %     |     -      |
-| throttle_reason                    |  -   | string (bitmask) |    -     |            |
-| memory_throttle_reason             |  -   |        -         |    -     |            |
-| auto_boosted_clock                 |  -   |       bool       |    -     |     -      |
-| tdp_frequency_limit                |  -   |        -         |    -     |            |
-| memory_tdp_frequency_limit         |  -   |        -         |    -     |            |
+| sample                             | sample type | CPUs |   NVIDIA GPUs    |  AMD GPUs   | Intel GPUs |
+|:-----------------------------------|:-----------:|:----:|:----------------:|:-----------:|:----------:|
+| auto_boosted_clock_enabled         |    fixed    | bool |       bool       |      -      |            |
+| clock_frequency_min                |    fixed    | MHz  |       MHz        |     MHz     |            |
+| clock_frequency_max                |    fixed    | MHz  |       MHz        |     MHz     |            |
+| memory_clock_frequency_min         |    fixed    |  -   |       MHz        |     MHz     |            |
+| memory_clock_frequency_max         |    fixed    |  -   |       MHz        |     MHz     |            |
+| socket_clock_frequency_min         |    fixed    |  -   |        -         |     MHz     |     -      |
+| socket_clock_frequency_min         |    fixed    |  -   |        -         |     MHz     |     -      |
+| sm_clock_frequency_max             |    fixed    |  -   |       MHz        |      -      |     -      |
+| available_clock_frequencies        |    fixed    |  -   |    map of MHz    | list of MHz |            |
+| available_memory_clock_frequencies |    fixed    |  -   |   list of MHz    | list of MHz |            |
+| clock_frequency                    |   sampled   | MHz  |       MHz        |     MHz     |            |
+| average_non_idle_frequency         |   sampled   | MHz  |        -         |      -      |     -      |
+| time_stamp_counter                 |   sampled   | MHz  |        -         |      -      |     -      |
+| memory_clock_frequency             |   sampled   |  -   |       MHz        |     MHz     |            |
+| socket_clock_frequency             |   sampled   |  -   |        -         |     MHz     |     -      |
+| sm_clock_frequency                 |   sampled   |  -   |       MHz        |      -      |     -      |
+| overdrive_level                    |   sampled   |  -   |        -         |      %      |     -      |
+| memory_overdrive_level             |   sampled   |  -   |        -         |      %      |     -      |
+| throttle_reason                    |   sampled   |  -   | string (bitmask) |      -      |            |
+| memory_throttle_reason             |             |  -   |        -         |      -      |            |
+| auto_boosted_clock                 |   sampled   |  -   |       bool       |      -      |     -      |
+| tdp_frequency_limit                |             |  -   |        -         |      -      |            |
+| memory_tdp_frequency_limit         |             |  -   |        -         |      -      |            |
 
 ### power-related samples
 
-| sample                         |               CPUs                | NVIDIA GPUs |  AMD GPUs   | Intel GPUs |
-|:-------------------------------|:---------------------------------:|:-----------:|:-----------:|:----------:|
-| power_management_limit         |                 -                 |      W      |      W      |            |
-| power_enforced_limit           |                 -                 |      W      |      W      |            |
-| power_measurement_type         |             str (fix)             |     str     |     str     |            |
-| power_management_mode          |                 -                 |    bool     |      -      |            |
-| available_power_profiles       |                 -                 | list of int | list of str |            |
-| power_usage                    |                 W                 |      W      |      W      |            |
-| core_watt                      |                 W                 |      -      |      -      |     -      |
-| dram_watt                      |                 W                 |      -      |      -      |     -      |
-| package_rapl_throttling        |                 %                 |      -      |      -      |     -      |
-| dram_rapl_throttling           |                 %                 |      -      |      -      |     -      |
-| power_total_energy_consumption | J<br>(calculated via power_usage) |      J      |      J      |     J      |
-| power_profile                  |                 -                 |     int     |     str     |            |
-| energy_threshold_enabled       |                                   |             |             |    bool    |
-| energy_threshold               |                                   |             |             |     J      |
+| sample                         | sample type |               CPUs                | NVIDIA GPUs |  AMD GPUs   | Intel GPUs |
+|:-------------------------------|:-----------:|:---------------------------------:|:-----------:|:-----------:|:----------:|
+| power_management_limit         |    fixed    |                 -                 |      W      |      W      |            |
+| power_enforced_limit           |    fixed    |                 -                 |      W      |      W      |            |
+| power_measurement_type         |    fixed    |             str (fix)             |     str     |     str     |            |
+| power_management_mode          |    fixed    |                 -                 |    bool     |      -      |            |
+| available_power_profiles       |    fixed    |                 -                 | list of int | list of str |            |
+| power_usage                    |   sampled   |                 W                 |      W      |      W      |            |
+| core_watt                      |   sampled   |                 W                 |      -      |      -      |     -      |
+| dram_watt                      |   sampled   |                 W                 |      -      |      -      |     -      |
+| package_rapl_throttling        |   sampled   |                 %                 |      -      |      -      |     -      |
+| dram_rapl_throttling           |   sampled   |                 %                 |      -      |      -      |     -      |
+| power_total_energy_consumption |   sampled   | J<br>(calculated via power_usage) |      J      |      J      |     J      |
+| power_profile                  |   sampled   |                 -                 |     int     |     str     |            |
+| energy_threshold_enabled       |             |                                   |             |             |    bool    |
+| energy_threshold               |             |                                   |             |             |     J      |
 
 ### memory-related samples
 
-| sample                      | CPUs | NVIDIA GPUs | AMD GPUs | Intel GPUs |
-|:----------------------------|:----:|:-----------:|:--------:|:----------:|
-| cache_size_L1d              | str  |      -      |    -     |     -      |
-| cache_size_L1i              | str  |      -      |    -     |     -      |
-| cache_size_L2               | str  |      -      |    -     |     -      |
-| cache_size_L3               | str  |      -      |    -     |     -      |
-| memory_total                |  B   |      B      |    B     |            |
-| visible_memory_total        |  -   |      -      |    B     |     -      |
-| swap_memory_total           |  B   |      -      |    -     |     -      |
-| memory_total_{}             |  -   |             |          |     B      |
-| allocatable_memory_total_{} |  -   |             |          |     B      |
-| num_pcie_lanes_min          |  -   |      -      |   int    |            |
-| num_pcie_lanes_max          |  -   |     int     |   int    |            |
-| pcie_link_generation_max    |  -   |     int     |    -     |    int     |
-| pcie_link_speed_max         |  -   |    MBPS     |    -     |    BPS     |
-| pcie_link_transfer_rate_min |  -   |      -      |   MT/s   |            |
-| pcie_link_transfer_rate_max |  -   |      -      |   MT/s   |            |
-| memory_bus_width            |  -   |     Bit     |    -     |            |
-| memory_used                 |  B   |      B      |    B     |            |
-| memory_free                 |  B   |      B      |    B     |            |
-| swap_memory_used            |  B   |      -      |    -     |     -      |
-| swap_memory_free            |  B   |      -      |    -     |     -      |
-| num_pcie_lanes              |  -   |     int     |   int    |            |
-| pcie_link_generation        |  -   |     int     |    -     |    int     |
-| pcie_link_speed             |  -   |    MBPS     |    -     |    MBPS    |
-| pcie_link_transfer_rate     |  -   |      -      |   T/s    |     -      |
-| memory_used_{}              |      |             |          |     B      |
-| memory_free_{}              |      |             |          |     B      |
-| memory_bus_width_{}         |      |             |          |    Bit     |
-| memory_num_channels_{}      |      |             |          |    int     |
-| memory_location_{}          |      |             |          |    str     |
+| sample                      | sample type | CPUs | NVIDIA GPUs | AMD GPUs | Intel GPUs |
+|:----------------------------|:-----------:|:----:|:-----------:|:--------:|:----------:|
+| cache_size_L1d              |    fixed    | str  |      -      |    -     |     -      |
+| cache_size_L1i              |    fixed    | str  |      -      |    -     |     -      |
+| cache_size_L2               |    fixed    | str  |      -      |    -     |     -      |
+| cache_size_L3               |    fixed    | str  |      -      |    -     |     -      |
+| memory_total                |    fixed    |  B   |      B      |    B     |            |
+| visible_memory_total        |    fixed    |  -   |      -      |    B     |     -      |
+| swap_memory_total           |    fixed    |  B   |      -      |    -     |     -      |
+| memory_total_{}             |             |  -   |             |          |     B      |
+| allocatable_memory_total_{} |             |  -   |             |          |     B      |
+| num_pcie_lanes_min          |    fixed    |  -   |      -      |   int    |            |
+| num_pcie_lanes_max          |    fixed    |  -   |     int     |   int    |            |
+| pcie_link_generation_max    |    fixed    |  -   |     int     |    -     |    int     |
+| pcie_link_speed_max         |    fixed    |  -   |    MBPS     |    -     |    BPS     |
+| pcie_link_transfer_rate_min |    fixed    |  -   |      -      |   MT/s   |            |
+| pcie_link_transfer_rate_max |    fixed    |  -   |      -      |   MT/s   |            |
+| memory_bus_width            |    fixed    |  -   |     Bit     |    -     |            |
+| memory_used                 |   sampled   |  B   |      B      |    B     |            |
+| memory_free                 |   sampled   |  B   |      B      |    B     |            |
+| swap_memory_used            |   sampled   |  B   |      -      |    -     |     -      |
+| swap_memory_free            |   sampled   |  B   |      -      |    -     |     -      |
+| num_pcie_lanes              |   sampled   |  -   |     int     |   int    |            |
+| pcie_link_generation        |   sampled   |  -   |     int     |    -     |    int     |
+| pcie_link_speed             |   sampled   |  -   |    MBPS     |    -     |    MBPS    |
+| pcie_link_transfer_rate     |   sampled   |  -   |      -      |   T/s    |     -      |
+| memory_used_{}              |             |      |             |          |     B      |
+| memory_free_{}              |             |      |             |          |     B      |
+| memory_bus_width_{}         |             |      |             |          |    Bit     |
+| memory_num_channels_{}      |             |      |             |          |    int     |
+| memory_location_{}          |             |      |             |          |    str     |
 
 ### temperature-related samples
 
-| sample                  | CPUs | NVIDIA GPUs | AMD GPUs | Intel GPUs |
-|:------------------------|:----:|:-----------:|:--------:|:----------:|
-| num_fans                |  -   |     int     |   int    |            |
-| fan_speed_min           |  -   |      %      |    -     |            | 
-| fan_speed_max           |  -   |      %      |   RPM    |            |
-| temperature_min         |  -   |      -      |    °C    |            |
-| temperature_max         |  -   |     °C      |    °C    |            |
-| memory_temperature_min  |  -   |      -      |    °C    |            |
-| memory_temperature_max  |  -   |     °C      |    °C    |            |
-| hotspot_temperature_min |  -   |      -      |    °C    |            |
-| hotspot_temperature_max |  -   |      -      |    °C    |            |
-| hbm_0_temperature_min   |  -   |      -      |    °C    |            |
-| hbm_0_temperature_max   |  -   |      -      |    °C    |            |
-| hbm_1_temperature_min   |  -   |      -      |    °C    |            |
-| hbm_1_temperature_max   |  -   |      -      |    °C    |            |
-| hbm_2_temperature_min   |  -   |      -      |    °C    |            |
-| hbm_2_temperature_max   |  -   |      -      |    °C    |            |
-| hbm_3_temperature_min   |  -   |      -      |    °C    |            |
-| hbm_3_temperature_max   |  -   |      -      |    °C    |            |
-| fan_speed_percentage    |  -   |      %      |    %     |            |
-| temperature             |  °C  |     °C      |    °C    |            |
-| memory_temperature      |  -   |      -      |    °C    |            |
-| hotspot_temperature     |  -   |      -      |    °C    |            |
-| hbm_0_temperature       |  -   |      -      |    °C    |            |
-| hbm_1_temperature       |  -   |      -      |    °C    |            |
-| hbm_2_temperature       |  -   |      -      |    °C    |            |
-| hbm_3_temperature       |  -   |      -      |    °C    |            |
-| temperature_{}_max      |      |             |          |            |
-| temperature_psu         |      |             |          |            |
-| temperature_{}          |      |             |          |            |
-| core_temperature        |  °C  |      -      |    -     |     -      |
-| core_throttle_percent   |  %   |      -      |    -     |     -      |
+| sample                  | sample type | CPUs | NVIDIA GPUs | AMD GPUs | Intel GPUs |
+|:------------------------|:-----------:|:----:|:-----------:|:--------:|:----------:|
+| num_fans                |    fixed    |  -   |     int     |   int    |            |
+| fan_speed_min           |    fixed    |  -   |      %      |    -     |            | 
+| fan_speed_max           |    fixed    |  -   |      %      |   RPM    |            |
+| temperature_min         |    fixed    |  -   |      -      |    °C    |            |
+| temperature_max         |    fixed    |  -   |     °C      |    °C    |            |
+| memory_temperature_min  |    fixed    |  -   |      -      |    °C    |            |
+| memory_temperature_max  |    fixed    |  -   |     °C      |    °C    |            |
+| hotspot_temperature_min |    fixed    |  -   |      -      |    °C    |            |
+| hotspot_temperature_max |    fixed    |  -   |      -      |    °C    |            |
+| hbm_0_temperature_min   |    fixed    |  -   |      -      |    °C    |            |
+| hbm_0_temperature_max   |    fixed    |  -   |      -      |    °C    |            |
+| hbm_1_temperature_min   |    fixed    |  -   |      -      |    °C    |            |
+| hbm_1_temperature_max   |    fixed    |  -   |      -      |    °C    |            |
+| hbm_2_temperature_min   |    fixed    |  -   |      -      |    °C    |            |
+| hbm_2_temperature_max   |    fixed    |  -   |      -      |    °C    |            |
+| hbm_3_temperature_min   |    fixed    |  -   |      -      |    °C    |            |
+| hbm_3_temperature_max   |    fixed    |  -   |      -      |    °C    |            |
+| fan_speed_percentage    |   sampled   |  -   |      %      |    %     |            |
+| temperature             |   sampled   |  °C  |     °C      |    °C    |            |
+| memory_temperature      |   sampled   |  -   |      -      |    °C    |            |
+| hotspot_temperature     |   sampled   |  -   |      -      |    °C    |            |
+| hbm_0_temperature       |   sampled   |  -   |      -      |    °C    |            |
+| hbm_1_temperature       |   sampled   |  -   |      -      |    °C    |            |
+| hbm_2_temperature       |   sampled   |  -   |      -      |    °C    |            |
+| hbm_3_temperature       |   sampled   |  -   |      -      |    °C    |            |
+| temperature_{}_max      |             |      |             |          |            |
+| temperature_psu         |             |      |             |          |            |
+| temperature_{}          |             |      |             |          |            |
+| core_temperature        |   sampled   |  °C  |      -      |    -     |     -      |
+| core_throttle_percent   |   sampled   |  %   |      -      |    -     |     -      |
 
 ### gfx-related (iGPU) samples
 
-| sample                     | CPUs |
-|:---------------------------|:----:|
-| graphics_render_state      |  %   |
-| graphics_frequency         | MHz  |
-| average_graphics_frequency | MHz  |
-| gpu_state_c0               |  %   |
-| cpu_works_for_gpu          |  %   |
-| graphics_power             |  W   |
+| sample                    | sample type | CPUs |
+|:--------------------------|:-----------:|:----:|
+| gfx_render_state_percent  |   sampled   |  %   |
+| gfx_frequency             |   sampled   | MHz  |
+| average_gfx_frequency     |   sampled   | MHz  |
+| gfx_state_c0_percent      |   sampled   |  %   |
+| cpu_works_for_gpu_percent |   sampled   |  %   |
+| gfx_watt                  |   sampled   |  W   |
 
 ### "idle states"-related samples
 
-| sample                           | CPUs |
-|:---------------------------------|:----:|
-| all_cpus_state_c0                |  %   |
-| any_cpu_state_c0                 |  %   |
-| lower_power_idle_state           |  %   |
-| system_lower_power_idle_state    |  %   |
-| package_lower_power_idle_state   |  %   |
-| cpu_idle_state_{}_percentage     |  %   |
-| package_idle_state_{}_percentage |  %   |
-| package_idle_state_{}_percentage |  %   |
-| idle_state_{}_percentage         |  %   |
-| idle_state_{}                    | int  |
+| sample                               | sample type |     CPUs      |
+|:-------------------------------------|:-----------:|:-------------:|
+| idle_states                          |    fixed    | map of values |
+| all_cpus_state_c0_percent            |   sampled   |       %       |
+| any_cpu_state_c0_percent             |   sampled   |       %       |
+| low_power_idle_state_percent         |   sampled   |       %       |
+| system_low_power_idle_state_percent  |   sampled   |       %       |
+| package_low_power_idle_state_percent |   sampled   |       %       |
 
 
 
