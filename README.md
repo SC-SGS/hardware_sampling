@@ -9,7 +9,8 @@ It currently supports CPUs as well as GPUs from NVIDIA, AMD, and Intel.
 
 General dependencies:
 
-- a C++20 capable compiler supporting `std::format` (tested with GCC 14.1.0)
+- a C++17 capable compiler
+- [{fmt} > 11.0.2](https://github.com/fmtlib/fmt) for string formatting (automatically build during the CMake configuration if it couldn't be found using the respective `find_package` call)
 - [Pybind11 > v2.13.1](https://github.com/pybind/pybind11) if Python bindings are enabled (automatically build during the CMake configuration if it couldn't be found using the respective `find_package` call)
 
 Dependencies based on the hardware to sample:

@@ -12,5 +12,5 @@ find_package(hardware_sampling REQUIRED)
 
 add_executable(prog main.cpp)
 
-target_compile_features(prog PUBLIC cxx_std_20)
+target_compile_features(prog PUBLIC cxx_std_17)
 target_link_libraries(prog PUBLIC hws::hardware_sampling)

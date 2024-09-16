@@ -12,9 +12,10 @@
 #define HARDWARE_SAMPLING_GPU_NVIDIA_NVML_SAMPLES_HPP_
 #pragma once
 
-#include "hardware_sampling/utility.hpp"  // HWS_SAMPLE_STRUCT_FIXED_MEMBER, HWS_SAMPLE_STRUCT_SAMPLING_MEMBER, hws::detail::ostream_formatter
+#include "hardware_sampling/utility.hpp"  // HWS_SAMPLE_STRUCT_FIXED_MEMBER, HWS_SAMPLE_STRUCT_SAMPLING_MEMBER
 
-#include <format>    // std::formatter
+#include "fmt/ostream.h"  // fmt::formatter, fmt::ostream_formatter
+
 #include <iosfwd>    // std::ostream forward declaration
 #include <map>       // std::map
 #include <optional>  // std::optional
@@ -229,18 +230,18 @@ std::ostream &operator<<(std::ostream &out, const nvml_temperature_samples &samp
 }  // namespace hws
 
 template <>
-struct std::formatter<hws::nvml_general_samples> : hws::detail::ostream_formatter { };
+struct fmt::formatter<hws::nvml_general_samples> : fmt::ostream_formatter { };
 
 template <>
-struct std::formatter<hws::nvml_clock_samples> : hws::detail::ostream_formatter { };
+struct fmt::formatter<hws::nvml_clock_samples> : fmt::ostream_formatter { };
 
 template <>
-struct std::formatter<hws::nvml_power_samples> : hws::detail::ostream_formatter { };
+struct fmt::formatter<hws::nvml_power_samples> : fmt::ostream_formatter { };
 
 template <>
-struct std::formatter<hws::nvml_memory_samples> : hws::detail::ostream_formatter { };
+struct fmt::formatter<hws::nvml_memory_samples> : fmt::ostream_formatter { };
 
 template <>
-struct std::formatter<hws::nvml_temperature_samples> : hws::detail::ostream_formatter { };
+struct fmt::formatter<hws::nvml_temperature_samples> : fmt::ostream_formatter { };
 
 #endif  // HARDWARE_SAMPLING_GPU_NVIDIA_NVML_SAMPLES_HPP_

@@ -7,9 +7,11 @@
 
 #include "hardware_sampling/gpu_nvidia/nvml_samples.hpp"
 
-#include "hardware_sampling/utility.hpp"  // hws::detail::{value_or_default, join, map_entry_to_string}
+#include "hardware_sampling/utility.hpp"  // hws::detail::{value_or_default, map_entry_to_string}
 
-#include <format>   // std::format
+#include "fmt/format.h"  // fmt::format
+#include "fmt/ranges.h"  // fmt::join
+
 #include <ostream>  // std::ostream
 #include <string>   // std::string
 
@@ -24,42 +26,42 @@ std::string nvml_general_samples::generate_yaml_string() const {
 
     // device architecture
     if (this->architecture_.has_value()) {
-        str += std::format("  architecture:\n"
+        str += fmt::format("  architecture:\n"
                            "    unit: \"string\"\n"
                            "    values: \"{}\"\n",
                            this->architecture_.value());
     }
     // device byte order
     if (this->byte_order_.has_value()) {
-        str += std::format("  byte_order:\n"
+        str += fmt::format("  byte_order:\n"
                            "    unit: \"string\"\n"
                            "    values: \"{}\"\n",
                            this->byte_order_.value());
     }
     // the vendor specific ID
     if (this->vendor_id_.has_value()) {
-        str += std::format("  vendor_id:\n"
+        str += fmt::format("  vendor_id:\n"
                            "    unit: \"string\"\n"
                            "    values: \"{}\"\n",
                            this->vendor_id_.value());
     }
     // device name
     if (this->name_.has_value()) {
-        str += std::format("  name:\n"
+        str += fmt::format("  name:\n"
                            "    unit: \"string\"\n"
                            "    values: \"{}\"\n",
                            this->name_.value());
     }
     // persistence mode enabled
     if (this->persistence_mode_.has_value()) {
-        str += std::format("  persistence_mode:\n"
+        str += fmt::format("  persistence_mode:\n"
                            "    unit: \"bool\"\n"
                            "    values: {}\n",
                            this->persistence_mode_.value());
     }
     // number of cores
     if (this->num_cores_.has_value()) {
-        str += std::format("  num_cores:\n"
+        str += fmt::format("  num_cores:\n"
                            "    unit: \"int\"\n"
                            "    values: {}\n",
                            this->num_cores_.value());
@@ -67,25 +69,25 @@ std::string nvml_general_samples::generate_yaml_string() const {
 
     // device compute utilization
     if (this->compute_utilization_.has_value()) {
-        str += std::format("  compute_utilization:\n"
+        str += fmt::format("  compute_utilization:\n"
                            "    unit: \"percentage\"\n"
                            "    values: [{}]\n",
-                           detail::join(this->compute_utilization_.value(), ", "));
+                           fmt::join(this->compute_utilization_.value(), ", "));
     }
 
     // device memory utilization
     if (this->memory_utilization_.has_value()) {
-        str += std::format("  memory_utilization:\n"
+        str += fmt::format("  memory_utilization:\n"
                            "    unit: \"percentage\"\n"
                            "    values: [{}]\n",
-                           detail::join(this->memory_utilization_.value(), ", "));
+                           fmt::join(this->memory_utilization_.value(), ", "));
     }
     // performance state
     if (this->performance_level_.has_value()) {
-        str += std::format("  performance_level:\n"
+        str += fmt::format("  performance_level:\n"
                            "    unit: \"0 - maximum performance; 15 - minimum performance; 32 - unknown\"\n"
                            "    values: [{}]\n",
-                           detail::join(this->performance_level_.value(), ", "));
+                           fmt::join(this->performance_level_.value(), ", "));
     }
 
     // remove last newline
@@ -95,7 +97,7 @@ std::string nvml_general_samples::generate_yaml_string() const {
 }
 
 std::ostream &operator<<(std::ostream &out, const nvml_general_samples &samples) {
-    return out << std::format("architecture [string]: {}\n"
+    return out << fmt::format("architecture [string]: {}\n"
                               "byte_order [string]: {}\n"
                               "vendor_id [string]: {}\n"
                               "name [string]: {}\n"
@@ -110,9 +112,9 @@ std::ostream &operator<<(std::ostream &out, const nvml_general_samples &samples)
                               detail::value_or_default(samples.get_name()),
                               detail::value_or_default(samples.get_persistence_mode()),
                               detail::value_or_default(samples.get_num_cores()),
-                              detail::join(detail::value_or_default(samples.get_compute_utilization()), ", "),
-                              detail::join(detail::value_or_default(samples.get_memory_utilization()), ", "),
-                              detail::join(detail::value_or_default(samples.get_performance_level()), ", "));
+                              fmt::join(detail::value_or_default(samples.get_compute_utilization()), ", "),
+                              fmt::join(detail::value_or_default(samples.get_memory_utilization()), ", "),
+                              fmt::join(detail::value_or_default(samples.get_performance_level()), ", "));
 }
 
 //*************************************************************************************************************************************//
@@ -124,97 +126,97 @@ std::string nvml_clock_samples::generate_yaml_string() const {
 
     // adaptive clock status
     if (this->auto_boosted_clock_enabled_.has_value()) {
-        str += std::format("  auto_boosted_clock_enabled:\n"
+        str += fmt::format("  auto_boosted_clock_enabled:\n"
                            "    unit: \"bool\"\n"
                            "    values: {}\n",
                            this->auto_boosted_clock_enabled_.value());
     }
     // minimum graph clock
     if (this->clock_frequency_min_.has_value()) {
-        str += std::format("  clock_frequency_min:\n"
+        str += fmt::format("  clock_frequency_min:\n"
                            "    unit: \"MHz\"\n"
                            "    values: {}\n",
                            this->clock_frequency_min_.value());
     }
     // maximum graph clock
     if (this->clock_frequency_max_.has_value()) {
-        str += std::format("  clock_frequency_max:\n"
+        str += fmt::format("  clock_frequency_max:\n"
                            "    unit: \"MHz\"\n"
                            "    values: {}\n",
                            this->clock_frequency_max_.value());
     }
     // minimum memory clock
     if (this->memory_clock_frequency_min_.has_value()) {
-        str += std::format("  memory_clock_frequency_min:\n"
+        str += fmt::format("  memory_clock_frequency_min:\n"
                            "    unit: \"MHz\"\n"
                            "    values: {}\n",
                            this->memory_clock_frequency_min_.value());
     }
     // maximum memory clock
     if (this->memory_clock_frequency_max_.has_value()) {
-        str += std::format("  memory_clock_frequency_max:\n"
+        str += fmt::format("  memory_clock_frequency_max:\n"
                            "    unit: \"MHz\"\n"
                            "    values: {}\n",
                            this->memory_clock_frequency_max_.value());
     }
     // maximum SM clock
     if (this->sm_clock_frequency_max_.has_value()) {
-        str += std::format("  sm_clock_frequency_max:\n"
+        str += fmt::format("  sm_clock_frequency_max:\n"
                            "    unit: \"MHz\"\n"
                            "    values: {}\n",
                            this->sm_clock_frequency_max_.value());
     }
     // the available clock frequencies
     if (this->available_clock_frequencies_.has_value()) {
-        str += std::format("  available_clock_frequencies:\n"
+        str += fmt::format("  available_clock_frequencies:\n"
                            "    unit: \"MHz\"\n"
                            "    values:\n");
         for (const auto &[key, value] : this->available_clock_frequencies_.value()) {
-            str += std::format("      {}: [{}]\n", key, detail::join(value, ", "));
+            str += fmt::format("      {}: [{}]\n", key, fmt::join(value, ", "));
         }
     }
     // the available memory clock frequencies
     if (this->available_memory_clock_frequencies_.has_value()) {
-        str += std::format("  available_memory_clock_frequencies:\n"
+        str += fmt::format("  available_memory_clock_frequencies:\n"
                            "    unit: \"MHz\"\n"
                            "    values: [{}]\n",
-                           detail::join(this->available_memory_clock_frequencies_.value(), ", "));
+                           fmt::join(this->available_memory_clock_frequencies_.value(), ", "));
     }
 
     // graph clock
     if (this->clock_frequency_.has_value()) {
-        str += std::format("  clock_frequency:\n"
+        str += fmt::format("  clock_frequency:\n"
                            "    unit: \"MHz\"\n"
                            "    values: [{}]\n",
-                           detail::join(this->clock_frequency_.value(), ", "));
+                           fmt::join(this->clock_frequency_.value(), ", "));
     }
     // memory clock
     if (this->memory_clock_frequency_.has_value()) {
-        str += std::format("  memory_clock_frequency:\n"
+        str += fmt::format("  memory_clock_frequency:\n"
                            "    unit: \"MHz\"\n"
                            "    values: [{}]\n",
-                           detail::join(this->memory_clock_frequency_.value(), ", "));
+                           fmt::join(this->memory_clock_frequency_.value(), ", "));
     }
     // SM clock
     if (this->sm_clock_frequency_.has_value()) {
-        str += std::format("  sm_clock_frequency:\n"
+        str += fmt::format("  sm_clock_frequency:\n"
                            "    unit: \"MHz\"\n"
                            "    values: [{}]\n",
-                           detail::join(this->sm_clock_frequency_.value(), ", "));
+                           fmt::join(this->sm_clock_frequency_.value(), ", "));
     }
     // clock throttle reason
     if (this->throttle_reason_.has_value()) {
-        str += std::format("  throttle_reason:\n"
+        str += fmt::format("  throttle_reason:\n"
                            "    unit: \"string\"\n"
                            "    values: [{}]\n",
-                           detail::join(this->throttle_reason_.value(), ", "));
+                           fmt::join(this->throttle_reason_.value(), ", "));
     }
     // clock is auto-boosted
     if (this->auto_boosted_clock_.has_value()) {
-        str += std::format("  auto_boosted_clock:\n"
+        str += fmt::format("  auto_boosted_clock:\n"
                            "    unit: \"bool\"\n"
                            "    values: [{}]\n",
-                           detail::join(this->auto_boosted_clock_.value(), ", "));
+                           fmt::join(this->auto_boosted_clock_.value(), ", "));
     }
 
     // remove last newline
@@ -224,7 +226,7 @@ std::string nvml_clock_samples::generate_yaml_string() const {
 }
 
 std::ostream &operator<<(std::ostream &out, const nvml_clock_samples &samples) {
-    return out << std::format("auto_boosted_clock_enabled [bool]: {}\n"
+    return out << fmt::format("auto_boosted_clock_enabled [bool]: {}\n"
                               "clock_frequency_min [MHz]: {}\n"
                               "clock_frequency_max [MHz]: {}\n"
                               "memory_clock_frequency_min [MHz]: {}\n"
@@ -244,12 +246,12 @@ std::ostream &operator<<(std::ostream &out, const nvml_clock_samples &samples) {
                               detail::value_or_default(samples.get_memory_clock_frequency_max()),
                               detail::value_or_default(samples.get_sm_clock_frequency_max()),
                               detail::map_entry_to_string(samples.get_available_clock_frequencies()),
-                              detail::join(detail::value_or_default(samples.get_available_memory_clock_frequencies()), ", "),
-                              detail::join(detail::value_or_default(samples.get_clock_frequency()), ", "),
-                              detail::join(detail::value_or_default(samples.get_memory_clock_frequency()), ", "),
-                              detail::join(detail::value_or_default(samples.get_sm_clock_frequency()), ", "),
-                              detail::join(detail::value_or_default(samples.get_throttle_reason()), ", "),
-                              detail::join(detail::value_or_default(samples.get_auto_boosted_clock()), ", "));
+                              fmt::join(detail::value_or_default(samples.get_available_memory_clock_frequencies()), ", "),
+                              fmt::join(detail::value_or_default(samples.get_clock_frequency()), ", "),
+                              fmt::join(detail::value_or_default(samples.get_memory_clock_frequency()), ", "),
+                              fmt::join(detail::value_or_default(samples.get_sm_clock_frequency()), ", "),
+                              fmt::join(detail::value_or_default(samples.get_throttle_reason()), ", "),
+                              fmt::join(detail::value_or_default(samples.get_auto_boosted_clock()), ", "));
 }
 
 //*************************************************************************************************************************************//
@@ -261,60 +263,60 @@ std::string nvml_power_samples::generate_yaml_string() const {
 
     // power management limit
     if (this->power_management_limit_.has_value()) {
-        str += std::format("  power_management_limit:\n"
+        str += fmt::format("  power_management_limit:\n"
                            "    unit: \"W\"\n"
                            "    values: {}\n",
                            this->power_management_limit_.value());
     }
     // power enforced limit
     if (this->power_enforced_limit_.has_value()) {
-        str += std::format("  power_enforced_limit:\n"
+        str += fmt::format("  power_enforced_limit:\n"
                            "    unit: \"W\"\n"
                            "    values: {}\n",
                            this->power_enforced_limit_.value());
     }
     // power measurement type
     if (this->power_measurement_type_.has_value()) {
-        str += std::format("  power_measurement_type:\n"
+        str += fmt::format("  power_measurement_type:\n"
                            "    unit: \"string\"\n"
                            "    values: \"{}\"\n",
                            this->power_measurement_type_.value());
     }
     // the power management mode
     if (this->power_management_mode_.has_value()) {
-        str += std::format("  power_management_mode:\n"
+        str += fmt::format("  power_management_mode:\n"
                            "    unit: \"bool\"\n"
                            "    values: {}\n",
                            this->power_management_mode_.value());
     }
     // available power levels
     if (this->available_power_profiles_.has_value()) {
-        str += std::format("  available_power_profiles:\n"
+        str += fmt::format("  available_power_profiles:\n"
                            "    unit: \"int\"\n"
                            "    values: [{}]\n",
-                           detail::join(this->available_power_profiles_.value(), ", "));
+                           fmt::join(this->available_power_profiles_.value(), ", "));
     }
 
     // current power usage
     if (this->power_usage_.has_value()) {
-        str += std::format("  power_usage:\n"
+        str += fmt::format("  power_usage:\n"
                            "    unit: \"W\"\n"
                            "    values: [{}]\n",
-                           detail::join(this->power_usage_.value(), ", "));
+                           fmt::join(this->power_usage_.value(), ", "));
     }
     // total energy consumed
     if (this->power_total_energy_consumption_.has_value()) {
-        str += std::format("  power_total_energy_consumed:\n"
+        str += fmt::format("  power_total_energy_consumed:\n"
                            "    unit: \"J\"\n"
                            "    values: [{}]\n",
-                           detail::join(this->power_total_energy_consumption_.value(), ", "));
+                           fmt::join(this->power_total_energy_consumption_.value(), ", "));
     }
     // power state
     if (this->power_profile_.has_value()) {
-        str += std::format("  power_profile:\n"
+        str += fmt::format("  power_profile:\n"
                            "    unit: \"int\"\n"
                            "    values: [{}]\n",
-                           detail::join(this->power_profile_.value(), ", "));
+                           fmt::join(this->power_profile_.value(), ", "));
     }
 
     // remove last newline
@@ -324,7 +326,7 @@ std::string nvml_power_samples::generate_yaml_string() const {
 }
 
 std::ostream &operator<<(std::ostream &out, const nvml_power_samples &samples) {
-    return out << std::format("power_management_limit [W]: {}\n"
+    return out << fmt::format("power_management_limit [W]: {}\n"
                               "power_enforced_limit [W]: {}\n"
                               "power_measurement_type [string]: {}\n"
                               "power_management_mode [bool]: {}\n"
@@ -336,10 +338,10 @@ std::ostream &operator<<(std::ostream &out, const nvml_power_samples &samples) {
                               detail::value_or_default(samples.get_power_enforced_limit()),
                               detail::value_or_default(samples.get_power_measurement_type()),
                               detail::value_or_default(samples.get_power_management_mode()),
-                              detail::join(detail::value_or_default(samples.get_available_power_profiles()), ", "),
-                              detail::join(detail::value_or_default(samples.get_power_usage()), ", "),
-                              detail::join(detail::value_or_default(samples.get_power_total_energy_consumption()), ", "),
-                              detail::join(detail::value_or_default(samples.get_power_profile()), ", "));
+                              fmt::join(detail::value_or_default(samples.get_available_power_profiles()), ", "),
+                              fmt::join(detail::value_or_default(samples.get_power_usage()), ", "),
+                              fmt::join(detail::value_or_default(samples.get_power_total_energy_consumption()), ", "),
+                              fmt::join(detail::value_or_default(samples.get_power_profile()), ", "));
 }
 
 //*************************************************************************************************************************************//
@@ -351,28 +353,28 @@ std::string nvml_memory_samples::generate_yaml_string() const {
 
     // total memory size
     if (this->memory_total_.has_value()) {
-        str += std::format("  memory_total:\n"
+        str += fmt::format("  memory_total:\n"
                            "    unit: \"B\"\n"
                            "    values: {}\n",
                            this->memory_total_.value());
     }
     // maximum PCIe link speed
     if (this->pcie_link_max_speed_.has_value()) {
-        str += std::format("  pcie_max_bandwidth:\n"
+        str += fmt::format("  pcie_max_bandwidth:\n"
                            "    unit: \"MBPS\"\n"
                            "    values: {}\n",
                            this->pcie_link_max_speed_.value());
     }
     // memory bus width
     if (this->memory_bus_width_.has_value()) {
-        str += std::format("  memory_bus_width:\n"
+        str += fmt::format("  memory_bus_width:\n"
                            "    unit: \"Bit\"\n"
                            "    values: {}\n",
                            this->memory_bus_width_.value());
     }
     // maximum PCIe link generation
     if (this->max_pcie_link_generation_.has_value()) {
-        str += std::format("  max_pcie_link_generation:\n"
+        str += fmt::format("  max_pcie_link_generation:\n"
                            "    unit: \"int\"\n"
                            "    values: {}\n",
                            this->max_pcie_link_generation_.value());
@@ -380,38 +382,38 @@ std::string nvml_memory_samples::generate_yaml_string() const {
 
     // free memory size
     if (this->memory_free_.has_value()) {
-        str += std::format("  memory_free:\n"
+        str += fmt::format("  memory_free:\n"
                            "    unit: \"B\"\n"
                            "    values: [{}]\n",
-                           detail::join(this->memory_free_.value(), ", "));
+                           fmt::join(this->memory_free_.value(), ", "));
     }
     // used memory size
     if (this->memory_used_.has_value()) {
-        str += std::format("  memory_used:\n"
+        str += fmt::format("  memory_used:\n"
                            "    unit: \"B\"\n"
                            "    values: [{}]\n",
-                           detail::join(this->memory_used_.value(), ", "));
+                           fmt::join(this->memory_used_.value(), ", "));
     }
     // PCIe link speed
     if (this->pcie_link_speed_.has_value()) {
-        str += std::format("  pcie_bandwidth:\n"
+        str += fmt::format("  pcie_bandwidth:\n"
                            "    unit: \"MBPS\"\n"
                            "    values: [{}]\n",
-                           detail::join(this->pcie_link_speed_.value(), ", "));
+                           fmt::join(this->pcie_link_speed_.value(), ", "));
     }
     // PCIe link width
     if (this->pcie_link_width_.has_value()) {
-        str += std::format("  pcie_link_width:\n"
+        str += fmt::format("  pcie_link_width:\n"
                            "    unit: \"int\"\n"
                            "    values: [{}]\n",
-                           detail::join(this->pcie_link_width_.value(), ", "));
+                           fmt::join(this->pcie_link_width_.value(), ", "));
     }
     // PCIe link generation
     if (this->pcie_link_generation_.has_value()) {
-        str += std::format("  pcie_link_generation:\n"
+        str += fmt::format("  pcie_link_generation:\n"
                            "    unit: \"int\"\n"
                            "    values: [{}]\n",
-                           detail::join(this->pcie_link_generation_.value(), ", "));
+                           fmt::join(this->pcie_link_generation_.value(), ", "));
     }
 
     // remove last newline
@@ -421,7 +423,7 @@ std::string nvml_memory_samples::generate_yaml_string() const {
 }
 
 std::ostream &operator<<(std::ostream &out, const nvml_memory_samples &samples) {
-    return out << std::format("memory_total [B]: {}\n"
+    return out << fmt::format("memory_total [B]: {}\n"
                               "pcie_link_max_speed [MBPS]: {}\n"
                               "memory_bus_width [Bit]: {}\n"
                               "max_pcie_link_generation [int]: {}\n"
@@ -434,11 +436,11 @@ std::ostream &operator<<(std::ostream &out, const nvml_memory_samples &samples) 
                               detail::value_or_default(samples.get_pcie_link_max_speed()),
                               detail::value_or_default(samples.get_memory_bus_width()),
                               detail::value_or_default(samples.get_max_pcie_link_generation()),
-                              detail::join(detail::value_or_default(samples.get_memory_free()), ", "),
-                              detail::join(detail::value_or_default(samples.get_memory_used()), ", "),
-                              detail::join(detail::value_or_default(samples.get_pcie_link_speed()), ", "),
-                              detail::join(detail::value_or_default(samples.get_pcie_link_width()), ", "),
-                              detail::join(detail::value_or_default(samples.get_pcie_link_generation()), ", "));
+                              fmt::join(detail::value_or_default(samples.get_memory_free()), ", "),
+                              fmt::join(detail::value_or_default(samples.get_memory_used()), ", "),
+                              fmt::join(detail::value_or_default(samples.get_pcie_link_speed()), ", "),
+                              fmt::join(detail::value_or_default(samples.get_pcie_link_width()), ", "),
+                              fmt::join(detail::value_or_default(samples.get_pcie_link_generation()), ", "));
 }
 
 //*************************************************************************************************************************************//
@@ -450,35 +452,35 @@ std::string nvml_temperature_samples::generate_yaml_string() const {
 
     // number of fans
     if (this->num_fans_.has_value()) {
-        str += std::format("  num_fans:\n"
+        str += fmt::format("  num_fans:\n"
                            "    unit: \"int\"\n"
                            "    values: {}\n",
                            this->num_fans_.value());
     }
     // min fan speed
     if (this->min_fan_speed_.has_value()) {
-        str += std::format("  min_fan_speed:\n"
+        str += fmt::format("  min_fan_speed:\n"
                            "    unit: \"percentage\"\n"
                            "    values: {}\n",
                            this->min_fan_speed_.value());
     }
     // max fan speed
     if (this->max_fan_speed_.has_value()) {
-        str += std::format("  max_fan_speed:\n"
+        str += fmt::format("  max_fan_speed:\n"
                            "    unit: \"percentage\"\n"
                            "    values: {}\n",
                            this->max_fan_speed_.value());
     }
     // temperature threshold GPU max
     if (this->temperature_threshold_gpu_max_.has_value()) {
-        str += std::format("  temperature_gpu_max:\n"
+        str += fmt::format("  temperature_gpu_max:\n"
                            "    unit: \"°C\"\n"
                            "    values: {}\n",
                            this->temperature_threshold_gpu_max_.value());
     }
     // temperature threshold memory max
     if (this->temperature_threshold_mem_max_.has_value()) {
-        str += std::format("  temperature_mem_max:\n"
+        str += fmt::format("  temperature_mem_max:\n"
                            "    unit: \"°C\"\n"
                            "    values: {}\n",
                            this->temperature_threshold_mem_max_.value());
@@ -486,17 +488,17 @@ std::string nvml_temperature_samples::generate_yaml_string() const {
 
     // fan speed
     if (this->fan_speed_.has_value()) {
-        str += std::format("  fan_speed:\n"
+        str += fmt::format("  fan_speed:\n"
                            "    unit: \"percentage\"\n"
                            "    values: [{}]\n",
-                           detail::join(this->fan_speed_.value(), ", "));
+                           fmt::join(this->fan_speed_.value(), ", "));
     }
     // temperature GPU
     if (this->temperature_gpu_.has_value()) {
-        str += std::format("  temperature_gpu:\n"
+        str += fmt::format("  temperature_gpu:\n"
                            "    unit: \"°C\"\n"
                            "    values: [{}]\n",
-                           detail::join(this->temperature_gpu_.value(), ", "));
+                           fmt::join(this->temperature_gpu_.value(), ", "));
     }
 
     // remove last newline
@@ -506,7 +508,7 @@ std::string nvml_temperature_samples::generate_yaml_string() const {
 }
 
 std::ostream &operator<<(std::ostream &out, const nvml_temperature_samples &samples) {
-    return out << std::format("num_fans [int]: {}\n"
+    return out << fmt::format("num_fans [int]: {}\n"
                               "min_fan_speed [%]: {}\n"
                               "max_fan_speed [%]: {}\n"
                               "temperature_threshold_gpu_max [°C]: {}\n"
@@ -518,8 +520,8 @@ std::ostream &operator<<(std::ostream &out, const nvml_temperature_samples &samp
                               detail::value_or_default(samples.get_max_fan_speed()),
                               detail::value_or_default(samples.get_temperature_threshold_gpu_max()),
                               detail::value_or_default(samples.get_temperature_threshold_mem_max()),
-                              detail::join(detail::value_or_default(samples.get_fan_speed()), ", "),
-                              detail::join(detail::value_or_default(samples.get_temperature_gpu()), ", "));
+                              fmt::join(detail::value_or_default(samples.get_fan_speed()), ", "),
+                              fmt::join(detail::value_or_default(samples.get_temperature_gpu()), ", "));
 }
 
 }  // namespace hws

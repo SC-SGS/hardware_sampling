@@ -14,10 +14,10 @@
 
 #include "hardware_sampling/cpu/cpu_samples.hpp"   // hws::{cpu_general_samples, clock_samples, power_samples, memory_samples, temperature_samples, gfx_samples, idle_state_samples}
 #include "hardware_sampling/hardware_sampler.hpp"  // hws::hardware_sampler
-#include "hardware_sampling/utility.hpp"           // hws::detail::ostream_formatter
+
+#include "fmt/ostream.h"  // fmt::formatter, fmt::ostream_formatter
 
 #include <chrono>  // std::chrono::milliseconds, std::chrono_literals namespace
-#include <format>  // std::formatter
 #include <iosfwd>  // std::ostream forward declaration
 
 namespace hws {
@@ -148,6 +148,6 @@ std::ostream &operator<<(std::ostream &out, const cpu_hardware_sampler &sampler)
 }  // namespace hws
 
 template <>
-struct std::formatter<hws::cpu_hardware_sampler> : hws::detail::ostream_formatter { };
+struct fmt::formatter<hws::cpu_hardware_sampler> : fmt::ostream_formatter { };
 
 #endif  // HARDWARE_SAMPLING_CPU_HARDWARE_SAMPLER_HPP_

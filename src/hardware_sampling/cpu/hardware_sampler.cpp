@@ -10,13 +10,15 @@
 #include "hardware_sampling/cpu/cpu_samples.hpp"   // hws::{cpu_general_samples, clock_samples, power_samples, memory_samples, temperature_samples, gfx_samples, idle_state_samples}
 #include "hardware_sampling/cpu/utility.hpp"       // HWS_SUBPROCESS_ERROR_CHECK, hws::detail::run_subprocess
 #include "hardware_sampling/hardware_sampler.hpp"  // hws::tracking::hardware_sampler
-#include "hardware_sampling/utility.hpp"           // hws::detail::{split, split_as, trim, convert_to, ostream_formatter, join}
+#include "hardware_sampling/utility.hpp"           // hws::detail::{split, split_as, trim, convert_to, starts_with}
+
+#include "fmt/format.h"  // fmt::format
+#include "fmt/ranges.h"  // fmt::join
 
 #include <cassert>        // assert
 #include <chrono>         // std::chrono::{steady_clock, milliseconds}
 #include <cstddef>        // std::size_t
 #include <exception>      // std::exception, std::terminate
-#include <format>         // std::format
 #include <ios>            // std::ios_base
 #include <iostream>       // std::cerr, std::endl
 #include <optional>       // std::make_optional
@@ -69,39 +71,39 @@ void cpu_hardware_sampler::sampling_loop() {
             value = detail::trim(value);
 
             // check the lines if the start with an entry that we want to sample
-            if (line.starts_with("Architecture")) {
+            if (detail::starts_with(line, "Architecture")) {
                 general_samples_.architecture_ = detail::convert_to<decltype(general_samples_.architecture_)::value_type>(value);
-            } else if (line.starts_with("Byte Order")) {
+            } else if (detail::starts_with(line, "Byte Order")) {
                 general_samples_.byte_order_ = detail::convert_to<decltype(general_samples_.byte_order_)::value_type>(value);
-            } else if (line.starts_with("CPU(s)")) {
+            } else if (detail::starts_with(line, "CPU(s)")) {
                 general_samples_.num_threads_ = detail::convert_to<decltype(general_samples_.num_threads_)::value_type>(value);
-            } else if (line.starts_with("Thread(s) per core")) {
+            } else if (detail::starts_with(line, "Thread(s) per core")) {
                 general_samples_.threads_per_core_ = detail::convert_to<decltype(general_samples_.threads_per_core_)::value_type>(value);
-            } else if (line.starts_with("Core(s) per socket")) {
+            } else if (detail::starts_with(line, "Core(s) per socket")) {
                 general_samples_.cores_per_socket_ = detail::convert_to<decltype(general_samples_.cores_per_socket_)::value_type>(value);
-            } else if (line.starts_with("Socket(s)")) {
+            } else if (detail::starts_with(line, "Socket(s)")) {
                 general_samples_.num_sockets_ = detail::convert_to<decltype(general_samples_.num_sockets_)::value_type>(value);
-            } else if (line.starts_with("NUMA node(s)")) {
+            } else if (detail::starts_with(line, "NUMA node(s)")) {
                 general_samples_.numa_nodes_ = detail::convert_to<decltype(general_samples_.numa_nodes_)::value_type>(value);
-            } else if (line.starts_with("Vendor ID")) {
+            } else if (detail::starts_with(line, "Vendor ID")) {
                 general_samples_.vendor_id_ = detail::convert_to<decltype(general_samples_.vendor_id_)::value_type>(value);
-            } else if (line.starts_with("Model name")) {
+            } else if (detail::starts_with(line, "Model name")) {
                 general_samples_.name_ = detail::convert_to<decltype(general_samples_.name_)::value_type>(value);
-            } else if (line.starts_with("Flags")) {
+            } else if (detail::starts_with(line, "Flags")) {
                 general_samples_.flags_ = detail::split_as<decltype(general_samples_.flags_)::value_type::value_type>(value, ' ');
-            } else if (line.starts_with("Frequency boost")) {
+            } else if (detail::starts_with(line, "Frequency boost")) {
                 clock_samples_.auto_boosted_clock_enabled_ = value == "enabled";
-            } else if (line.starts_with("CPU max MHz")) {
+            } else if (detail::starts_with(line, "CPU max MHz")) {
                 clock_samples_.clock_frequency_max_ = detail::convert_to<decltype(clock_samples_.clock_frequency_max_)::value_type>(value);
-            } else if (line.starts_with("CPU min MHz")) {
+            } else if (detail::starts_with(line, "CPU min MHz")) {
                 clock_samples_.clock_frequency_min_ = detail::convert_to<decltype(clock_samples_.clock_frequency_min_)::value_type>(value);
-            } else if (line.starts_with("L1d cache")) {
+            } else if (detail::starts_with(line, "L1d cache")) {
                 memory_samples_.l1d_cache_ = detail::convert_to<decltype(memory_samples_.l1d_cache_)::value_type>(value);
-            } else if (line.starts_with("L1i cache")) {
+            } else if (detail::starts_with(line, "L1i cache")) {
                 memory_samples_.l1i_cache_ = detail::convert_to<decltype(memory_samples_.l1i_cache_)::value_type>(value);
-            } else if (line.starts_with("L2 cache")) {
+            } else if (detail::starts_with(line, "L2 cache")) {
                 memory_samples_.l2_cache_ = detail::convert_to<decltype(memory_samples_.l2_cache_)::value_type>(value);
-            } else if (line.starts_with("L3 cache")) {
+            } else if (detail::starts_with(line, "L3 cache")) {
                 memory_samples_.l3_cache_ = detail::convert_to<decltype(memory_samples_.l3_cache_)::value_type>(value);
             }
         }
@@ -401,7 +403,7 @@ void cpu_hardware_sampler::sampling_loop() {
                         power_samples_.dram_rapl_throttle_percent_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
                     } else {
                         const std::string header_str{ header[i] };
-                        if (idle_state_samples_.idle_states_.value().contains(header_str)) {
+                        if (idle_state_samples_.idle_states_.value().count(header_str) > decltype(idle_state_samples_)::map_type::size_type{ 0 }) {
                             using vector_type = cpu_idle_states_samples::map_type::mapped_type;
                             idle_state_samples_.idle_states_.value()[header_str].push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
                         }
@@ -426,7 +428,7 @@ std::string cpu_hardware_sampler::generate_yaml_string() const {
         throw std::runtime_error{ "Can't create the final YAML entry if the hardware sampler is still running!" };
     }
 
-    return std::format("{}\n"
+    return fmt::format("{}\n"
                        "{}\n"
                        "{}\n"
                        "{}\n"
@@ -447,7 +449,7 @@ std::ostream &operator<<(std::ostream &out, const cpu_hardware_sampler &sampler)
         out.setstate(std::ios_base::failbit);
         return out;
     } else {
-        return out << std::format("sampling interval: {}\n"
+        return out << fmt::format("sampling interval: {}\n"
                                   "time points: [{}]\n\n"
                                   "general samples:\n{}\n\n"
                                   "clock samples:\n{}\n\n"
@@ -457,7 +459,7 @@ std::ostream &operator<<(std::ostream &out, const cpu_hardware_sampler &sampler)
                                   "gfx samples:\n{}\n\n"
                                   "idle state samples:\n{}",
                                   sampler.sampling_interval(),
-                                  detail::join(detail::time_points_to_epoch(sampler.sampling_time_points()), ", "),
+                                  fmt::join(detail::time_points_to_epoch(sampler.sampling_time_points()), ", "),
                                   sampler.general_samples(),
                                   sampler.clock_samples(),
                                   sampler.power_samples(),

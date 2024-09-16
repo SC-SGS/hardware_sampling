@@ -14,13 +14,13 @@
 
 #include "hardware_sampling/gpu_amd/rocm_smi_samples.hpp"  // hws::{rocm_smi_general_samples, rocm_smi_clock_samples, rocm_smi_power_samples, rocm_smi_memory_samples, rocm_smi_temperature_samples}
 #include "hardware_sampling/hardware_sampler.hpp"          // hws::hardware_sampler
-#include "hardware_sampling/utility.hpp"                   // hws::detail::ostream_formatter
+
+#include "fmt/ostream.h"  // fmt::formatter, fmt::ostream_formatter
 
 #include <atomic>   // std::atomic
 #include <chrono>   // std::chrono::milliseconds, std::chrono_literals namespace
 #include <cstddef>  // std::size_t
 #include <cstdint>  // std::uint32_t
-#include <format>   // std::formatter
 #include <iosfwd>   // std::ostream forward declaration
 
 namespace hws {
@@ -159,6 +159,6 @@ std::ostream &operator<<(std::ostream &out, const gpu_amd_hardware_sampler &samp
 }  // namespace hws
 
 template <>
-struct std::formatter<hws::gpu_amd_hardware_sampler> : hws::detail::ostream_formatter { };
+struct fmt::formatter<hws::gpu_amd_hardware_sampler> : fmt::ostream_formatter { };
 
 #endif  // HARDWARE_SAMPLING_GPU_AMD_HARDWARE_SAMPLER_HPP_

@@ -10,8 +10,10 @@
 #include "hardware_sampling/gpu_amd/rocm_smi_samples.hpp"  // hws::{rocm_smi_general_samples, rocm_smi_clock_samples, rocm_smi_power_samples, rocm_smi_memory_samples, rocm_smi_temperature_samples}
 #include "hardware_sampling/gpu_amd/utility.hpp"           // HWS_ROCM_SMI_ERROR_CHECK
 #include "hardware_sampling/hardware_sampler.hpp"          // hws::hardware_sampler
-#include "hardware_sampling/utility.hpp"                   // hws::detail::{time_points_to_epoch, join}
+#include "hardware_sampling/utility.hpp"                   // hws::detail::time_points_to_epoch
 
+#include "fmt/format.h"           // fmt::format
+#include "fmt/ranges.h"           // fmt::join
 #include "hip/hip_runtime_api.h"  // HIP runtime functions
 #include "rocm_smi/rocm_smi.h"    // ROCm SMI runtime functions
 
@@ -19,7 +21,6 @@
 #include <cstddef>    // std::size_t
 #include <cstdint>    // std::uint32_t, std::uint64_t
 #include <exception>  // std::exception, std::terminate
-#include <format>     // std::format
 #include <ios>        // std::ios_base
 #include <iostream>   // std::cerr, std::endl
 #include <optional>   // std::optional
@@ -278,8 +279,7 @@ void gpu_amd_hardware_sampler::sampling_loop() {
         float resolution{};
         std::uint64_t power_total_energy_consumption{};
         if (rsmi_dev_energy_count_get(device_id_, &power_total_energy_consumption, &resolution, &timestamp) == RSMI_STATUS_SUCCESS) {
-            const auto scaled_value = static_cast<decltype(power_samples_.power_total_energy_consumption_)::value_type::value_type>(power_total_energy_consumption) *
-                                      static_cast<decltype(power_samples_.power_total_energy_consumption_)::value_type::value_type>(resolution);
+            const auto scaled_value = static_cast<decltype(power_samples_.power_total_energy_consumption_)::value_type::value_type>(power_total_energy_consumption) * static_cast<decltype(power_samples_.power_total_energy_consumption_)::value_type::value_type>(resolution);
             power_samples_.power_total_energy_consumption_ = decltype(power_samples_.power_total_energy_consumption_)::value_type{ scaled_value / 1000.0 / 1000.0 };
         }
     }
@@ -538,8 +538,7 @@ void gpu_amd_hardware_sampler::sampling_loop() {
                     float resolution{};
                     std::uint64_t value{};
                     HWS_ROCM_SMI_ERROR_CHECK(rsmi_dev_energy_count_get(device_id_, &value, &resolution, &timestamp));
-                    const auto scaled_value = static_cast<decltype(power_samples_.power_total_energy_consumption_)::value_type::value_type>(value) *
-                                              static_cast<decltype(power_samples_.power_total_energy_consumption_)::value_type::value_type>(resolution);
+                    const auto scaled_value = static_cast<decltype(power_samples_.power_total_energy_consumption_)::value_type::value_type>(value) * static_cast<decltype(power_samples_.power_total_energy_consumption_)::value_type::value_type>(resolution);
                     power_samples_.power_total_energy_consumption_->push_back(scaled_value / 1000.0);
                 }
 
@@ -655,7 +654,7 @@ void gpu_amd_hardware_sampler::sampling_loop() {
 }
 
 std::string gpu_amd_hardware_sampler::device_identification() const {
-    return std::format("gpu_amd_device_{}", device_id_);
+    return fmt::format("gpu_amd_device_{}", device_id_);
 }
 
 std::string gpu_amd_hardware_sampler::generate_yaml_string() const {
@@ -664,7 +663,7 @@ std::string gpu_amd_hardware_sampler::generate_yaml_string() const {
         throw std::runtime_error{ "Can't create the final YAML entry if the hardware sampler is still running!" };
     }
 
-    return std::format("{}\n"
+    return fmt::format("{}\n"
                        "{}\n"
                        "{}\n"
                        "{}\n"
@@ -681,7 +680,7 @@ std::ostream &operator<<(std::ostream &out, const gpu_amd_hardware_sampler &samp
         out.setstate(std::ios_base::failbit);
         return out;
     } else {
-        return out << std::format("sampling interval: {}\n"
+        return out << fmt::format("sampling interval: {}\n"
                                   "time points: [{}]\n\n"
                                   "general samples:\n{}\n\n"
                                   "clock samples:\n{}\n\n"
@@ -689,7 +688,7 @@ std::ostream &operator<<(std::ostream &out, const gpu_amd_hardware_sampler &samp
                                   "memory samples:\n{}\n\n"
                                   "temperature samples:\n{}",
                                   sampler.sampling_interval(),
-                                  detail::join(detail::time_points_to_epoch(sampler.sampling_time_points()), ", "),
+                                  fmt::join(detail::time_points_to_epoch(sampler.sampling_time_points()), ", "),
                                   sampler.general_samples(),
                                   sampler.clock_samples(),
                                   sampler.power_samples(),

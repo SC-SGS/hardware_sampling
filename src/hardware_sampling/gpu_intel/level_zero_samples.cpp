@@ -20,15 +20,6 @@ namespace hws {
 
 namespace detail {
 
-template <typename T>
-struct is_vector : std::false_type { };
-
-template <typename T>
-struct is_vector<std::vector<T>> : std::true_type { };
-
-template <typename T>
-constexpr bool is_vector_v = is_vector<T>::value;
-
 template <typename MapType>
 void append_map_values(std::string &str, const std::string_view entry_name, const MapType &map) {
     if (map.has_value()) {
@@ -248,19 +239,26 @@ std::ostream &operator<<(std::ostream &out, const level_zero_clock_samples &samp
 std::string level_zero_power_samples::generate_yaml_string() const {
     std::string str{ "power:\n" };
 
-    // flag whether the energy threshold is enabled
-    if (this->energy_threshold_enabled_.has_value()) {
-        str += std::format("  energy_threshold_enabled:\n"
+    // power enforced limit
+    if (this->power_enforced_limit_.has_value()) {
+        str += std::format("  power_enforced_limit:\n"
+                           "    unit: \"W\"\n"
+                           "    values: {}\n",
+                           this->power_enforced_limit_.value());
+    }
+    // power measurement type
+    if (this->power_measurement_type_.has_value()) {
+        str += std::format("  power_measurement_type:\n"
+                           "    unit: \"string\"\n"
+                           "    values: {}\n",
+                           this->power_measurement_type_.value());
+    }
+    // the power management mode
+    if (this->power_management_mode_.has_value()) {
+        str += std::format("  power_management_mode:\n"
                            "    unit: \"bool\"\n"
                            "    values: {}\n",
-                           this->energy_threshold_enabled_.value());
-    }
-    // the energy threshold
-    if (this->energy_threshold_.has_value()) {
-        str += std::format("  energy_threshold:\n"
-                           "    unit: \"J\"\n"
-                           "    values: {}\n",
-                           this->energy_threshold_.value());
+                           this->power_management_mode_.value());
     }
 
     // the total consumed energy
@@ -282,11 +280,13 @@ std::string level_zero_power_samples::generate_yaml_string() const {
 }
 
 std::ostream &operator<<(std::ostream &out, const level_zero_power_samples &samples) {
-    return out << std::format("energy_threshold_enabled [bool]: {}\n"
-                              "energy_threshold [J]: {}\n"
+    return out << std::format("power_enforced_limit [W]: {}\n"
+                              "power_measurement_type [string]: {}\n"
+                              "power_management_mode [bool]: {}\n"
                               "power_total_energy_consumption [J]: [{}]",
-                              detail::value_or_default(samples.get_energy_threshold_enabled()),
-                              detail::value_or_default(samples.get_energy_threshold()),
+                              detail::value_or_default(samples.get_power_enforced_limit()),
+                              detail::value_or_default(samples.get_power_measurement_type()),
+                              detail::value_or_default(samples.get_power_management_mode()),
                               detail::join(detail::value_or_default(samples.get_power_total_energy_consumption()), ", "));
 }
 

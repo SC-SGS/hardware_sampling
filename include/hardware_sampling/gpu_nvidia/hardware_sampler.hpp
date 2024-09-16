@@ -15,12 +15,12 @@
 #include "hardware_sampling/gpu_nvidia/nvml_device_handle.hpp"  // hws::nvml_device_handle
 #include "hardware_sampling/gpu_nvidia/nvml_samples.hpp"        // hws::{nvml_general_samples, nvml_clock_samples, nvml_power_samples, nvml_memory_samples, nvml_temperature_samples}
 #include "hardware_sampling/hardware_sampler.hpp"               // hws::hardware_sampler
-#include "hardware_sampling/utility.hpp"                        // hws::detail::ostream_formatter
+
+#include "fmt/format.h"  // fmt::formatter, fmt::ostream_formatter
 
 #include <atomic>   // std::atomic
 #include <chrono>   // std::chrono::milliseconds, std::chrono_literals namespace
 #include <cstddef>  // std::size_t
-#include <format>   // std::formatter
 #include <iosfwd>   // std::ostream forward declaration
 #include <string>   // std::string
 
@@ -160,6 +160,6 @@ std::ostream &operator<<(std::ostream &out, const gpu_nvidia_hardware_sampler &s
 }  // namespace hws
 
 template <>
-struct std::formatter<hws::gpu_nvidia_hardware_sampler> : hws::detail::ostream_formatter { };
+struct fmt::formatter<hws::gpu_nvidia_hardware_sampler> : fmt::ostream_formatter { };
 
 #endif  // HARDWARE_SAMPLING_GPU_NVIDIA_HARDWARE_SAMPLER_HPP_

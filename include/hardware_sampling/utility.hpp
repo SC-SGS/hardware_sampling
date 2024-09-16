@@ -12,11 +12,13 @@
 #define HARDWARE_SAMPLING_UTILITY_HPP_
 #pragma once
 
+#include "fmt/format.h"  // fmt::format
+#include "fmt/ranges.h"  // fmt::join
+
 #include <charconv>      // std::from_chars
 #include <chrono>        // std::chrono::{milliseconds, duration_cast}
 #include <cmath>         // std::trunc
 #include <cstddef>       // std::size_t
-#include <format>        // std::format, std::formatter, std::basic_format_context, std::format_to
 #include <iterator>      // std::back_inserter, std::next, std::prev
 #include <optional>      // std::optional
 #include <sstream>       // std::basic_stringstream
@@ -24,7 +26,7 @@
 #include <string>        // std::string, std::stof, std::stod, std::stold
 #include <string_view>   // std::string_view, std::basic_string_view
 #include <system_error>  // std::errc
-#include <type_traits>   // std::is_same_v, std::remove_cvref_t
+#include <type_traits>   // std::is_same_v, std::remove_cv_t, std::remove_reference_t
 #include <vector>        // std::vector
 
 namespace hws::detail {
@@ -53,6 +55,21 @@ namespace hws::detail {
                                                                                                       \
   private:                                                                                            \
     std::optional<std::vector<sample_type>> sample_name##_{};
+
+// TODO: clean-up
+
+/**
+ * @brief Checks whether the string @p sv starts with the substring @p start
+ * @param[in] sv the full string
+ * @param[in] start the substring
+ * @return `true` if @p sv starts with @p start, otherwise `false`
+ */
+[[nodiscard]] inline bool starts_with(const std::string_view sv, const std::string_view start) {
+    return sv.substr(0, start.size()) == start;
+}
+
+template <typename T>
+using remove_cvref_t = std::remove_cv_t<std::remove_reference_t<T>>;
 
 /**
  * @brief Convert all time points to their duration in seconds (using double) truncated to three decimal places passed since the @p reference time point.
@@ -125,10 +142,10 @@ template <typename T>
  */
 template <typename T>
 [[nodiscard]] inline T convert_to(const std::string_view str) {
-    if constexpr (std::is_same_v<std::remove_cvref_t<T>, std::string>) {
+    if constexpr (std::is_same_v<detail::remove_cvref_t<T>, std::string>) {
         // convert string_view to string
         return std::string{ trim(str) };
-    } else if constexpr (std::is_same_v<std::remove_cvref_t<T>, bool>) {
+    } else if constexpr (std::is_same_v<detail::remove_cvref_t<T>, bool>) {
         const std::string lower_case_str = to_lower_case(trim(str));
         // the string true
         if (lower_case_str == "true") {
@@ -140,17 +157,17 @@ template <typename T>
         }
         // convert a number to its "long long" value and convert it to a bool: 0 -> false, otherwise true
         return static_cast<bool>(convert_to<long long>(str));
-    } else if constexpr (std::is_same_v<std::remove_cvref_t<T>, char>) {
+    } else if constexpr (std::is_same_v<detail::remove_cvref_t<T>, char>) {
         const std::string_view trimmed = trim(str);
         // since we expect a character, after trimming the string must only contain exactly one character
         if (trimmed.size() != 1) {
-            throw std::runtime_error{ std::format("Can't convert '{}' to a value of type char!", str) };
+            throw std::runtime_error{ fmt::format("Can't convert '{}' to a value of type char!", str) };
         }
         return trimmed.front();
-    } else if constexpr (std::is_floating_point_v<std::remove_cvref_t<T>>) {
-        if constexpr (std::is_same_v<std::remove_cvref_t<T>, float>) {
+    } else if constexpr (std::is_floating_point_v<detail::remove_cvref_t<T>>) {
+        if constexpr (std::is_same_v<detail::remove_cvref_t<T>, float>) {
             return std::stof(std::string{ str });
-        } else if constexpr (std::is_same_v<std::remove_cvref_t<T>, double>) {
+        } else if constexpr (std::is_same_v<detail::remove_cvref_t<T>, double>) {
             return std::stod(std::string{ str });
         } else {
             return std::stold(std::string{ str });
@@ -163,7 +180,7 @@ template <typename T>
         T val;
         auto res = std::from_chars(trimmed_str.data(), trimmed_str.data() + trimmed_str.size(), val);
         if (res.ec != std::errc{}) {
-            throw std::runtime_error{ std::format("Can't convert '{}' to a value of type T!", str) };
+            throw std::runtime_error{ fmt::format("Can't convert '{}' to a value of type T!", str) };
         }
         return val;
     }
@@ -203,46 +220,6 @@ template <typename T>
  */
 [[nodiscard]] std::vector<std::string_view> split(std::string_view str, char delim = ' ');
 
-/**
- * @brief A std::formatter child class allowing to format custom types using an `operator<<` overload.
- * @tparam CharT the character type
- */
-template <typename CharT>
-struct basic_ostream_formatter : std::formatter<std::basic_string_view<CharT>, CharT> {
-    template <typename T, typename OutputIt>
-    OutputIt format(const T &value, std::basic_format_context<OutputIt, CharT> &ctx) const {
-        std::basic_stringstream<CharT> ss;
-        ss << value;
-        return std::formatter<std::basic_string_view<CharT>, CharT>::format(ss.view(), ctx);
-    }
-};
-
-/// Type alias for a basic_ostream_formatter using a normal char.
-using ostream_formatter = basic_ostream_formatter<char>;
-
-/**
- * @brief Join all values in @p c to a single string using @p delim as delimiter.
- * @tparam Container the type of the container
- * @param[in] c the container for what the values should be joined
- * @param[in] delim the delimiter used in joining the values
- * @return the joined string (`[[nodiscard]]`)
- */
-template <typename Container>
-[[nodiscard]] inline std::string join(const Container &c, const std::string_view delim) {
-    if (c.empty()) {
-        return "";
-    } else if (c.size() == 1) {
-        return std::format("{}", *c.cbegin());
-    } else {
-        std::string out{};
-        for (auto it = c.cbegin(); it != std::prev(c.cend()); it = std::next(it)) {
-            std::format_to(std::back_inserter(out), "{}{}", *it, delim);
-        }
-        std::format_to(std::back_inserter(out), "{}", *std::prev(c.end()));
-        return out;
-    }
-}
-
 template <typename T>
 struct is_vector : std::false_type { };
 
@@ -264,13 +241,13 @@ template <typename MapType>
     if (map.has_value()) {
         std::vector<std::string> entries{};
         for (const auto &[key, value] : map.value()) {
-            if constexpr (is_vector_v<std::remove_cvref_t<decltype(value)>>) {
-                entries.push_back(std::format("{{{}, [{}]}}", key, detail::join(value, ", ")));
+            if constexpr (is_vector_v<detail::remove_cvref_t<decltype(value)>>) {
+                entries.push_back(fmt::format("{{{}, [{}]}}", key, fmt::join(value, ", ")));
             } else {
-                entries.push_back(std::format("{{{}, {}}}", key, value));
+                entries.push_back(fmt::format("{{{}, {}}}", key, value));
             }
         }
-        return detail::join(entries, ", ");
+        return fmt::format("{}", fmt::join(entries, ", "));
     }
     return "";
 }

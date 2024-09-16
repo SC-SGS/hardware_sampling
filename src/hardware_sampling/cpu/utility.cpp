@@ -9,12 +9,12 @@
 
 #include "hardware_sampling/utility.hpp"  // hws::detail::split_as
 
+#include "fmt/format.h"  // fmt::format
 #include "subprocess.h"  // subprocess_s, subprocess_create, subprocess_join, subprocess_stdout, subprocess_option_e
 
 #include <algorithm>    // std::transform
 #include <cstddef>      // std::size_t
 #include <cstdio>       // std::FILE, std::fread
-#include <format>       // std::format
 #include <stdexcept>    // std::runtime_error
 #include <string>       // std::string
 #include <string_view>  // std::string_view
@@ -41,7 +41,7 @@ std::string run_subprocess(const std::string_view cmd_line) {
     int return_code{};
     HWS_SUBPROCESS_ERROR_CHECK(subprocess_join(&proc, &return_code));
     if (return_code != 0) {
-        throw std::runtime_error{ std::format("Error: \"{}\" returned with {}!", cmd_line, return_code) };
+        throw std::runtime_error{ fmt::format("Error: \"{}\" returned with {}!", cmd_line, return_code) };
     }
 
     // get output handle and read data -> stdout and stderr are the same handle

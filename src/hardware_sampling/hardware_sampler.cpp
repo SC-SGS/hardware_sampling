@@ -8,12 +8,15 @@
 #include "hardware_sampling/hardware_sampler.hpp"
 
 #include "hardware_sampling/event.hpp"    // hws::event
-#include "hardware_sampling/utility.hpp"  // hws::detail::{durations_from_reference_time, join}
+#include "hardware_sampling/utility.hpp"  // hws::detail::durations_from_reference_time
+
+#include "fmt/format.h"  // fmt::format
+#include "fmt/ranges.h"  // fmt::join
+#include "fmt/chrono.h"  // fmt::localtime, direct formatting of std::chrono types
 
 #include <chrono>     // std::chrono::{system_clock, steady_clock, duration_cast, milliseconds}
 #include <cstddef>    // std::size_t
 #include <exception>  // std::exception
-#include <format>     // std::format
 #include <fstream>    // std::ofstream
 #include <iostream>   // std::cerr, std::endl
 #include <stdexcept>  // std::runtime_error, std::out_of_range
@@ -109,7 +112,7 @@ void hardware_sampler::add_event(decltype(event::name) name) {
 
 event hardware_sampler::get_event(const std::size_t idx) const {
     if (idx >= this->num_events()) {
-        throw std::out_of_range{ std::format("The index {} is out-of-range for the number of events {}!", idx, this->num_events()) };
+        throw std::out_of_range{ fmt::format("The index {} is out-of-range for the number of events {}!", idx, this->num_events()) };
     }
 
     return events_[idx];
@@ -126,10 +129,10 @@ void hardware_sampler::dump_yaml(const char *filename) {
     file << "---\n\n";
 
     // set the device identification
-    file << std::format("device_identification: {}\n\n", this->device_identification());
+    file << fmt::format("device_identification: {}\n\n", this->device_identification());
 
     // output the start date time of this hardware sampling
-    file << std::format("start_time: \"{:%Y-%m-%d %X}\"\n\n", std::chrono::current_zone()->to_local(start_date_time_));
+    file << fmt::format("start_time: \"{:%Y-%m-%d %X}\"\n\n", start_date_time_);
 
     // output the event information
     std::vector<decltype(event::time_point)> event_time_points{};
@@ -138,22 +141,22 @@ void hardware_sampler::dump_yaml(const char *filename) {
         event_time_points.push_back(time_point);
         event_names.push_back(name);
     }
-    file << std::format("events:\n"
+    file << fmt::format("events:\n"
                         "  time_points:\n"
                         "    unit: \"s\"\n"
                         "    values: [{}]\n"
                         "  names: [{}]\n\n",
-                        detail::join(detail::durations_from_reference_time(event_time_points, this->get_event(0).time_point), ", "),
-                        detail::join(event_names, ", "));
+                        fmt::join(detail::durations_from_reference_time(event_time_points, this->get_event(0).time_point), ", "),
+                        fmt::join(event_names, ", "));
 
     // output the sampling information
-    file << std::format("sampling_interval: {}\n"
+    file << fmt::format("sampling_interval: {}\n"
                         "time_points:\n"
                         "  unit: \"s\"\n"
                         "  values: [{}]\n"
                         "{}\n\n",
                         this->sampling_interval(),
-                        detail::join(detail::durations_from_reference_time(this->sampling_time_points(), this->get_event(0).time_point), ", "),
+                        fmt::join(detail::durations_from_reference_time(this->sampling_time_points(), this->get_event(0).time_point), ", "),
                         this->generate_yaml_string());
 }
 

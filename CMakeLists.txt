@@ -26,7 +26,7 @@ add_library(${HWS_LIBRARY_NAME} SHARED ${HWS_SOURCES})
 set(HWS_TARGETS_TO_INSTALL ${HWS_LIBRARY_NAME})
 
 # use C++20
-target_compile_features(${HWS_LIBRARY_NAME} PUBLIC cxx_std_20)
+target_compile_features(${HWS_LIBRARY_NAME} PUBLIC cxx_std_17)
 
 # add target include directory
 target_include_directories(${HWS_LIBRARY_NAME} PUBLIC
@@ -58,6 +58,34 @@ endif ()
 message(STATUS "Setting the hardware sampler interval to ${HWS_SAMPLING_INTERVAL}ms.")
 target_compile_definitions(${HWS_LIBRARY_NAME} PUBLIC HWS_SAMPLING_INTERVAL=${HWS_SAMPLING_INTERVAL}ms)
 
+# install fmt as dependency
+include(FetchContent)
+set(HWS_fmt_VERSION 11.0.2)
+find_package(fmt 11.0.2 QUIET)
+if (fmt_FOUND)
+    message(STATUS "Found package fmt.")
+else ()
+    message(STATUS "Couldn't find package fmt. Building version ${HWS_fmt_VERSION} from source.")
+    set(FMT_PEDANTIC OFF CACHE INTERNAL "" FORCE)
+    set(FMT_WERROR OFF CACHE INTERNAL "" FORCE)
+    set(FMT_DOC OFF CACHE INTERNAL "" FORCE)
+    set(FMT_INSTALL ON CACHE INTERNAL "" FORCE) # let {fmt} handle the install target
+    set(FMT_TEST OFF CACHE INTERNAL "" FORCE)
+    set(FMT_FUZZ OFF CACHE INTERNAL "" FORCE)
+    set(FMT_CUDA_TEST OFF CACHE INTERNAL "" FORCE)
+    set(FMT_MODULE OFF CACHE INTERNAL "" FORCE)
+    set(FMT_SYSTEM_HEADERS ON CACHE INTERNAL "" FORCE)
+    # fetch string formatting library fmt
+    FetchContent_Declare(fmt
+            GIT_REPOSITORY https://github.com/fmtlib/fmt.git
+            GIT_TAG ${HWS_fmt_VERSION}
+            QUIET
+    )
+    FetchContent_MakeAvailable(fmt)
+    set_property(TARGET fmt PROPERTY POSITION_INDEPENDENT_CODE ON)
+    add_dependencies(${HWS_LIBRARY_NAME} fmt)
+endif ()
+target_link_libraries(${HWS_LIBRARY_NAME} PUBLIC fmt::fmt)
 
 ####################################################################################################################
 ##                                                CPU measurements                                                ##

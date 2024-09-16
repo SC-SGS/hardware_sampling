@@ -12,9 +12,9 @@
 #define HARDWARE_SAMPLING_GPU_AMD_UTILITY_HPP_
 #pragma once
 
+#include "fmt/format.h"         // fmt::format
 #include "rocm_smi/rocm_smi.h"  // ROCm SMI runtime functions
 
-#include <format>     // std::format
 #include <stdexcept>  // std::runtime_error
 
 namespace hws {
@@ -32,9 +32,9 @@ namespace hws {
                 const char *error_string;                                                                                                          \
                 const rsmi_status_t ret = rsmi_status_string(errc, &error_string);                                                                 \
                 if (ret == RSMI_STATUS_SUCCESS) {                                                                                                  \
-                    throw std::runtime_error{ std::format("Error in ROCm SMI function call \"{}\": {}", #rocm_smi_func, error_string) };           \
+                    throw std::runtime_error{ fmt::format("Error in ROCm SMI function call \"{}\": {}", #rocm_smi_func, error_string) };           \
                 } else {                                                                                                                           \
-                    throw std::runtime_error{ std::format("Error in ROCm SMI function call \"{}\": {}", #rocm_smi_func, static_cast<int>(errc)) }; \
+                    throw std::runtime_error{ fmt::format("Error in ROCm SMI function call \"{}\": {}", #rocm_smi_func, static_cast<int>(errc)) }; \
                 }                                                                                                                                  \
             }                                                                                                                                      \
         }
@@ -43,7 +43,7 @@ namespace hws {
         {                                                                                                                             \
             const hiperror_t errc = hip_func;                                                                                         \
             if (errc != hipSuccess) {                                                                                                 \
-                throw std::runtime_error{ std::format("Error in HIP function call \"{}\": {}", #hip_func, hipGetErrorString(errc)) }; \
+                throw std::runtime_error{ fmt::format("Error in HIP function call \"{}\": {}", #hip_func, hipGetErrorString(errc)) }; \
             }                                                                                                                         \
         }
 

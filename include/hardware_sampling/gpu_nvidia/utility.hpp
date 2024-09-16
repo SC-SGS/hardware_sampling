@@ -12,11 +12,10 @@
 #define HARDWARE_SAMPLING_GPU_NVIDIA_UTILITY_HPP_
 #pragma once
 
-#include "hardware_sampling/utility.hpp"  // hws::detail::join
+#include "fmt/format.h"  // fmt::format
+#include "fmt/ranges.h"  // fmt::join
+#include "nvml.h"        // NVML runtime functions
 
-#include "nvml.h"  // NVML runtime functions
-
-#include <format>     // std::format
 #include <stdexcept>  // std::runtime_error
 #include <string>     // std::string
 #include <vector>     // std::vector
@@ -33,7 +32,7 @@ namespace hws::detail {
         {                                                                                                                                                          \
             const nvmlReturn_t errc = nvml_func;                                                                                                                   \
             if (errc != NVML_SUCCESS) {                                                                                                                            \
-                throw std::runtime_error{ std::format("Error in NVML function call \"{}\": {} ({})", #nvml_func, nvmlErrorString(errc), static_cast<int>(errc)) }; \
+                throw std::runtime_error{ fmt::format("Error in NVML function call \"{}\": {} ({})", #nvml_func, nvmlErrorString(errc), static_cast<int>(errc)) }; \
             }                                                                                                                                                      \
         }
 #else
@@ -77,7 +76,7 @@ namespace hws::detail {
         if ((clocks_event_reasons & nvmlClocksThrottleReasonHwThermalSlowdown) != 0ull) {
             reasons.emplace_back("HwThermalSlowdown");
         }
-        return std::format("\"{}\"", detail::join(reasons, "|"));
+        return fmt::format("\"{}\"", fmt::join(reasons, "|"));
     }
 }
 

@@ -122,10 +122,11 @@ class level_zero_power_samples {
      */
     [[nodiscard]] std::string generate_yaml_string() const;
 
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(bool, energy_threshold_enabled)  // true if the energy threshold is enabled
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(double, energy_threshold)        // the energy threshold in J
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(double, power_enforced_limit)         // the actually enforced power limit (W), may be different from power management limit if external limiters are set
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, power_measurement_type)  // the type of the power readings
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(bool, power_management_mode)          // true if power management limits are enabled
 
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(std::uint64_t, power_total_energy_consumption)  // the total power consumption since the last driver reload in mJ
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, power_total_energy_consumption)  // the total power consumption since the last driver reload in J
 };
 
 /**

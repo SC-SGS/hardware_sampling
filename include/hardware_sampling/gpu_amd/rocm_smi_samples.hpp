@@ -12,10 +12,11 @@
 #define HARDWARE_SAMPLING_GPU_AMD_ROCM_SMI_SAMPLES_HPP_
 #pragma once
 
-#include "hardware_sampling/utility.hpp"  // HWS_SAMPLE_STRUCT_FIXED_MEMBER, HWS_SAMPLE_STRUCT_SAMPLING_MEMBER, hws::detail::ostream_formatter
+#include "hardware_sampling/utility.hpp"  // HWS_SAMPLE_STRUCT_FIXED_MEMBER, HWS_SAMPLE_STRUCT_SAMPLING_MEMBER
+
+#include "fmt/ostream.h"  // fmt::formatter, fmt::ostream_formatter
 
 #include <cstdint>   // std::uint64_t, std::int64_t, std::uint32_t
-#include <format>    // std::formatter
 #include <iosfwd>    // std::ostream forward declaration
 #include <optional>  // std::optional
 #include <string>    // std::string
@@ -239,18 +240,18 @@ std::ostream &operator<<(std::ostream &out, const rocm_smi_temperature_samples &
 }  // namespace hws
 
 template <>
-struct std::formatter<hws::rocm_smi_general_samples> : hws::detail::ostream_formatter { };
+struct fmt::formatter<hws::rocm_smi_general_samples> : fmt::ostream_formatter { };
 
 template <>
-struct std::formatter<hws::rocm_smi_clock_samples> : hws::detail::ostream_formatter { };
+struct fmt::formatter<hws::rocm_smi_clock_samples> : fmt::ostream_formatter { };
 
 template <>
-struct std::formatter<hws::rocm_smi_power_samples> : hws::detail::ostream_formatter { };
+struct fmt::formatter<hws::rocm_smi_power_samples> : fmt::ostream_formatter { };
 
 template <>
-struct std::formatter<hws::rocm_smi_memory_samples> : hws::detail::ostream_formatter { };
+struct fmt::formatter<hws::rocm_smi_memory_samples> : fmt::ostream_formatter { };
 
 template <>
-struct std::formatter<hws::rocm_smi_temperature_samples> : hws::detail::ostream_formatter { };
+struct fmt::formatter<hws::rocm_smi_temperature_samples> : fmt::ostream_formatter { };
 
 #endif  // HARDWARE_SAMPLING_GPU_AMD_ROCM_SMI_SAMPLES_HPP_

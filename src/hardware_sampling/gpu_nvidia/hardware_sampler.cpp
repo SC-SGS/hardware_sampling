@@ -11,15 +11,16 @@
 #include "hardware_sampling/gpu_nvidia/nvml_samples.hpp"             // hws::{nvml_general_samples, nvml_clock_samples, nvml_power_samples, nvml_memory_samples, nvml_temperature_samples}
 #include "hardware_sampling/gpu_nvidia/utility.hpp"                  // HWS_NVML_ERROR_CHECK
 #include "hardware_sampling/hardware_sampler.hpp"                    // hws::hardware_sampler
-#include "hardware_sampling/utility.hpp"                             // hws::detail::{time_points_to_epoch, join}
+#include "hardware_sampling/utility.hpp"                             // hws::detail::time_points_to_epoch
 
-#include "nvml.h"  // NVML runtime functions
+#include "fmt/format.h"  // fmt::format
+#include "fmt/ranges.h"  // fmt::join
+#include "nvml.h"        // NVML runtime functions
 
 #include <algorithm>  // std::min_element, std::sort, std::transform
 #include <chrono>     // std::chrono::{steady_clock, duration_cast, milliseconds}
 #include <cstddef>    // std::size_t
 #include <exception>  // std::exception, std::terminate
-#include <format>     // std::format
 #include <ios>        // std::ios_base
 #include <iostream>   // std::cerr, std::endl
 #include <numeric>    // std::iota
@@ -534,7 +535,7 @@ void gpu_nvidia_hardware_sampler::sampling_loop() {
 std::string gpu_nvidia_hardware_sampler::device_identification() const {
     nvmlPciInfo_st pcie_info{};
     HWS_NVML_ERROR_CHECK(nvmlDeviceGetPciInfo_v3(device_.get_impl().device, &pcie_info));
-    return std::format("gpu_nvidia_device_{}_{}", pcie_info.bus, pcie_info.device);
+    return fmt::format("gpu_nvidia_device_{}_{}", pcie_info.bus, pcie_info.device);
 }
 
 std::string gpu_nvidia_hardware_sampler::generate_yaml_string() const {
@@ -543,7 +544,7 @@ std::string gpu_nvidia_hardware_sampler::generate_yaml_string() const {
         throw std::runtime_error{ "Can't create the final YAML entry if the hardware sampler is still running!" };
     }
 
-    return std::format("{}\n"
+    return fmt::format("{}\n"
                        "{}\n"
                        "{}\n"
                        "{}\n"
@@ -560,7 +561,7 @@ std::ostream &operator<<(std::ostream &out, const gpu_nvidia_hardware_sampler &s
         out.setstate(std::ios_base::failbit);
         return out;
     } else {
-        return out << std::format("sampling interval: {}\n"
+        return out << fmt::format("sampling interval: {}\n"
                                   "time points: [{}]\n\n"
                                   "general samples:\n{}\n\n"
                                   "clock samples:\n{}\n\n"
@@ -568,7 +569,7 @@ std::ostream &operator<<(std::ostream &out, const gpu_nvidia_hardware_sampler &s
                                   "memory samples:\n{}\n\n"
                                   "temperature samples:\n{}",
                                   sampler.sampling_interval(),
-                                  detail::join(detail::time_points_to_epoch(sampler.sampling_time_points()), ", "),
+                                  fmt::join(detail::time_points_to_epoch(sampler.sampling_time_points()), ", "),
                                   sampler.general_samples(),
                                   sampler.clock_samples(),
                                   sampler.power_samples(),

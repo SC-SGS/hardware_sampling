@@ -227,17 +227,45 @@ void gpu_intel_hardware_sampler::sampling_loop() {
             if (zesDeviceEnumPowerDomains(device, &num_power_domains, power_handles.data()) == ZE_RESULT_SUCCESS) {
                 if (!power_handles.empty()) {
                     // NOTE: only the first power domain is used here
+                    // get the power measurement type
+                    // NOTE: only the first value is used here!
+                    std::uint32_t num_power_limit_descriptors{ 1 };
+                    zes_power_limit_ext_desc_t desc{};
+                    if (zesPowerGetLimitsExt(power_handles.front(), &num_power_limit_descriptors, &desc) == ZE_RESULT_SUCCESS) {
+                        switch (desc.level) {
+                            case ZES_POWER_LEVEL_UNKNOWN:
+                                power_samples_.power_measurement_type_ = "unknown";
+                                break;
+                            case ZES_POWER_LEVEL_SUSTAINED:
+                                power_samples_.power_measurement_type_ = "sustained";
+                                break;
+                            case ZES_POWER_LEVEL_BURST:
+                                power_samples_.power_measurement_type_ = "burst";
+                                break;
+                            case ZES_POWER_LEVEL_PEAK:
+                                power_samples_.power_measurement_type_ = "peak";
+                                break;
+                            case ZES_POWER_LEVEL_INSTANTANEOUS:
+                                power_samples_.power_measurement_type_ = "current/instant";
+                                break;
+                            case ZES_POWER_LEVEL_FORCE_UINT32:
+                                power_samples_.power_measurement_type_ = "force uint32";
+                                break;
+                        }
+
+                        power_samples_.power_enforced_limit_ = static_cast<decltype(power_samples_.power_enforced_limit_)::value_type>(desc.limit);
+                    }
+
                     // get total power consumption
                     zes_power_energy_counter_t energy_counter{};
                     if (zesPowerGetEnergyCounter(power_handles.front(), &energy_counter) == ZE_RESULT_SUCCESS) {
-                        power_samples_.power_total_energy_consumption_ = decltype(power_samples_.power_total_energy_consumption_)::value_type{ energy_counter.energy };
+                        power_samples_.power_total_energy_consumption_ = decltype(power_samples_.power_total_energy_consumption_)::value_type{ static_cast<decltype(power_samples_.power_total_energy_consumption_)::value_type::value_type>(energy_counter.energy) / 1000.0 / 1000.0 };
                     }
 
                     // get energy thresholds
                     zes_energy_threshold_t energy_threshold{};
                     if (zesPowerGetEnergyThreshold(power_handles.front(), &energy_threshold) == ZE_RESULT_SUCCESS) {
-                        power_samples_.energy_threshold_enabled_ = static_cast<decltype(power_samples_.energy_threshold_enabled_)::value_type>(energy_threshold.enable);
-                        power_samples_.energy_threshold_ = energy_threshold.threshold;
+                        power_samples_.power_management_mode_ = static_cast<decltype(power_samples_.power_management_mode_)::value_type>(energy_threshold.enable);
                     }
                 }
             }
@@ -453,7 +481,7 @@ void gpu_intel_hardware_sampler::sampling_loop() {
                         zes_power_energy_counter_t energy_counter{};
                         HWS_LEVEL_ZERO_ERROR_CHECK(zesPowerGetEnergyCounter(power_handles.front(), &energy_counter));
 
-                        power_samples_.power_total_energy_consumption_->push_back(energy_counter.energy);
+                        power_samples_.power_total_energy_consumption_->push_back(static_cast<decltype(power_samples_.power_total_energy_consumption_)::value_type::value_type>(energy_counter.energy) / 1000.0 / 1000.0);
                     }
                 }
             }

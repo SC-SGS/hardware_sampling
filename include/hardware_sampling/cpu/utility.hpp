@@ -12,7 +12,8 @@
 #define HARDWARE_SAMPLING_CPU_UTILITY_HPP_
 #pragma once
 
-#include <format>       // std::format
+#include "fmt/format.h"  // fmt::format
+
 #include <stdexcept>    // std::runtime_error
 #include <string>       // std::string
 #include <string_view>  // std::string_view
@@ -29,7 +30,7 @@ namespace hws::detail {
         {                                                                                                              \
             const int errc = subprocess_func;                                                                          \
             if (errc != 0) {                                                                                           \
-                throw std::runtime_error{ std::format("Error calling subprocess function \"{}\"", #subprocess_func) }; \
+                throw std::runtime_error{ fmt::format("Error calling subprocess function \"{}\"", #subprocess_func) }; \
             }                                                                                                          \
         }
 #else
@@ -43,6 +44,6 @@ namespace hws::detail {
  */
 [[nodiscard]] std::string run_subprocess(std::string_view cmd_line);
 
-}  // namespace hws
+}  // namespace hws::detail
 
 #endif  // HARDWARE_SAMPLING_CPU_UTILITY_HPP_

@@ -12,9 +12,10 @@
 #define HARDWARE_SAMPLING_CPU_CPU_SAMPLES_HPP_
 #pragma once
 
-#include "hardware_sampling/utility.hpp"  // HWS_SAMPLE_STRUCT_FIXED_MEMBER, HWS_SAMPLE_STRUCT_SAMPLING_MEMBER, hws::detail::ostream_formatter
+#include "hardware_sampling/utility.hpp"  // HWS_SAMPLE_STRUCT_FIXED_MEMBER, HWS_SAMPLE_STRUCT_SAMPLING_MEMBER
 
-#include <format>         // std::formatter
+#include "fmt/ostream.h"  // fmt::formatter, fmt::ostream_formatter
+
 #include <iosfwd>         // std::ostream forward declaration
 #include <optional>       // std::optional
 #include <string>         // std::string
@@ -297,24 +298,24 @@ std::ostream &operator<<(std::ostream &out, const cpu_idle_states_samples &sampl
 }  // namespace hws
 
 template <>
-struct std::formatter<hws::cpu_general_samples> : hws::detail::ostream_formatter { };
+struct fmt::formatter<hws::cpu_general_samples> : fmt::ostream_formatter { };
 
 template <>
-struct std::formatter<hws::cpu_clock_samples> : hws::detail::ostream_formatter { };
+struct fmt::formatter<hws::cpu_clock_samples> : fmt::ostream_formatter { };
 
 template <>
-struct std::formatter<hws::cpu_power_samples> : hws::detail::ostream_formatter { };
+struct fmt::formatter<hws::cpu_power_samples> : fmt::ostream_formatter { };
 
 template <>
-struct std::formatter<hws::cpu_memory_samples> : hws::detail::ostream_formatter { };
+struct fmt::formatter<hws::cpu_memory_samples> : fmt::ostream_formatter { };
 
 template <>
-struct std::formatter<hws::cpu_temperature_samples> : hws::detail::ostream_formatter { };
+struct fmt::formatter<hws::cpu_temperature_samples> : fmt::ostream_formatter { };
 
 template <>
-struct std::formatter<hws::cpu_gfx_samples> : hws::detail::ostream_formatter { };
+struct fmt::formatter<hws::cpu_gfx_samples> : fmt::ostream_formatter { };
 
 template <>
-struct std::formatter<hws::cpu_idle_states_samples> : hws::detail::ostream_formatter { };
+struct fmt::formatter<hws::cpu_idle_states_samples> : fmt::ostream_formatter { };
 
 #endif  // HARDWARE_SAMPLING_CPU_CPU_SAMPLES_HPP_
