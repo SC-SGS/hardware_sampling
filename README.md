@@ -177,39 +177,36 @@ export PYTHONPATH=${CMAKE_INSTALL_PREFIX}/lib:${PYTHONPATH}
 
 | sample                   | CPUs | NVIDIA GPUs | AMD GPUs | Intel GPUs |
 |:-------------------------|:----:|:-----------:|:--------:|:----------:|
-| per_core_temperature     |  °C  |             |          |            |
-| core_throttle_percentage |  %   |             |          |            |
-| per_package_temperature  |  °C  |             |          |            |
-| num_fans                 |      |     int     |   int    |            |
-| max_fan_speed            |      |             |   int    |            |
-| temperature_gpu_min      |      |             |   m°C    |            |
-| temperature_gpu_max      |      |     °C      |   m°C    |            |
-| temperature_hotspot_min  |      |             |   m°C    |            |
-| temperature_hotspot_max  |      |             |   m°C    |            |
-| temperature_memory_min   |      |             |   m°C    |            |
-| temperature_memory_max   |      |             |   m°C    |            |
-| temperature_hbm_0_min    |      |             |   m°C    |            |
-| temperature_hbm_0_max    |      |             |   m°C    |            |
-| temperature_hbm_1_min    |      |             |   m°C    |    MBPS    |
-| temperature_hbm_1_max    |      |             |   m°C    |            |
-| temperature_hbm_2_min    |      |             |   m°C    |     B      |
-| temperature_hbm_2_max    |      |             |   m°C    |     B      |
-| temperature_hbm_3_min    |      |             |   m°C    |    BPS     |
-| temperature_hbm_3_max    |      |             |   m°C    |    int     |
-| fan_speed                |      |      %      |    %     |    int     |
-| temperature_gpu          |      |     °C      |   m°C    |    Bit     |
-| temperature_hotspot      |      |             |   m°C    |    int     |
-| temperature_memory       |      |             |   m°C    |    str     |
-| temperature_hbm_0        |      |             |   m°C    |     B      |
-| temperature_hbm_1        |      |             |   m°C    |     B      |
-| temperature_hbm_2        |      |             |   m°C    |    int     |
-| temperature_hbm_3        |      |             |   m°C    |    int     |
+| num_fans                 |  -   |     int     |   int    |            |
+| fan_speed_min            |  -   |      %      |    -     |            | 
+| fan_speed_max            |  -   |      %      |   RPM    |            |
+| temperature_min          |  -   |      -      |    °C    |            |
+| temperature_max          |  -   |     °C      |    °C    |            |
+| memory_temperature_min   |  -   |      -      |    °C    |            |
+| memory_temperature_max   |  -   |     °C      |    °C    |            |
+| hotspot_temperature_min  |  -   |      -      |    °C    |            |
+| hotspot_temperature_max  |  -   |      -      |    °C    |            |
+| hbm_0_temperature_min    |  -   |      -      |    °C    |            |
+| hbm_0_temperature_max    |  -   |      -      |    °C    |            |
+| hbm_1_temperature_min    |  -   |      -      |    °C    |            |
+| hbm_1_temperature_max    |  -   |      -      |    °C    |            |
+| hbm_2_temperature_min    |  -   |      -      |    °C    |            |
+| hbm_2_temperature_max    |  -   |      -      |    °C    |            |
+| hbm_3_temperature_min    |  -   |      -      |    °C    |            |
+| hbm_3_temperature_max    |  -   |      -      |    °C    |            |
+| fan_speed_percentage     |  -   |      %      |    %     |            |
+| temperature              |  °C  |     °C      |    °C    |            |
+| memory_temperature       |  -   |      -      |    °C    |            |
+| hotspot_temperature      |  -   |      -      |    °C    |            |
+| hbm_0_temperature        |  -   |      -      |    °C    |            |
+| hbm_1_temperature        |  -   |      -      |    °C    |            |
+| hbm_2_temperature        |  -   |      -      |    °C    |            |
+| hbm_3_temperature        |  -   |      -      |    °C    |            |
 | temperature_{}_max       |      |             |          |            |
 | temperature_psu          |      |             |          |            |
 | temperature_{}           |      |             |          |            |
-| min_fan_speed            |      |      %      |          |            |
-| max_fan_speed            |      |      %      |          |            |
-| temperature_mem_max      |      |     °C      |          |            |
+| core_temperature         |  °C  |      -      |    -     |     -      |
+| core_throttle_percentage |  %   |      -      |    -     |     -      |
 
 ### gfx-related (iGPU) samples
 

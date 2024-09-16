@@ -458,47 +458,47 @@ std::string nvml_temperature_samples::generate_yaml_string() const {
                            this->num_fans_.value());
     }
     // min fan speed
-    if (this->min_fan_speed_.has_value()) {
-        str += fmt::format("  min_fan_speed:\n"
+    if (this->fan_speed_min_.has_value()) {
+        str += fmt::format("  fan_speed_min:\n"
                            "    unit: \"percentage\"\n"
                            "    values: {}\n",
-                           this->min_fan_speed_.value());
+                           this->fan_speed_min_.value());
     }
     // max fan speed
-    if (this->max_fan_speed_.has_value()) {
-        str += fmt::format("  max_fan_speed:\n"
+    if (this->fan_speed_max_.has_value()) {
+        str += fmt::format("  fan_speed_max:\n"
                            "    unit: \"percentage\"\n"
                            "    values: {}\n",
-                           this->max_fan_speed_.value());
+                           this->fan_speed_max_.value());
     }
     // temperature threshold GPU max
-    if (this->temperature_threshold_gpu_max_.has_value()) {
-        str += fmt::format("  temperature_gpu_max:\n"
+    if (this->temperature_max_.has_value()) {
+        str += fmt::format("  temperature_max:\n"
                            "    unit: \"°C\"\n"
                            "    values: {}\n",
-                           this->temperature_threshold_gpu_max_.value());
+                           this->temperature_max_.value());
     }
     // temperature threshold memory max
-    if (this->temperature_threshold_mem_max_.has_value()) {
-        str += fmt::format("  temperature_mem_max:\n"
+    if (this->memory_temperature_max_.has_value()) {
+        str += fmt::format("  memory_temperature_max:\n"
                            "    unit: \"°C\"\n"
                            "    values: {}\n",
-                           this->temperature_threshold_mem_max_.value());
+                           this->memory_temperature_max_.value());
     }
 
     // fan speed
-    if (this->fan_speed_.has_value()) {
-        str += fmt::format("  fan_speed:\n"
+    if (this->fan_speed_percentage_.has_value()) {
+        str += fmt::format("  fan_speed_percentage:\n"
                            "    unit: \"percentage\"\n"
                            "    values: [{}]\n",
-                           fmt::join(this->fan_speed_.value(), ", "));
+                           fmt::join(this->fan_speed_percentage_.value(), ", "));
     }
     // temperature GPU
-    if (this->temperature_gpu_.has_value()) {
-        str += fmt::format("  temperature_gpu:\n"
+    if (this->temperature_.has_value()) {
+        str += fmt::format("  temperature:\n"
                            "    unit: \"°C\"\n"
                            "    values: [{}]\n",
-                           fmt::join(this->temperature_gpu_.value(), ", "));
+                           fmt::join(this->temperature_.value(), ", "));
     }
 
     // remove last newline
@@ -511,17 +511,17 @@ std::ostream &operator<<(std::ostream &out, const nvml_temperature_samples &samp
     return out << fmt::format("num_fans [int]: {}\n"
                               "min_fan_speed [%]: {}\n"
                               "max_fan_speed [%]: {}\n"
-                              "temperature_threshold_gpu_max [°C]: {}\n"
-                              "temperature_threshold_mem_max [°C]: {}\n"
-                              "fan_speed [%]: [{}]\n"
-                              "temperature_gpu [°C]: [{}]",
+                              "temperature__max [°C]: {}\n"
+                              "memory_temperature_max [°C]: {}\n"
+                              "fan_speed_percentage [%]: [{}]\n"
+                              "temperature [°C]: [{}]",
                               detail::value_or_default(samples.get_num_fans()),
-                              detail::value_or_default(samples.get_min_fan_speed()),
-                              detail::value_or_default(samples.get_max_fan_speed()),
-                              detail::value_or_default(samples.get_temperature_threshold_gpu_max()),
-                              detail::value_or_default(samples.get_temperature_threshold_mem_max()),
-                              fmt::join(detail::value_or_default(samples.get_fan_speed()), ", "),
-                              fmt::join(detail::value_or_default(samples.get_temperature_gpu()), ", "));
+                              detail::value_or_default(samples.get_fan_speed_min()),
+                              detail::value_or_default(samples.get_fan_speed_max()),
+                              detail::value_or_default(samples.get_temperature_max()),
+                              detail::value_or_default(samples.get_memory_temperature_max()),
+                              fmt::join(detail::value_or_default(samples.get_fan_speed_percentage()), ", "),
+                              fmt::join(detail::value_or_default(samples.get_temperature()), ", "));
 }
 
 }  // namespace hws

@@ -207,9 +207,9 @@ class cpu_temperature_samples {
      */
     [[nodiscard]] std::string generate_yaml_string() const;
 
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, temperature)             // the current temperature of the whole package in °C
     HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(unsigned int, core_temperature)  // the current temperature of the core part of the CPU in °C
     HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, core_throttle_percent)   // the percent of time the CPU has throttled
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, package_temperature)     // the current temperature of the whole package in °C
 };
 
 /**

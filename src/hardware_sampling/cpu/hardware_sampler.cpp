@@ -198,8 +198,8 @@ void cpu_hardware_sampler::sampling_loop() {
                 using vector_type = decltype(temperature_samples_.core_throttle_percent_)::value_type;
                 temperature_samples_.core_throttle_percent_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
             } else if (header[i] == "PkgTmp") {
-                using vector_type = decltype(temperature_samples_.package_temperature_)::value_type;
-                temperature_samples_.package_temperature_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
+                using vector_type = decltype(temperature_samples_.temperature_)::value_type;
+                temperature_samples_.temperature_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
             } else if (header[i] == "GFX%rc6") {
                 using vector_type = decltype(gfx_samples_.gfx_render_state_percent_)::value_type;
                 gfx_samples_.gfx_render_state_percent_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
@@ -345,8 +345,8 @@ void cpu_hardware_sampler::sampling_loop() {
                         using vector_type = decltype(temperature_samples_.core_throttle_percent_)::value_type;
                         temperature_samples_.core_throttle_percent_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
                     } else if (header[i] == "PkgTmp") {
-                        using vector_type = decltype(temperature_samples_.package_temperature_)::value_type;
-                        temperature_samples_.package_temperature_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
+                        using vector_type = decltype(temperature_samples_.temperature_)::value_type;
+                        temperature_samples_.temperature_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
                     } else if (header[i] == "GFX%rc6") {
                         using vector_type = decltype(gfx_samples_.gfx_render_state_percent_)::value_type;
                         gfx_samples_.gfx_render_state_percent_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));

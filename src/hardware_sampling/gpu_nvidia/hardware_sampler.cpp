@@ -378,33 +378,33 @@ void gpu_nvidia_hardware_sampler::sampling_loop() {
         }
 
         if (temperature_samples_.num_fans_.has_value() && temperature_samples_.num_fans_.value() > 0) {
-            decltype(temperature_samples_.min_fan_speed_)::value_type min_fan_speed{};
-            decltype(temperature_samples_.max_fan_speed_)::value_type max_fan_speed{};
+            decltype(temperature_samples_.fan_speed_min_)::value_type min_fan_speed{};
+            decltype(temperature_samples_.fan_speed_max_)::value_type max_fan_speed{};
             if (nvmlDeviceGetMinMaxFanSpeed(device, &min_fan_speed, &max_fan_speed) == NVML_SUCCESS) {
-                temperature_samples_.min_fan_speed_ = min_fan_speed;
-                temperature_samples_.max_fan_speed_ = max_fan_speed;
+                temperature_samples_.fan_speed_min_ = min_fan_speed;
+                temperature_samples_.fan_speed_max_ = max_fan_speed;
             }
         }
 
-        decltype(temperature_samples_.temperature_threshold_gpu_max_)::value_type temperature_threshold_gpu_max{};
-        if (nvmlDeviceGetTemperatureThreshold(device, NVML_TEMPERATURE_THRESHOLD_GPU_MAX, &temperature_threshold_gpu_max) == NVML_SUCCESS) {
-            temperature_samples_.temperature_threshold_gpu_max_ = temperature_threshold_gpu_max;
+        unsigned int temperature_max{};
+        if (nvmlDeviceGetTemperatureThreshold(device, NVML_TEMPERATURE_THRESHOLD_GPU_MAX, &temperature_max) == NVML_SUCCESS) {
+            temperature_samples_.temperature_max_ = static_cast<decltype(temperature_samples_.temperature_max_)::value_type>(temperature_max);
         }
 
-        decltype(temperature_samples_.temperature_threshold_mem_max_)::value_type temperature_threshold_mem_max{};
-        if (nvmlDeviceGetTemperatureThreshold(device, NVML_TEMPERATURE_THRESHOLD_MEM_MAX, &temperature_threshold_mem_max) == NVML_SUCCESS) {
-            temperature_samples_.temperature_threshold_mem_max_ = temperature_threshold_mem_max;
+        unsigned int memory_temperature_max{};
+        if (nvmlDeviceGetTemperatureThreshold(device, NVML_TEMPERATURE_THRESHOLD_MEM_MAX, &memory_temperature_max) == NVML_SUCCESS) {
+            temperature_samples_.memory_temperature_max_ = static_cast<decltype(temperature_samples_.memory_temperature_max_)::value_type>(memory_temperature_max);
         }
 
         // queried samples -> retrieved every iteration if available
-        decltype(temperature_samples_.fan_speed_)::value_type::value_type fan_speed{};
-        if (nvmlDeviceGetFanSpeed(device, &fan_speed) == NVML_SUCCESS) {
-            temperature_samples_.fan_speed_ = decltype(temperature_samples_.fan_speed_)::value_type{ fan_speed };
+        unsigned int fan_speed_percentage{};
+        if (nvmlDeviceGetFanSpeed(device, &fan_speed_percentage) == NVML_SUCCESS) {
+            temperature_samples_.fan_speed_percentage_ = decltype(temperature_samples_.fan_speed_percentage_)::value_type{ static_cast<decltype(temperature_samples_.fan_speed_percentage_)::value_type::value_type>(fan_speed_percentage) };
         }
 
-        decltype(temperature_samples_.temperature_gpu_)::value_type::value_type temperature_gpu{};
-        if (nvmlDeviceGetTemperature(device, NVML_TEMPERATURE_GPU, &temperature_gpu) == NVML_SUCCESS) {
-            temperature_samples_.temperature_gpu_ = decltype(temperature_samples_.temperature_gpu_)::value_type{ temperature_gpu };
+        unsigned int temperature{};
+        if (nvmlDeviceGetTemperature(device, NVML_TEMPERATURE_GPU, &temperature) == NVML_SUCCESS) {
+            temperature_samples_.temperature_ = decltype(temperature_samples_.temperature_)::value_type{ static_cast<decltype(temperature_samples_.temperature_)::value_type::value_type>(temperature) };
         }
     }
 
@@ -513,16 +513,16 @@ void gpu_nvidia_hardware_sampler::sampling_loop() {
 
             // retrieve temperature related information
             {
-                if (temperature_samples_.fan_speed_.has_value()) {
-                    decltype(temperature_samples_.fan_speed_)::value_type::value_type value{};
+                if (temperature_samples_.fan_speed_percentage_.has_value()) {
+                    unsigned int value{};
                     HWS_NVML_ERROR_CHECK(nvmlDeviceGetFanSpeed(device, &value));
-                    temperature_samples_.fan_speed_->push_back(value);
+                    temperature_samples_.fan_speed_percentage_->push_back(static_cast<decltype(temperature_samples_.fan_speed_percentage_)::value_type::value_type>(value));
                 }
 
-                if (temperature_samples_.temperature_gpu_.has_value()) {
-                    decltype(temperature_samples_.temperature_gpu_)::value_type::value_type value{};
+                if (temperature_samples_.temperature_.has_value()) {
+                    unsigned int value{};
                     HWS_NVML_ERROR_CHECK(nvmlDeviceGetTemperature(device, NVML_TEMPERATURE_GPU, &value));
-                    temperature_samples_.temperature_gpu_->push_back(value);
+                    temperature_samples_.temperature_->push_back(static_cast<decltype(temperature_samples_.temperature_)::value_type::value_type>(value));
                 }
             }
         }

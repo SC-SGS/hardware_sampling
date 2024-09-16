@@ -423,170 +423,166 @@ std::string rocm_smi_temperature_samples::generate_yaml_string() const {
                            this->num_fans_.value());
     }
     // maximum fan speed
-    if (this->max_fan_speed_.has_value()) {
-        str += fmt::format("  max_fan_speed:\n"
-                           "    unit: \"int\"\n"
+    if (this->fan_speed_max_.has_value()) {
+        str += fmt::format("  fan_speed_max:\n"
+                           "    unit: \"RPM\"\n"
                            "    values: {}\n",
-                           this->max_fan_speed_.value());
+                           this->fan_speed_max_.value());
     }
     // minimum GPU edge temperature
-    if (this->temperature_edge_min_.has_value()) {
-        str += fmt::format("  temperature_gpu_min:\n"
-                           "    unit: \"m°C\"\n"
+    if (this->temperature_min_.has_value()) {
+        str += fmt::format("  temperature_min:\n"
+                           "    unit: \"°C\"\n"
                            "    values: {}\n",
-                           this->temperature_edge_min_.value());
+                           this->temperature_min_.value());
     }
     // maximum GPU edge temperature
-    if (this->temperature_edge_max_.has_value()) {
-        str += fmt::format("  temperature_gpu_max:\n"
-                           "    unit: \"m°C\"\n"
+    if (this->temperature_max_.has_value()) {
+        str += fmt::format("  temperature_max:\n"
+                           "    unit: \"°C\"\n"
                            "    values: {}\n",
-                           this->temperature_edge_max_.value());
-    }
-    // minimum GPU hotspot temperature
-    if (this->temperature_hotspot_min_.has_value()) {
-        str += fmt::format("  temperature_hotspot_min:\n"
-                           "    unit: \"m°C\"\n"
-                           "    values: {}\n",
-                           this->temperature_hotspot_min_.value());
-    }
-    // maximum GPU hotspot temperature
-    if (this->temperature_hotspot_max_.has_value()) {
-        str += fmt::format("  temperature_hotspot_max:\n"
-                           "    unit: \"m°C\"\n"
-                           "    values: {}\n",
-                           this->temperature_hotspot_max_.value());
+                           this->temperature_max_.value());
     }
     // minimum GPU memory temperature
-    if (this->temperature_memory_min_.has_value()) {
-        str += fmt::format("  temperature_memory_min:\n"
-                           "    unit: \"m°C\"\n"
+    if (this->memory_temperature_min_.has_value()) {
+        str += fmt::format("  memory_temperature_min:\n"
+                           "    unit: \"°C\"\n"
                            "    values: {}\n",
-                           this->temperature_memory_min_.value());
+                           this->memory_temperature_min_.value());
     }
     // maximum GPU memory temperature
-    if (this->temperature_memory_max_.has_value()) {
-        str += fmt::format("  temperature_memory_max:\n"
-                           "    unit: \"m°C\"\n"
+    if (this->memory_temperature_max_.has_value()) {
+        str += fmt::format("  memory_temperature_max:\n"
+                           "    unit: \"°C\"\n"
                            "    values: {}\n",
-                           this->temperature_memory_max_.value());
+                           this->memory_temperature_max_.value());
+    }
+    // minimum GPU hotspot temperature
+    if (this->hotspot_temperature_min_.has_value()) {
+        str += fmt::format("  hotspot_temperature_min:\n"
+                           "    unit: \"°C\"\n"
+                           "    values: {}\n",
+                           this->hotspot_temperature_min_.value());
+    }
+    // maximum GPU hotspot temperature
+    if (this->hotspot_temperature_max_.has_value()) {
+        str += fmt::format("  hotspot_temperature_max:\n"
+                           "    unit: \"°C\"\n"
+                           "    values: {}\n",
+                           this->hotspot_temperature_max_.value());
     }
     // minimum GPU HBM 0 temperature
-    if (this->temperature_hbm_0_min_.has_value()) {
-        str += fmt::format("  temperature_hbm_0_min:\n"
-                           "    unit: \"m°C\"\n"
+    if (this->hbm_0_temperature_min_.has_value()) {
+        str += fmt::format("  hbm_0_temperature_min:\n"
+                           "    unit: \"°C\"\n"
                            "    values: {}\n",
-                           this->temperature_hbm_0_min_.value());
+                           this->hbm_0_temperature_min_.value());
     }
     // maximum GPU HBM 0 temperature
-    if (this->temperature_hbm_0_max_.has_value()) {
-        str += fmt::format("  temperature_hbm_0_max:\n"
-                           "    unit: \"m°C\"\n"
+    if (this->hbm_0_temperature_max_.has_value()) {
+        str += fmt::format("  hbm_0_temperature_max:\n"
+                           "    unit: \"°C\"\n"
                            "    values: {}\n",
-                           this->temperature_hbm_0_max_.value());
+                           this->hbm_0_temperature_max_.value());
     }
     // minimum GPU HBM 1 temperature
-    if (this->temperature_hbm_1_min_.has_value()) {
-        str += fmt::format("  temperature_hbm_1_min:\n"
-                           "    unit: \"m°C\"\n"
+    if (this->hbm_1_temperature_min_.has_value()) {
+        str += fmt::format("  hbm_1_temperature_min:\n"
+                           "    unit: \"°C\"\n"
                            "    values: {}\n",
-                           this->temperature_hbm_1_min_.value());
+                           this->hbm_1_temperature_min_.value());
     }
     // maximum GPU HBM 1 temperature
-    if (this->temperature_hbm_1_max_.has_value()) {
-        str += fmt::format("  temperature_hbm_1_max:\n"
-                           "    unit: \"m°C\"\n"
+    if (this->hbm_1_temperature_max_.has_value()) {
+        str += fmt::format("  hbm_1_temperature_max:\n"
+                           "    unit: \"°C\"\n"
                            "    values: {}\n",
-                           this->temperature_hbm_1_max_.value());
+                           this->hbm_1_temperature_max_.value());
     }
     // minimum GPU HBM 2 temperature
-    if (this->temperature_hbm_2_min_.has_value()) {
-        str += fmt::format("  temperature_hbm_2_min:\n"
-                           "    unit: \"m°C\"\n"
+    if (this->hbm_2_temperature_min_.has_value()) {
+        str += fmt::format("  hbm_2_temperature_min:\n"
+                           "    unit: \"°C\"\n"
                            "    values: {}\n",
-                           this->temperature_hbm_2_min_.value());
+                           this->hbm_2_temperature_min_.value());
     }
     // maximum GPU HBM 2 temperature
-    if (this->temperature_hbm_2_max_.has_value()) {
-        str += fmt::format("  temperature_hbm_2_max:\n"
-                           "    unit: \"m°C\"\n"
+    if (this->hbm_2_temperature_max_.has_value()) {
+        str += fmt::format("  hbm_2_temperature_max:\n"
+                           "    unit: \"°C\"\n"
                            "    values: {}\n",
-                           this->temperature_hbm_2_max_.value());
+                           this->hbm_2_temperature_max_.value());
     }
     // minimum GPU HBM 3 temperature
-    if (this->temperature_hbm_3_min_.has_value()) {
-        str += fmt::format("  temperature_hbm_3_min:\n"
-                           "    unit: \"m°C\"\n"
+    if (this->hbm_3_temperature_min_.has_value()) {
+        str += fmt::format("  hbm_3_temperature_min:\n"
+                           "    unit: \"°C\"\n"
                            "    values: {}\n",
-                           this->temperature_hbm_3_min_.value());
+                           this->hbm_3_temperature_min_.value());
     }
     // maximum GPU HBM 3 temperature
-    if (this->temperature_hbm_3_max_.has_value()) {
-        str += fmt::format("  temperature_hbm_3_max:\n"
-                           "    unit: \"m°C\"\n"
+    if (this->hbm_3_temperature_max_.has_value()) {
+        str += fmt::format("  hbm_3_temperature_max:\n"
+                           "    unit: \"°C\"\n"
                            "    values: {}\n",
-                           this->temperature_hbm_3_max_.value());
+                           this->hbm_3_temperature_max_.value());
     }
 
     // fan speed
-    if (this->fan_speed_.has_value()) {
-        std::vector<double> fan_speed_percent(this->fan_speed_->size());
-        for (std::size_t i = 0; i < fan_speed_percent.size(); ++i) {
-            fan_speed_percent[i] = static_cast<double>(this->fan_speed_.value()[i]) / static_cast<double>(RSMI_MAX_FAN_SPEED);
-        }
-        str += fmt::format("  fan_speed:\n"
+    if (this->fan_speed_percentage_.has_value()) {
+        str += fmt::format("  fan_speed_percentage:\n"
                            "    unit: \"percentage\"\n"
                            "    values: [{}]\n",
-                           fmt::join(fan_speed_percent, ", "));
+                           fmt::join(this->fan_speed_percentage_.value(), ", "));
     }
     // GPU edge temperature
-    if (this->temperature_edge_.has_value()) {
-        str += fmt::format("  temperature_gpu:\n"
-                           "    unit: \"m°C\"\n"
+    if (this->temperature_.has_value()) {
+        str += fmt::format("  temperature:\n"
+                           "    unit: \"°C\"\n"
                            "    values: [{}]\n",
-                           fmt::join(this->temperature_edge_.value(), ", "));
-    }
-    // GPU hotspot temperature
-    if (this->temperature_hotspot_.has_value()) {
-        str += fmt::format("  temperature_hotspot:\n"
-                           "    unit: \"m°C\"\n"
-                           "    values: [{}]\n",
-                           fmt::join(this->temperature_hotspot_.value(), ", "));
+                           fmt::join(this->temperature_.value(), ", "));
     }
     // GPU memory temperature
-    if (this->temperature_memory_.has_value()) {
-        str += fmt::format("  temperature_memory:\n"
-                           "    unit: \"m°C\"\n"
+    if (this->memory_temperature_.has_value()) {
+        str += fmt::format("  memory_temperature:\n"
+                           "    unit: \"°C\"\n"
                            "    values: [{}]\n",
-                           fmt::join(this->temperature_memory_.value(), ", "));
+                           fmt::join(this->memory_temperature_.value(), ", "));
+    }
+    // GPU hotspot temperature
+    if (this->hotspot_temperature_.has_value()) {
+        str += fmt::format("  hotspot_temperature:\n"
+                           "    unit: \"°C\"\n"
+                           "    values: [{}]\n",
+                           fmt::join(this->hotspot_temperature_.value(), ", "));
     }
     // GPU HBM 0 temperature
-    if (this->temperature_hbm_0_.has_value()) {
-        str += fmt::format("  temperature_hbm_0:\n"
-                           "    unit: \"m°C\"\n"
+    if (this->hbm_0_temperature_.has_value()) {
+        str += fmt::format("  hbm_0_temperature:\n"
+                           "    unit: \"°C\"\n"
                            "    values: [{}]\n",
-                           fmt::join(this->temperature_hbm_0_.value(), ", "));
+                           fmt::join(this->hbm_0_temperature_.value(), ", "));
     }
     // GPU HBM 1 temperature
-    if (this->temperature_hbm_1_.has_value()) {
-        str += fmt::format("  temperature_hbm_1:\n"
-                           "    unit: \"m°C\"\n"
+    if (this->hbm_1_temperature_.has_value()) {
+        str += fmt::format("  hbm_1_temperature:\n"
+                           "    unit: \"°C\"\n"
                            "    values: [{}]\n",
-                           fmt::join(this->temperature_hbm_1_.value(), ", "));
+                           fmt::join(this->hbm_1_temperature_.value(), ", "));
     }
     // GPU HBM 2 temperature
-    if (this->temperature_hbm_2_.has_value()) {
-        str += fmt::format("  temperature_hbm_2:\n"
-                           "    unit: \"m°C\"\n"
+    if (this->hbm_2_temperature_.has_value()) {
+        str += fmt::format("  hbm_2_temperature:\n"
+                           "    unit: \"°C\"\n"
                            "    values: [{}]\n",
-                           fmt::join(this->temperature_hbm_2_.value(), ", "));
+                           fmt::join(this->hbm_2_temperature_.value(), ", "));
     }
     // GPU HBM 3 temperature
-    if (this->temperature_hbm_3_.has_value()) {
-        str += fmt::format("  temperature_hbm_3:\n"
-                           "    unit: \"m°C\"\n"
+    if (this->hbm_3_temperature_.has_value()) {
+        str += fmt::format("  hbm_3_temperature:\n"
+                           "    unit: \"°C\"\n"
                            "    values: [{}]\n",
-                           fmt::join(this->temperature_hbm_3_.value(), ", "));
+                           fmt::join(this->hbm_3_temperature_.value(), ", "));
     }
 
     // remove last newline
@@ -597,53 +593,53 @@ std::string rocm_smi_temperature_samples::generate_yaml_string() const {
 
 std::ostream &operator<<(std::ostream &out, const rocm_smi_temperature_samples &samples) {
     return out << fmt::format("num_fans [int]: {}\n"
-                              "max_fan_speed [int]: {}\n"
-                              "temperature_edge_min [m°C]: {}\n"
-                              "temperature_edge_max [m°C]: {}\n"
-                              "temperature_hotspot_min [m°C]: {}\n"
-                              "temperature_hotspot_max [m°C]: {}\n"
-                              "temperature_memory_min [m°C]: {}\n"
-                              "temperature_memory_max [m°C]: {}\n"
-                              "temperature_hbm_0_min [m°C]: {}\n"
-                              "temperature_hbm_0_max [m°C]: {}\n"
-                              "temperature_hbm_1_min [m°C]: {}\n"
-                              "temperature_hbm_1_max [m°C]: {}\n"
-                              "temperature_hbm_2_min [m°C]: {}\n"
-                              "temperature_hbm_2_max [m°C]: {}\n"
-                              "temperature_hbm_3_min [m°C]: {}\n"
-                              "temperature_hbm_3_max [m°C]: {}\n"
-                              "fan_speed [%]: [{}]\n"
-                              "temperature_edge [m°C]: [{}]\n"
-                              "temperature_hotspot [m°C]: [{}]\n"
-                              "temperature_memory [m°C]: [{}]\n"
-                              "temperature_hbm_0 [m°C]: [{}]\n"
-                              "temperature_hbm_1 [m°C]: [{}]\n"
-                              "temperature_hbm_2 [m°C]: [{}]\n"
-                              "temperature_hbm_3 [m°C]: [{}]",
+                              "fan_speed_max [RPM]: {}\n"
+                              "temperature_min [°C]: {}\n"
+                              "temperature_max [°C]: {}\n"
+                              "memory_temperature_min [°C]: {}\n"
+                              "memory_temperature_max [°C]: {}\n"
+                              "hotspot_temperature_min [°C]: {}\n"
+                              "hotspot_temperature_max [°C]: {}\n"
+                              "hbm_0_temperature_min [°C]: {}\n"
+                              "hbm_0_temperature_max [°C]: {}\n"
+                              "hbm_1_temperature_min [°C]: {}\n"
+                              "hbm_1_temperature_max [°C]: {}\n"
+                              "hbm_2_temperature_min [°C]: {}\n"
+                              "hbm_2_temperature_max [°C]: {}\n"
+                              "hbm_3_temperature_min [°C]: {}\n"
+                              "hbm_3_temperature_max [°C]: {}\n"
+                              "fan_speed_percentage [%]: [{}]\n"
+                              "temperature [°C]: [{}]\n"
+                              "memory_temperature [°C]: [{}]\n"
+                              "hotspot_temperature [°C]: [{}]\n"
+                              "hbm_0_temperature [°C]: [{}]\n"
+                              "hbm_1_temperature [°C]: [{}]\n"
+                              "hbm_2_temperature [°C]: [{}]\n"
+                              "hbm_3_temperature [°C]: [{}]",
                               detail::value_or_default(samples.get_num_fans()),
-                              detail::value_or_default(samples.get_max_fan_speed()),
-                              detail::value_or_default(samples.get_temperature_edge_min()),
-                              detail::value_or_default(samples.get_temperature_edge_max()),
-                              detail::value_or_default(samples.get_temperature_hotspot_min()),
-                              detail::value_or_default(samples.get_temperature_hotspot_max()),
-                              detail::value_or_default(samples.get_temperature_memory_min()),
-                              detail::value_or_default(samples.get_temperature_memory_max()),
-                              detail::value_or_default(samples.get_temperature_hbm_0_min()),
-                              detail::value_or_default(samples.get_temperature_hbm_0_max()),
-                              detail::value_or_default(samples.get_temperature_hbm_1_min()),
-                              detail::value_or_default(samples.get_temperature_hbm_1_max()),
-                              detail::value_or_default(samples.get_temperature_hbm_2_min()),
-                              detail::value_or_default(samples.get_temperature_hbm_2_max()),
-                              detail::value_or_default(samples.get_temperature_hbm_3_min()),
-                              detail::value_or_default(samples.get_temperature_hbm_3_max()),
-                              fmt::join(detail::value_or_default(samples.get_fan_speed()), ", "),
-                              fmt::join(detail::value_or_default(samples.get_temperature_edge()), ", "),
-                              fmt::join(detail::value_or_default(samples.get_temperature_hotspot()), ", "),
-                              fmt::join(detail::value_or_default(samples.get_temperature_memory()), ", "),
-                              fmt::join(detail::value_or_default(samples.get_temperature_hbm_0()), ", "),
-                              fmt::join(detail::value_or_default(samples.get_temperature_hbm_1()), ", "),
-                              fmt::join(detail::value_or_default(samples.get_temperature_hbm_2()), ", "),
-                              fmt::join(detail::value_or_default(samples.get_temperature_hbm_3()), ", "));
+                              detail::value_or_default(samples.get_fan_speed_max()),
+                              detail::value_or_default(samples.get_temperature_min()),
+                              detail::value_or_default(samples.get_temperature_max()),
+                              detail::value_or_default(samples.get_memory_temperature_min()),
+                              detail::value_or_default(samples.get_memory_temperature_max()),
+                              detail::value_or_default(samples.get_hotspot_temperature_min()),
+                              detail::value_or_default(samples.get_hotspot_temperature_max()),
+                              detail::value_or_default(samples.get_hbm_0_temperature_min()),
+                              detail::value_or_default(samples.get_hbm_0_temperature_max()),
+                              detail::value_or_default(samples.get_hbm_1_temperature_min()),
+                              detail::value_or_default(samples.get_hbm_1_temperature_max()),
+                              detail::value_or_default(samples.get_hbm_2_temperature_min()),
+                              detail::value_or_default(samples.get_hbm_2_temperature_max()),
+                              detail::value_or_default(samples.get_hbm_3_temperature_min()),
+                              detail::value_or_default(samples.get_hbm_3_temperature_max()),
+                              fmt::join(detail::value_or_default(samples.get_fan_speed_percentage()), ", "),
+                              fmt::join(detail::value_or_default(samples.get_temperature()), ", "),
+                              fmt::join(detail::value_or_default(samples.get_memory_temperature()), ", "),
+                              fmt::join(detail::value_or_default(samples.get_hotspot_temperature()), ", "),
+                              fmt::join(detail::value_or_default(samples.get_hbm_0_temperature()), ", "),
+                              fmt::join(detail::value_or_default(samples.get_hbm_1_temperature()), ", "),
+                              fmt::join(detail::value_or_default(samples.get_hbm_2_temperature()), ", "),
+                              fmt::join(detail::value_or_default(samples.get_hbm_3_temperature()), ", "));
 }
 
 }  // namespace hws

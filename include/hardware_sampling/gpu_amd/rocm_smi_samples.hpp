@@ -201,31 +201,31 @@ class rocm_smi_temperature_samples {
      */
     [[nodiscard]] std::string generate_yaml_string() const;
 
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::uint32_t, num_fans)                // the number of fans (if any)
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::uint64_t, max_fan_speed)           // the maximum fan speed
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::int64_t, temperature_edge_min)     // the minimum temperature on the GPU's edge temperature sensor in m°C
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::int64_t, temperature_edge_max)     // the maximum temperature on the GPU's edge temperature sensor in m°C
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::int64_t, temperature_hotspot_min)  // the minimum temperature on the GPU's hotspot temperature sensor in m°C
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::int64_t, temperature_hotspot_max)  // the maximum temperature on the GPU's hotspot temperature sensor in m°C
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::int64_t, temperature_memory_min)   // the minimum temperature on the GPU's memory temperature sensor in m°C
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::int64_t, temperature_memory_max)   // the maximum temperature on the GPU's memory temperature sensor in m°C
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::int64_t, temperature_hbm_0_min)    // the minimum temperature on the GPU's HBM0 temperature sensor in m°C
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::int64_t, temperature_hbm_0_max)    // the maximum temperature on the GPU's HBM0 temperature sensor in m°C
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::int64_t, temperature_hbm_1_min)    // the minimum temperature on the GPU's HBM1 temperature sensor in m°C
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::int64_t, temperature_hbm_1_max)    // the maximum temperature on the GPU's HBM1 temperature sensor in m°C
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::int64_t, temperature_hbm_2_min)    // the minimum temperature on the GPU's HBM2 temperature sensor in m°C
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::int64_t, temperature_hbm_2_max)    // the maximum temperature on the GPU's HBM2 temperature sensor in m°C
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::int64_t, temperature_hbm_3_min)    // the minimum temperature on the GPU's HBM3 temperature sensor in m°C
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::int64_t, temperature_hbm_3_max)    // the maximum temperature on the GPU's HBM3 temperature sensor in m°C
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::uint32_t, num_fans)          // the number of fans (if any)
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::uint64_t, fan_speed_max)     // the maximum fan speed in RPM
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(double, temperature_min)          // the minimum temperature on the GPU's edge temperature sensor in °C
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(double, temperature_max)          // the maximum temperature on the GPU's edge temperature sensor in °C
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(double, memory_temperature_min)   // the minimum temperature on the GPU's memory temperature sensor in °C
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(double, memory_temperature_max)   // the maximum temperature on the GPU's memory temperature sensor in °C
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(double, hotspot_temperature_min)  // the minimum temperature on the GPU's hotspot temperature sensor in °C
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(double, hotspot_temperature_max)  // the maximum temperature on the GPU's hotspot temperature sensor in °C
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(double, hbm_0_temperature_min)    // the minimum temperature on the GPU's HBM0 temperature sensor in °C
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(double, hbm_0_temperature_max)    // the maximum temperature on the GPU's HBM0 temperature sensor in °C
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(double, hbm_1_temperature_min)    // the minimum temperature on the GPU's HBM1 temperature sensor in °C
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(double, hbm_1_temperature_max)    // the maximum temperature on the GPU's HBM1 temperature sensor in °C
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(double, hbm_2_temperature_min)    // the minimum temperature on the GPU's HBM2 temperature sensor in °C
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(double, hbm_2_temperature_max)    // the maximum temperature on the GPU's HBM2 temperature sensor in °C
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(double, hbm_3_temperature_min)    // the minimum temperature on the GPU's HBM3 temperature sensor in °C
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(double, hbm_3_temperature_max)    // the maximum temperature on the GPU's HBM3 temperature sensor in °C
 
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(std::int64_t, fan_speed)            // the current fan speed in %
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(std::int64_t, temperature_edge)     // the current temperature on the GPU's edge temperature sensor in m°C
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(std::int64_t, temperature_hotspot)  // the current temperature on the GPU's hotspot temperature sensor in m°C
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(std::int64_t, temperature_memory)   // the current temperature on the GPU's memory temperature sensor in m°C
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(std::int64_t, temperature_hbm_0)    // the current temperature on the GPU's HBM0 temperature sensor in m°C
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(std::int64_t, temperature_hbm_1)    // the current temperature on the GPU's HBM1 temperature sensor in m°C
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(std::int64_t, temperature_hbm_2)    // the current temperature on the GPU's HBM2 temperature sensor in m°C
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(std::int64_t, temperature_hbm_3)    // the current temperature on the GPU's HBM3 temperature sensor in m°C
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, fan_speed_percentage)  // the current fan speed in %
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, temperature)           // the current temperature on the GPU's edge temperature sensor in °C
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, hotspot_temperature)   // the current temperature on the GPU's hotspot temperature sensor in °C
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, memory_temperature)    // the current temperature on the GPU's memory temperature sensor in °C
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, hbm_0_temperature)     // the current temperature on the GPU's HBM0 temperature sensor in °C
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, hbm_1_temperature)     // the current temperature on the GPU's HBM1 temperature sensor in °C
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, hbm_2_temperature)     // the current temperature on the GPU's HBM2 temperature sensor in °C
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, hbm_3_temperature)     // the current temperature on the GPU's HBM3 temperature sensor in °C
 };
 
 /**

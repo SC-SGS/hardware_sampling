@@ -323,125 +323,127 @@ void gpu_amd_hardware_sampler::sampling_loop() {
     // retrieve fixed temperature related information
     {
         std::uint32_t fan_id{ 0 };
-        decltype(temperature_samples_.fan_speed_)::value_type::value_type fan_speed{};
+        std::int64_t fan_speed{};
         while (rsmi_dev_fan_speed_get(device_id_, fan_id, &fan_speed) == RSMI_STATUS_SUCCESS) {
             if (fan_id == 0) {
                 // queried samples -> retrieved every iteration if available
-                temperature_samples_.fan_speed_ = decltype(temperature_samples_.fan_speed_)::value_type{ fan_speed };
+                const auto percentage = static_cast<decltype(temperature_samples_.fan_speed_percentage_)::value_type::value_type>(fan_speed) /
+                                        static_cast<decltype(temperature_samples_.fan_speed_percentage_)::value_type::value_type>(RSMI_MAX_FAN_SPEED);
+                temperature_samples_.fan_speed_percentage_ = decltype(temperature_samples_.fan_speed_percentage_)::value_type{ percentage };
             }
             ++fan_id;
         }
         temperature_samples_.num_fans_ = fan_id;
 
-        decltype(temperature_samples_.max_fan_speed_)::value_type max_fan_speed{};
+        decltype(temperature_samples_.fan_speed_max_)::value_type max_fan_speed{};
         if (rsmi_dev_fan_speed_max_get(device_id_, std::uint32_t{ 0 }, &max_fan_speed) == RSMI_STATUS_SUCCESS) {
-            temperature_samples_.max_fan_speed_ = max_fan_speed;
+            temperature_samples_.fan_speed_max_ = max_fan_speed;
         }
 
-        decltype(temperature_samples_.temperature_edge_min_)::value_type temperature_edge_min{};
-        if (rsmi_dev_temp_metric_get(device_id_, RSMI_TEMP_TYPE_EDGE, RSMI_TEMP_MIN, &temperature_edge_min) == RSMI_STATUS_SUCCESS) {
-            temperature_samples_.temperature_edge_min_ = temperature_edge_min;
+        std::int64_t temperature_min{};
+        if (rsmi_dev_temp_metric_get(device_id_, RSMI_TEMP_TYPE_EDGE, RSMI_TEMP_MIN, &temperature_min) == RSMI_STATUS_SUCCESS) {
+            temperature_samples_.temperature_min_ = static_cast<decltype(temperature_samples_.temperature_min_)::value_type>(temperature_min) / 1000.0;
         }
 
-        decltype(temperature_samples_.temperature_edge_max_)::value_type temperature_edge_max{};
-        if (rsmi_dev_temp_metric_get(device_id_, RSMI_TEMP_TYPE_EDGE, RSMI_TEMP_MAX, &temperature_edge_max) == RSMI_STATUS_SUCCESS) {
-            temperature_samples_.temperature_edge_max_ = temperature_edge_min;
+        std::int64_t temperature_max{};
+        if (rsmi_dev_temp_metric_get(device_id_, RSMI_TEMP_TYPE_EDGE, RSMI_TEMP_MAX, &temperature_max) == RSMI_STATUS_SUCCESS) {
+            temperature_samples_.temperature_max_ = static_cast<decltype(temperature_samples_.temperature_max_)::value_type>(temperature_max) / 1000.0;
         }
 
-        decltype(temperature_samples_.temperature_hotspot_min_)::value_type temperature_hotspot_min{};
-        if (rsmi_dev_temp_metric_get(device_id_, RSMI_TEMP_TYPE_JUNCTION, RSMI_TEMP_MIN, &temperature_hotspot_min) == RSMI_STATUS_SUCCESS) {
-            temperature_samples_.temperature_hotspot_min_ = temperature_hotspot_min;
+        std::int64_t memory_temperature_min{};
+        if (rsmi_dev_temp_metric_get(device_id_, RSMI_TEMP_TYPE_MEMORY, RSMI_TEMP_MIN, &memory_temperature_min) == RSMI_STATUS_SUCCESS) {
+            temperature_samples_.memory_temperature_min_ = static_cast<decltype(temperature_samples_.memory_temperature_min_)::value_type>(memory_temperature_min) / 1000.0;
         }
 
-        decltype(temperature_samples_.temperature_hotspot_max_)::value_type temperature_hotspot_max{};
-        if (rsmi_dev_temp_metric_get(device_id_, RSMI_TEMP_TYPE_JUNCTION, RSMI_TEMP_MAX, &temperature_hotspot_max) == RSMI_STATUS_SUCCESS) {
-            temperature_samples_.temperature_hotspot_max_ = temperature_hotspot_max;
+        std::int64_t memory_temperature_max{};
+        if (rsmi_dev_temp_metric_get(device_id_, RSMI_TEMP_TYPE_MEMORY, RSMI_TEMP_MAX, &memory_temperature_max) == RSMI_STATUS_SUCCESS) {
+            temperature_samples_.memory_temperature_max_ = static_cast<decltype(temperature_samples_.memory_temperature_max_)::value_type>(memory_temperature_max) / 1000.0;
         }
 
-        decltype(temperature_samples_.temperature_memory_min_)::value_type temperature_memory_min{};
-        if (rsmi_dev_temp_metric_get(device_id_, RSMI_TEMP_TYPE_MEMORY, RSMI_TEMP_MIN, &temperature_memory_min) == RSMI_STATUS_SUCCESS) {
-            temperature_samples_.temperature_memory_min_ = temperature_memory_min;
+        std::int64_t hotspot_temperature_min{};
+        if (rsmi_dev_temp_metric_get(device_id_, RSMI_TEMP_TYPE_JUNCTION, RSMI_TEMP_MIN, &hotspot_temperature_min) == RSMI_STATUS_SUCCESS) {
+            temperature_samples_.hotspot_temperature_min_ = static_cast<decltype(temperature_samples_.hotspot_temperature_min_)::value_type>(hotspot_temperature_min) / 1000.0;
         }
 
-        decltype(temperature_samples_.temperature_memory_max_)::value_type temperature_memory_max{};
-        if (rsmi_dev_temp_metric_get(device_id_, RSMI_TEMP_TYPE_MEMORY, RSMI_TEMP_MAX, &temperature_memory_max) == RSMI_STATUS_SUCCESS) {
-            temperature_samples_.temperature_memory_max_ = temperature_memory_max;
+        std::int64_t hotspot_temperature_max{};
+        if (rsmi_dev_temp_metric_get(device_id_, RSMI_TEMP_TYPE_JUNCTION, RSMI_TEMP_MAX, &hotspot_temperature_max) == RSMI_STATUS_SUCCESS) {
+            temperature_samples_.hotspot_temperature_max_ = static_cast<decltype(temperature_samples_.hotspot_temperature_max_)::value_type>(hotspot_temperature_max) / 1000.0;
         }
 
-        decltype(temperature_samples_.temperature_hbm_0_min_)::value_type temperature_hbm_0_min{};
-        if (rsmi_dev_temp_metric_get(device_id_, RSMI_TEMP_TYPE_HBM_0, RSMI_TEMP_MIN, &temperature_hbm_0_min) == RSMI_STATUS_SUCCESS) {
-            temperature_samples_.temperature_hbm_0_min_ = temperature_hbm_0_min;
+        std::int64_t hbm_0_temperature_min{};
+        if (rsmi_dev_temp_metric_get(device_id_, RSMI_TEMP_TYPE_HBM_0, RSMI_TEMP_MIN, &hbm_0_temperature_min) == RSMI_STATUS_SUCCESS) {
+            temperature_samples_.hbm_0_temperature_min_ = static_cast<decltype(temperature_samples_.hbm_0_temperature_min_)::value_type>(hbm_0_temperature_min) / 1000.0;
         }
 
-        decltype(temperature_samples_.temperature_hbm_0_max_)::value_type temperature_hbm_0_max{};
-        if (rsmi_dev_temp_metric_get(device_id_, RSMI_TEMP_TYPE_HBM_0, RSMI_TEMP_MAX, &temperature_hbm_0_max) == RSMI_STATUS_SUCCESS) {
-            temperature_samples_.temperature_hbm_0_max_ = temperature_hbm_0_max;
+        std::int64_t hbm_0_temperature_max{};
+        if (rsmi_dev_temp_metric_get(device_id_, RSMI_TEMP_TYPE_HBM_0, RSMI_TEMP_MAX, &hbm_0_temperature_max) == RSMI_STATUS_SUCCESS) {
+            temperature_samples_.hbm_0_temperature_max_ = static_cast<decltype(temperature_samples_.hbm_0_temperature_max_)::value_type>(hbm_0_temperature_max) / 1000.0;
         }
 
-        decltype(temperature_samples_.temperature_hbm_1_min_)::value_type temperature_hbm_1_min{};
-        if (rsmi_dev_temp_metric_get(device_id_, RSMI_TEMP_TYPE_HBM_1, RSMI_TEMP_MIN, &temperature_hbm_1_min) == RSMI_STATUS_SUCCESS) {
-            temperature_samples_.temperature_hbm_1_min_ = temperature_hbm_1_min;
+        std::int64_t hbm_1_temperature_min{};
+        if (rsmi_dev_temp_metric_get(device_id_, RSMI_TEMP_TYPE_HBM_1, RSMI_TEMP_MIN, &hbm_1_temperature_min) == RSMI_STATUS_SUCCESS) {
+            temperature_samples_.hbm_1_temperature_min_ = static_cast<decltype(temperature_samples_.hbm_1_temperature_min_)::value_type>(hbm_1_temperature_min) / 1000.0;
         }
 
-        decltype(temperature_samples_.temperature_hbm_1_max_)::value_type temperature_hbm_1_max{};
-        if (rsmi_dev_temp_metric_get(device_id_, RSMI_TEMP_TYPE_HBM_1, RSMI_TEMP_MAX, &temperature_hbm_1_max) == RSMI_STATUS_SUCCESS) {
-            temperature_samples_.temperature_hbm_1_max_ = temperature_hbm_1_max;
+        std::int64_t hbm_1_temperature_max{};
+        if (rsmi_dev_temp_metric_get(device_id_, RSMI_TEMP_TYPE_HBM_1, RSMI_TEMP_MAX, &hbm_1_temperature_max) == RSMI_STATUS_SUCCESS) {
+            temperature_samples_.hbm_1_temperature_max_ = static_cast<decltype(temperature_samples_.hbm_1_temperature_max_)::value_type>(hbm_1_temperature_max) / 1000.0;
         }
 
-        decltype(temperature_samples_.temperature_hbm_2_min_)::value_type temperature_hbm_2_min{};
-        if (rsmi_dev_temp_metric_get(device_id_, RSMI_TEMP_TYPE_HBM_2, RSMI_TEMP_MIN, &temperature_hbm_2_min) == RSMI_STATUS_SUCCESS) {
-            temperature_samples_.temperature_hbm_2_min_ = temperature_hbm_2_min;
+        std::int64_t hbm_2_temperature_min{};
+        if (rsmi_dev_temp_metric_get(device_id_, RSMI_TEMP_TYPE_HBM_2, RSMI_TEMP_MIN, &hbm_2_temperature_min) == RSMI_STATUS_SUCCESS) {
+            temperature_samples_.hbm_2_temperature_min_ = static_cast<decltype(temperature_samples_.hbm_2_temperature_min_)::value_type>(hbm_2_temperature_min) / 1000.0;
         }
 
-        decltype(temperature_samples_.temperature_hbm_2_max_)::value_type temperature_hbm_2_max{};
-        if (rsmi_dev_temp_metric_get(device_id_, RSMI_TEMP_TYPE_HBM_2, RSMI_TEMP_MAX, &temperature_hbm_2_max) == RSMI_STATUS_SUCCESS) {
-            temperature_samples_.temperature_hbm_2_max_ = temperature_hbm_2_max;
+        std::int64_t hbm_2_temperature_max{};
+        if (rsmi_dev_temp_metric_get(device_id_, RSMI_TEMP_TYPE_HBM_2, RSMI_TEMP_MAX, &hbm_2_temperature_max) == RSMI_STATUS_SUCCESS) {
+            temperature_samples_.hbm_2_temperature_max_ = static_cast<decltype(temperature_samples_.hbm_2_temperature_max_)::value_type>(hbm_2_temperature_max) / 1000.0;
         }
 
-        decltype(temperature_samples_.temperature_hbm_3_min_)::value_type temperature_hbm_3_min{};
-        if (rsmi_dev_temp_metric_get(device_id_, RSMI_TEMP_TYPE_HBM_3, RSMI_TEMP_MIN, &temperature_hbm_3_min) == RSMI_STATUS_SUCCESS) {
-            temperature_samples_.temperature_hbm_3_min_ = temperature_hbm_3_min;
+        std::int64_t hbm_3_temperature_min{};
+        if (rsmi_dev_temp_metric_get(device_id_, RSMI_TEMP_TYPE_HBM_3, RSMI_TEMP_MIN, &hbm_3_temperature_min) == RSMI_STATUS_SUCCESS) {
+            temperature_samples_.hbm_3_temperature_min_ = static_cast<decltype(temperature_samples_.hbm_3_temperature_min_)::value_type>(hbm_3_temperature_min) / 1000.0;
         }
 
-        decltype(temperature_samples_.temperature_hbm_3_max_)::value_type temperature_hbm_3_max{};
-        if (rsmi_dev_temp_metric_get(device_id_, RSMI_TEMP_TYPE_HBM_3, RSMI_TEMP_MAX, &temperature_hbm_3_max) == RSMI_STATUS_SUCCESS) {
-            temperature_samples_.temperature_hbm_3_max_ = temperature_hbm_3_max;
+        std::int64_t hbm_3_temperature_max{};
+        if (rsmi_dev_temp_metric_get(device_id_, RSMI_TEMP_TYPE_HBM_3, RSMI_TEMP_MAX, &hbm_3_temperature_max) == RSMI_STATUS_SUCCESS) {
+            temperature_samples_.hbm_3_temperature_max_ = static_cast<decltype(temperature_samples_.hbm_3_temperature_max_)::value_type>(hbm_3_temperature_max) / 1000.0;
         }
 
         // queried samples -> retrieved every iteration if available
-        decltype(temperature_samples_.temperature_edge_)::value_type::value_type temperature_edge{};
-        if (rsmi_dev_temp_metric_get(device_id_, RSMI_TEMP_TYPE_EDGE, RSMI_TEMP_CURRENT, &temperature_edge) == RSMI_STATUS_SUCCESS) {
-            temperature_samples_.temperature_edge_ = decltype(temperature_samples_.temperature_edge_)::value_type{ temperature_edge };
+        std::int64_t temperature{};
+        if (rsmi_dev_temp_metric_get(device_id_, RSMI_TEMP_TYPE_EDGE, RSMI_TEMP_CURRENT, &temperature) == RSMI_STATUS_SUCCESS) {
+            temperature_samples_.temperature_ = decltype(temperature_samples_.temperature_)::value_type{ static_cast<decltype(temperature_samples_.temperature_)::value_type::value_type>(temperature) / 1000.0 };
         }
 
-        decltype(temperature_samples_.temperature_hotspot_)::value_type::value_type temperature_hotspot{};
-        if (rsmi_dev_temp_metric_get(device_id_, RSMI_TEMP_TYPE_JUNCTION, RSMI_TEMP_CURRENT, &temperature_hotspot) == RSMI_STATUS_SUCCESS) {
-            temperature_samples_.temperature_hotspot_ = decltype(temperature_samples_.temperature_hotspot_)::value_type{ temperature_hotspot };
+        std::int64_t hotspot_temperature{};
+        if (rsmi_dev_temp_metric_get(device_id_, RSMI_TEMP_TYPE_JUNCTION, RSMI_TEMP_CURRENT, &hotspot_temperature) == RSMI_STATUS_SUCCESS) {
+            temperature_samples_.hotspot_temperature_ = decltype(temperature_samples_.hotspot_temperature_)::value_type{ static_cast<decltype(temperature_samples_.hotspot_temperature_)::value_type::value_type>(hotspot_temperature) / 1000.0 };
         }
 
-        decltype(temperature_samples_.temperature_memory_)::value_type::value_type temperature_memory{};
-        if (rsmi_dev_temp_metric_get(device_id_, RSMI_TEMP_TYPE_MEMORY, RSMI_TEMP_CURRENT, &temperature_memory) == RSMI_STATUS_SUCCESS) {
-            temperature_samples_.temperature_memory_ = decltype(temperature_samples_.temperature_memory_)::value_type{ temperature_memory };
+        std::int64_t memory_temperature{};
+        if (rsmi_dev_temp_metric_get(device_id_, RSMI_TEMP_TYPE_MEMORY, RSMI_TEMP_CURRENT, &memory_temperature) == RSMI_STATUS_SUCCESS) {
+            temperature_samples_.memory_temperature_ = decltype(temperature_samples_.memory_temperature_)::value_type{ static_cast<decltype(temperature_samples_.memory_temperature_)::value_type::value_type>(memory_temperature) / 1000.0 };
         }
 
-        decltype(temperature_samples_.temperature_hbm_0_)::value_type::value_type temperature_hbm_0{};
-        if (rsmi_dev_temp_metric_get(device_id_, RSMI_TEMP_TYPE_HBM_0, RSMI_TEMP_CURRENT, &temperature_hbm_0) == RSMI_STATUS_SUCCESS) {
-            temperature_samples_.temperature_hbm_0_ = decltype(temperature_samples_.temperature_hbm_0_)::value_type{ temperature_hbm_0 };
+        std::int64_t hbm_0_temperature{};
+        if (rsmi_dev_temp_metric_get(device_id_, RSMI_TEMP_TYPE_HBM_0, RSMI_TEMP_CURRENT, &hbm_0_temperature) == RSMI_STATUS_SUCCESS) {
+            temperature_samples_.hbm_0_temperature_ = decltype(temperature_samples_.hbm_0_temperature_)::value_type{ static_cast<decltype(temperature_samples_.hbm_0_temperature_)::value_type::value_type>(hbm_0_temperature) / 1000.0 };
         }
 
-        decltype(temperature_samples_.temperature_hbm_1_)::value_type::value_type temperature_hbm_1{};
-        if (rsmi_dev_temp_metric_get(device_id_, RSMI_TEMP_TYPE_HBM_1, RSMI_TEMP_CURRENT, &temperature_hbm_1) == RSMI_STATUS_SUCCESS) {
-            temperature_samples_.temperature_hbm_1_ = decltype(temperature_samples_.temperature_hbm_1_)::value_type{ temperature_hbm_1 };
+        std::int64_t hbm_1_temperature{};
+        if (rsmi_dev_temp_metric_get(device_id_, RSMI_TEMP_TYPE_HBM_1, RSMI_TEMP_CURRENT, &hbm_1_temperature) == RSMI_STATUS_SUCCESS) {
+            temperature_samples_.hbm_1_temperature_ = decltype(temperature_samples_.hbm_1_temperature_)::value_type{ static_cast<decltype(temperature_samples_.hbm_1_temperature_)::value_type::value_type>(hbm_1_temperature) / 1000.0 };
         }
 
-        decltype(temperature_samples_.temperature_hbm_2_)::value_type::value_type temperature_hbm_2{};
-        if (rsmi_dev_temp_metric_get(device_id_, RSMI_TEMP_TYPE_HBM_2, RSMI_TEMP_CURRENT, &temperature_hbm_2) == RSMI_STATUS_SUCCESS) {
-            temperature_samples_.temperature_hbm_2_ = decltype(temperature_samples_.temperature_hbm_2_)::value_type{ temperature_hbm_2 };
+        std::int64_t hbm_2_temperature{};
+        if (rsmi_dev_temp_metric_get(device_id_, RSMI_TEMP_TYPE_HBM_2, RSMI_TEMP_CURRENT, &hbm_2_temperature) == RSMI_STATUS_SUCCESS) {
+            temperature_samples_.hbm_2_temperature_ = decltype(temperature_samples_.hbm_2_temperature_)::value_type{ static_cast<decltype(temperature_samples_.hbm_2_temperature_)::value_type::value_type>(hbm_2_temperature) / 1000.0 };
         }
 
-        decltype(temperature_samples_.temperature_hbm_3_)::value_type::value_type temperature_hbm_3{};
-        if (rsmi_dev_temp_metric_get(device_id_, RSMI_TEMP_TYPE_HBM_3, RSMI_TEMP_CURRENT, &temperature_hbm_3) == RSMI_STATUS_SUCCESS) {
-            temperature_samples_.temperature_hbm_3_ = decltype(temperature_samples_.temperature_hbm_3_)::value_type{ temperature_hbm_3 };
+        std::int64_t hbm_3_temperature{};
+        if (rsmi_dev_temp_metric_get(device_id_, RSMI_TEMP_TYPE_HBM_3, RSMI_TEMP_CURRENT, &hbm_3_temperature) == RSMI_STATUS_SUCCESS) {
+            temperature_samples_.hbm_3_temperature_ = decltype(temperature_samples_.hbm_3_temperature_)::value_type{ static_cast<decltype(temperature_samples_.hbm_3_temperature_)::value_type::value_type>(hbm_3_temperature) / 1000.0 };
         }
     }
 
@@ -598,52 +600,53 @@ void gpu_amd_hardware_sampler::sampling_loop() {
 
             // retrieve temperature related samples
             {
-                if (temperature_samples_.fan_speed_.has_value()) {
-                    decltype(temperature_samples_.fan_speed_)::value_type::value_type value{};
+                if (temperature_samples_.fan_speed_percentage_.has_value()) {
+                    std::int64_t value{};
                     HWS_ROCM_SMI_ERROR_CHECK(rsmi_dev_fan_speed_get(device_id_, std::uint32_t{ 0 }, &value));
-                    temperature_samples_.fan_speed_->push_back(value);
+                    temperature_samples_.fan_speed_percentage_->push_back(static_cast<decltype(temperature_samples_.fan_speed_percentage_)::value_type::value_type>(value) /
+                                                                          static_cast<decltype(temperature_samples_.fan_speed_percentage_)::value_type::value_type>(RSMI_MAX_FAN_SPEED));
                 }
 
-                if (temperature_samples_.temperature_edge_.has_value()) {
-                    decltype(temperature_samples_.temperature_edge_)::value_type::value_type value{};
+                if (temperature_samples_.temperature_.has_value()) {
+                    std::int64_t value{};
                     HWS_ROCM_SMI_ERROR_CHECK(rsmi_dev_temp_metric_get(device_id_, RSMI_TEMP_TYPE_EDGE, RSMI_TEMP_CURRENT, &value));
-                    temperature_samples_.temperature_edge_->push_back(value);
+                    temperature_samples_.temperature_->push_back(static_cast<decltype(temperature_samples_.temperature_)::value_type::value_type>(value) / 1000.0);
                 }
 
-                if (temperature_samples_.temperature_hotspot_.has_value()) {
-                    decltype(temperature_samples_.temperature_hotspot_)::value_type::value_type value{};
-                    HWS_ROCM_SMI_ERROR_CHECK(rsmi_dev_temp_metric_get(device_id_, RSMI_TEMP_TYPE_JUNCTION, RSMI_TEMP_CURRENT, &value));
-                    temperature_samples_.temperature_hotspot_->push_back(value);
-                }
-
-                if (temperature_samples_.temperature_memory_.has_value()) {
-                    decltype(temperature_samples_.temperature_memory_)::value_type::value_type value{};
+                if (temperature_samples_.memory_temperature_.has_value()) {
+                    std::int64_t value{};
                     HWS_ROCM_SMI_ERROR_CHECK(rsmi_dev_temp_metric_get(device_id_, RSMI_TEMP_TYPE_MEMORY, RSMI_TEMP_CURRENT, &value));
-                    temperature_samples_.temperature_memory_->push_back(value);
+                    temperature_samples_.memory_temperature_->push_back(static_cast<decltype(temperature_samples_.memory_temperature_)::value_type::value_type>(value) / 1000.0);
                 }
 
-                if (temperature_samples_.temperature_hbm_0_.has_value()) {
-                    decltype(temperature_samples_.temperature_hbm_0_)::value_type::value_type value{};
+                if (temperature_samples_.hotspot_temperature_.has_value()) {
+                    std::int64_t value{};
+                    HWS_ROCM_SMI_ERROR_CHECK(rsmi_dev_temp_metric_get(device_id_, RSMI_TEMP_TYPE_JUNCTION, RSMI_TEMP_CURRENT, &value));
+                    temperature_samples_.hotspot_temperature_->push_back(static_cast<decltype(temperature_samples_.hotspot_temperature_)::value_type::value_type>(value) / 1000.0);
+                }
+
+                if (temperature_samples_.hbm_0_temperature_.has_value()) {
+                    std::int64_t value{};
                     HWS_ROCM_SMI_ERROR_CHECK(rsmi_dev_temp_metric_get(device_id_, RSMI_TEMP_TYPE_HBM_0, RSMI_TEMP_CURRENT, &value));
-                    temperature_samples_.temperature_hbm_0_->push_back(value);
+                    temperature_samples_.hbm_0_temperature_->push_back(static_cast<decltype(temperature_samples_.hbm_0_temperature_)::value_type::value_type>(value) / 1000.0);
                 }
 
-                if (temperature_samples_.temperature_hbm_1_.has_value()) {
-                    decltype(temperature_samples_.temperature_hbm_1_)::value_type::value_type value{};
+                if (temperature_samples_.hbm_1_temperature_.has_value()) {
+                    std::int64_t value{};
                     HWS_ROCM_SMI_ERROR_CHECK(rsmi_dev_temp_metric_get(device_id_, RSMI_TEMP_TYPE_HBM_1, RSMI_TEMP_CURRENT, &value));
-                    temperature_samples_.temperature_hbm_1_->push_back(value);
+                    temperature_samples_.hbm_1_temperature_->push_back(static_cast<decltype(temperature_samples_.hbm_1_temperature_)::value_type::value_type>(value) / 1000.0);
                 }
 
-                if (temperature_samples_.temperature_hbm_2_.has_value()) {
-                    decltype(temperature_samples_.temperature_hbm_2_)::value_type::value_type value{};
+                if (temperature_samples_.hbm_2_temperature_.has_value()) {
+                    std::int64_t value{};
                     HWS_ROCM_SMI_ERROR_CHECK(rsmi_dev_temp_metric_get(device_id_, RSMI_TEMP_TYPE_HBM_2, RSMI_TEMP_CURRENT, &value));
-                    temperature_samples_.temperature_hbm_2_->push_back(value);
+                    temperature_samples_.hbm_2_temperature_->push_back(static_cast<decltype(temperature_samples_.hbm_2_temperature_)::value_type::value_type>(value) / 1000.0);
                 }
 
-                if (temperature_samples_.temperature_hbm_3_.has_value()) {
-                    decltype(temperature_samples_.temperature_hbm_3_)::value_type::value_type value{};
+                if (temperature_samples_.hbm_3_temperature_.has_value()) {
+                    std::int64_t value{};
                     HWS_ROCM_SMI_ERROR_CHECK(rsmi_dev_temp_metric_get(device_id_, RSMI_TEMP_TYPE_HBM_3, RSMI_TEMP_CURRENT, &value));
-                    temperature_samples_.temperature_hbm_3_->push_back(value);
+                    temperature_samples_.hbm_3_temperature_->push_back(static_cast<decltype(temperature_samples_.hbm_3_temperature_)::value_type::value_type>(value) / 1000.0);
                 }
             }
         }

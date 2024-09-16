@@ -208,14 +208,14 @@ class nvml_temperature_samples {
      */
     [[nodiscard]] std::string generate_yaml_string() const;
 
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(unsigned int, num_fans)                       // the number of fans (if any)
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(unsigned int, min_fan_speed)                  // the minimum fan speed the user can set in %
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(unsigned int, max_fan_speed)                  // the maximum fan speed the user can set in %
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(unsigned int, temperature_threshold_gpu_max)  // the maximum graphics temperature threshold in °C
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(unsigned int, temperature_threshold_mem_max)  // the maximum memory temperature threshold in °C
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(unsigned int, num_fans)          // the number of fans (if any)
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(unsigned int, fan_speed_min)     // the minimum fan speed the user can set in %
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(unsigned int, fan_speed_max)     // the maximum fan speed the user can set in %
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(double, temperature_max)         // the maximum graphics temperature threshold in °C
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(double, memory_temperature_max)  // the maximum memory temperature threshold in °C
 
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(unsigned int, fan_speed)        // the current intended fan speed in %
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(unsigned int, temperature_gpu)  // the current GPU temperature in °C
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, fan_speed_percentage)  // the current intended fan speed in %
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, temperature)           // the current GPU temperature in °C
 };
 
 /**

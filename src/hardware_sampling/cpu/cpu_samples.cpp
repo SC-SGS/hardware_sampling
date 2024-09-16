@@ -482,9 +482,17 @@ std::ostream &operator<<(std::ostream &out, const cpu_memory_samples &samples) {
 std::string cpu_temperature_samples::generate_yaml_string() const {
     std::string str{ "temperature:\n" };
 
+    // the temperature of the whole package
+    if (this->temperature_.has_value()) {
+        str += fmt::format("  temperature:\n"
+                           "    turbostat_name: \"PkgTmp\"\n"
+                           "    unit: \"°C\"\n"
+                           "    values: [{}]\n",
+                           fmt::join(this->temperature_.value(), ", "));
+    }
     // the temperature of the cores
     if (this->core_temperature_.has_value()) {
-        str += fmt::format("  per_core_temperature:\n"
+        str += fmt::format("  core_temperature:\n"
                            "    turbostat_name: \"CoreTmp\"\n"
                            "    unit: \"°C\"\n"
                            "    values: [{}]\n",
@@ -498,14 +506,6 @@ std::string cpu_temperature_samples::generate_yaml_string() const {
                            "    values: [{}]\n",
                            fmt::join(this->core_throttle_percent_.value(), ", "));
     }
-    // the temperature of the whole package
-    if (this->package_temperature_.has_value()) {
-        str += fmt::format("  per_package_temperature:\n"
-                           "    turbostat_name: \"PkgTmp\"\n"
-                           "    unit: \"°C\"\n"
-                           "    values: [{}]\n",
-                           fmt::join(this->package_temperature_.value(), ", "));
-    }
 
     // remove last newline
     str.pop_back();
@@ -514,12 +514,12 @@ std::string cpu_temperature_samples::generate_yaml_string() const {
 }
 
 std::ostream &operator<<(std::ostream &out, const cpu_temperature_samples &samples) {
-    return out << fmt::format("core_temperature [°C]: [{}]\n"
-                              "core_throttle_percent [%]: [{}]\n"
-                              "package_temperature [°C]: [{}]",
+    return out << fmt::format("temperature [°C]: [{}]\n"
+                              "core_temperature [°C]: [{}]\n"
+                              "core_throttle_percent [%]: [{}]",
+                              fmt::join(detail::value_or_default(samples.get_temperature()), ", "),
                               fmt::join(detail::value_or_default(samples.get_core_temperature()), ", "),
-                              fmt::join(detail::value_or_default(samples.get_core_throttle_percent()), ", "),
-                              fmt::join(detail::value_or_default(samples.get_package_temperature()), ", "));
+                              fmt::join(detail::value_or_default(samples.get_core_throttle_percent()), ", "));
 }
 
 //*************************************************************************************************************************************//
