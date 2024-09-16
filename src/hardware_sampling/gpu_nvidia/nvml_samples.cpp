@@ -172,7 +172,7 @@ std::string nvml_clock_samples::generate_yaml_string() const {
                            "    unit: \"MHz\"\n"
                            "    values:\n");
         for (const auto &[key, value] : this->available_clock_frequencies_.value()) {
-            str += fmt::format("      {}: [{}]\n", key, fmt::join(value, ", "));
+            str += fmt::format("      memory_clock_frequency_{}: [{}]\n", key, fmt::join(value, ", "));
         }
     }
     // the available memory clock frequencies
