@@ -16,17 +16,15 @@
 #include "fmt/ranges.h"  // fmt::join
 
 #include <charconv>      // std::from_chars
-#include <chrono>        // std::chrono::{milliseconds, duration_cast}
+#include <chrono>        // std::chrono::duration
 #include <cmath>         // std::trunc
 #include <cstddef>       // std::size_t
-#include <iterator>      // std::back_inserter, std::next, std::prev
 #include <optional>      // std::optional
-#include <sstream>       // std::basic_stringstream
 #include <stdexcept>     // std::runtime_error
 #include <string>        // std::string, std::stof, std::stod, std::stold
-#include <string_view>   // std::string_view, std::basic_string_view
+#include <string_view>   // std::string_view
 #include <system_error>  // std::errc
-#include <type_traits>   // std::is_same_v, std::remove_cv_t, std::remove_reference_t
+#include <type_traits>   // std::is_same_v, std::is_floating_point_v, std::remove_cv_t, std::remove_reference_t, std::true_type, std::false_type
 #include <vector>        // std::vector
 
 namespace hws::detail {
@@ -56,7 +54,25 @@ namespace hws::detail {
   private:                                                                                            \
     std::optional<std::vector<sample_type>> sample_name##_{};
 
-// TODO: clean-up
+/*****************************************************************************************************/
+/**                                          type_traits                                            **/
+/*****************************************************************************************************/
+
+template <typename T>
+using remove_cvref_t = std::remove_cv_t<std::remove_reference_t<T>>;
+
+template <typename T>
+struct is_vector : std::false_type { };
+
+template <typename T>
+struct is_vector<std::vector<T>> : std::true_type { };
+
+template <typename T>
+constexpr bool is_vector_v = is_vector<T>::value;
+
+/*****************************************************************************************************/
+/**                                      string manipulation                                        **/
+/*****************************************************************************************************/
 
 /**
  * @brief Checks whether the string @p sv starts with the substring @p start
@@ -64,61 +80,7 @@ namespace hws::detail {
  * @param[in] start the substring
  * @return `true` if @p sv starts with @p start, otherwise `false`
  */
-[[nodiscard]] inline bool starts_with(const std::string_view sv, const std::string_view start) {
-    return sv.substr(0, start.size()) == start;
-}
-
-template <typename T>
-using remove_cvref_t = std::remove_cv_t<std::remove_reference_t<T>>;
-
-/**
- * @brief Convert all time points to their duration in seconds (using double) truncated to three decimal places passed since the @p reference time point.
- * @tparam TimePoint the type if the time points
- * @param[in] time_points the time points
- * @param[in] reference the reference time point
- * @return the duration passed in seconds since the @p reference time point (`[[nodiscard]]`)
- */
-template <typename TimePoint>
-[[nodiscard]] inline std::vector<double> durations_from_reference_time(const std::vector<TimePoint> &time_points, const TimePoint &reference) {
-    std::vector<double> durations(time_points.size());
-
-    for (std::size_t i = 0; i < durations.size(); ++i) {
-        durations[i] = std::trunc(std::chrono::duration<double>(time_points[i] - reference).count() * 1000.0) / 1000.0;
-    }
-
-    return durations;
-}
-
-/**
- * @brief Convert all time points to their duration since the epoch start.
- * @tparam TimePoint the type of the time points
- * @param[in] time_points the time points
- * @return the duration passed since the respective @p TimePoint epoch start (`[[nodiscard]]`)
- */
-template <typename TimePoint>
-[[nodiscard]] inline std::vector<typename TimePoint::duration> time_points_to_epoch(const std::vector<TimePoint> &time_points) {
-    std::vector<typename TimePoint::duration> times(time_points.size());
-
-    for (std::size_t i = 0; i < times.size(); ++i) {
-        times[i] = time_points[i].time_since_epoch();
-    }
-    return times;
-}
-
-/**
- * @brief Return the value encapsulated by the std::optional @p opt if it contains a value, otherwise a default constructed @p T is returned.
- * @tparam T the type of the value stored in the std::optional
- * @param[in] opt the std::optional to check
- * @return the value of the std::optional or a default constructed @p T (`[[nodiscard]]`)
- */
-template <typename T>
-[[nodiscard]] inline T value_or_default(const std::optional<T> &opt) {
-    if (opt.has_value()) {
-        return opt.value();
-    } else {
-        return T{};
-    }
-}
+[[nodiscard]] bool starts_with(std::string_view sv, std::string_view start) noexcept;
 
 /**
  * @brief Trim the @p str, i.e., remove all leading and trailing whitespace characters.
@@ -133,6 +95,14 @@ template <typename T>
  * @return the lower case string (`[[nodiscard]]`)
  */
 [[nodiscard]] std::string to_lower_case(std::string_view str);
+
+/**
+ * @brief Split the @p str at the delimiters @p delim.
+ * @param[in] str the string to split
+ * @param[in] delim the used delimiter
+ * @return a vector containing all split tokens (`[[nodiscard]]`)
+ */
+[[nodiscard]] std::vector<std::string_view> split(std::string_view str, char delim = ' ');
 
 /**
  * @brief Convert the @p str to a value of type @p T.
@@ -213,23 +183,6 @@ template <typename T>
 }
 
 /**
- * @brief Split the @p str at the delimiters @p delim.
- * @param[in] str the string to split
- * @param[in] delim the used delimiter
- * @return a vector containing all split tokens (`[[nodiscard]]`)
- */
-[[nodiscard]] std::vector<std::string_view> split(std::string_view str, char delim = ' ');
-
-template <typename T>
-struct is_vector : std::false_type { };
-
-template <typename T>
-struct is_vector<std::vector<T>> : std::true_type { };
-
-template <typename T>
-constexpr bool is_vector_v = is_vector<T>::value;
-
-/**
  * @brief Convert all entries in the map to a single dict-like string.
  * @details The resulting string is of form "{KEY, VALUE}" or "{KEY, [VALUES]}".
  * @tparam MapType the type of the map
@@ -270,6 +223,59 @@ template <typename T>
     }
 
     return quoted;
+}
+
+/*****************************************************************************************************/
+/**                                      other free functions                                       **/
+/*****************************************************************************************************/
+
+/**
+ * @brief Convert all time points to their duration in seconds (using double) truncated to three decimal places passed since the @p reference time point.
+ * @tparam TimePoint the type if the time points
+ * @param[in] time_points the time points
+ * @param[in] reference the reference time point
+ * @return the duration passed in seconds since the @p reference time point (`[[nodiscard]]`)
+ */
+template <typename TimePoint>
+[[nodiscard]] inline std::vector<double> durations_from_reference_time(const std::vector<TimePoint> &time_points, const TimePoint &reference) {
+    std::vector<double> durations(time_points.size());
+
+    for (std::size_t i = 0; i < durations.size(); ++i) {
+        durations[i] = std::trunc(std::chrono::duration<double>(time_points[i] - reference).count() * 1000.0) / 1000.0;
+    }
+
+    return durations;
+}
+
+/**
+ * @brief Convert all time points to their duration since the epoch start.
+ * @tparam TimePoint the type of the time points
+ * @param[in] time_points the time points
+ * @return the duration passed since the respective @p TimePoint epoch start (`[[nodiscard]]`)
+ */
+template <typename TimePoint>
+[[nodiscard]] inline std::vector<typename TimePoint::duration> time_points_to_epoch(const std::vector<TimePoint> &time_points) {
+    std::vector<typename TimePoint::duration> times(time_points.size());
+
+    for (std::size_t i = 0; i < times.size(); ++i) {
+        times[i] = time_points[i].time_since_epoch();
+    }
+    return times;
+}
+
+/**
+ * @brief Return the value encapsulated by the std::optional @p opt if it contains a value, otherwise a default constructed @p T is returned.
+ * @tparam T the type of the value stored in the std::optional
+ * @param[in] opt the std::optional to check
+ * @return the value of the std::optional or a default constructed @p T (`[[nodiscard]]`)
+ */
+template <typename T>
+[[nodiscard]] inline T value_or_default(const std::optional<T> &opt) {
+    if (opt.has_value()) {
+        return opt.value();
+    } else {
+        return T{};
+    }
 }
 
 }  // namespace hws::detail

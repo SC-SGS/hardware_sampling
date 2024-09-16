@@ -15,6 +15,10 @@
 
 namespace hws::detail {
 
+bool starts_with(const std::string_view sv, const std::string_view start) noexcept {
+    return sv.substr(0, start.size()) == start;
+}
+
 std::string_view trim(std::string_view str) noexcept {
     // trim right
     {
