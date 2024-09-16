@@ -98,13 +98,13 @@ void cpu_hardware_sampler::sampling_loop() {
             } else if (detail::starts_with(line, "CPU min MHz")) {
                 clock_samples_.clock_frequency_min_ = detail::convert_to<decltype(clock_samples_.clock_frequency_min_)::value_type>(value);
             } else if (detail::starts_with(line, "L1d cache")) {
-                memory_samples_.l1d_cache_ = detail::convert_to<decltype(memory_samples_.l1d_cache_)::value_type>(value);
+                memory_samples_.cache_size_L1d_ = detail::convert_to<decltype(memory_samples_.cache_size_L1d_)::value_type>(value);
             } else if (detail::starts_with(line, "L1i cache")) {
-                memory_samples_.l1i_cache_ = detail::convert_to<decltype(memory_samples_.l1i_cache_)::value_type>(value);
+                memory_samples_.cache_size_L1i_ = detail::convert_to<decltype(memory_samples_.cache_size_L1i_)::value_type>(value);
             } else if (detail::starts_with(line, "L2 cache")) {
-                memory_samples_.l2_cache_ = detail::convert_to<decltype(memory_samples_.l2_cache_)::value_type>(value);
+                memory_samples_.cache_size_L2_ = detail::convert_to<decltype(memory_samples_.cache_size_L2_)::value_type>(value);
             } else if (detail::starts_with(line, "L3 cache")) {
-                memory_samples_.l3_cache_ = detail::convert_to<decltype(memory_samples_.l3_cache_)::value_type>(value);
+                memory_samples_.cache_size_L3_ = detail::convert_to<decltype(memory_samples_.cache_size_L3_)::value_type>(value);
             }
         }
 

@@ -163,14 +163,17 @@ class rocm_smi_memory_samples {
      */
     [[nodiscard]] std::string generate_yaml_string() const;
 
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::uint64_t, memory_total)          // the total available memory in Byte
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::uint64_t, visible_memory_total)  // the total visible available memory in Byte, may be smaller than the total memory
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::uint32_t, min_num_pcie_lanes)    // the minimum number of used PCIe lanes
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::uint32_t, max_num_pcie_lanes)    // the maximum number of used PCIe lanes
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::uint64_t, memory_total)                 // the total available memory in Byte
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::uint64_t, visible_memory_total)         // the total visible available memory in Byte, may be smaller than the total memory
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::uint32_t, num_pcie_lanes_min)           // the minimum number of used PCIe lanes
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::uint32_t, num_pcie_lanes_max)           // the maximum number of used PCIe lanes
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::uint64_t, pcie_link_transfer_rate_min)  // the minimum PCIe link transfer rate in MT/s
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::uint64_t, pcie_link_transfer_rate_max)  // the maximum PCIe link transfer rate in MT/s
 
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(std::uint64_t, memory_used)         // the currently used memory in Byte
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(std::uint64_t, pcie_transfer_rate)  // the current PCIe transfer rate in T/s
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(std::uint32_t, num_pcie_lanes)      // the number of currently used PCIe lanes
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(std::uint64_t, memory_used)              // the currently used memory in Byte
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(std::uint64_t, memory_free)              // the currently free memory in Byte
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(std::uint32_t, num_pcie_lanes)           // the number of currently used PCIe lanes
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(std::uint64_t, pcie_link_transfer_rate)  // the current PCIe transfer rate in MT/s
 };
 
 /**

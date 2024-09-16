@@ -337,18 +337,32 @@ std::string rocm_smi_memory_samples::generate_yaml_string() const {
                            this->visible_memory_total_.value());
     }
     // min number of PCIe lanes
-    if (this->min_num_pcie_lanes_.has_value()) {
-        str += fmt::format("  min_num_pcie_lanes:\n"
+    if (this->num_pcie_lanes_min_.has_value()) {
+        str += fmt::format("  num_pcie_lanes_min:\n"
                            "    unit: \"int\"\n"
                            "    values: {}\n",
-                           this->min_num_pcie_lanes_.value());
+                           this->num_pcie_lanes_min_.value());
     }
     // max number of PCIe lanes
-    if (this->max_num_pcie_lanes_.has_value()) {
-        str += fmt::format("  max_num_pcie_lanes:\n"
+    if (this->num_pcie_lanes_max_.has_value()) {
+        str += fmt::format("  num_pcie_lanes_max:\n"
                            "    unit: \"int\"\n"
                            "    values: {}\n",
-                           this->max_num_pcie_lanes_.value());
+                           this->num_pcie_lanes_max_.value());
+    }
+    // the minimum PCIe link transfer rate
+    if (this->pcie_link_transfer_rate_min_.has_value()) {
+        str += fmt::format("  pcie_link_transfer_rate_min:\n"
+                           "    unit: \"MT/s\"\n"
+                           "    values: {}\n",
+                           this->pcie_link_transfer_rate_min_.value());
+    }
+    // the maximum PCIe link transfer rate
+    if (this->pcie_link_transfer_rate_max_.has_value()) {
+        str += fmt::format("  pcie_link_transfer_rate_max:\n"
+                           "    unit: \"MT/s\"\n"
+                           "    values: {}\n",
+                           this->pcie_link_transfer_rate_max_.value());
     }
 
     // used memory
@@ -359,30 +373,26 @@ std::string rocm_smi_memory_samples::generate_yaml_string() const {
                            fmt::join(this->memory_used_.value(), ", "));
     }
     // free memory
-    if (this->memory_used_.has_value() && this->memory_total_.has_value()) {
-        decltype(rocm_smi_memory_samples::memory_used_)::value_type memory_free(this->memory_used_->size(), this->memory_total_.value());
-        for (std::size_t i = 0; i < memory_free.size(); ++i) {
-            memory_free[i] -= this->memory_used_.value()[i];
-        }
+    if (this->memory_free_.has_value()) {
         str += fmt::format("  memory_free:\n"
                            "    unit: \"B\"\n"
                            "    values: [{}]\n",
-                           fmt::join(memory_free, ", "));
+                           fmt::join(this->memory_free_.value(), ", "));
     }
 
-    // PCIe bandwidth
-    if (this->pcie_transfer_rate_.has_value()) {
-        str += fmt::format("  pcie_bandwidth:\n"
-                           "    unit: \"T/s\"\n"
-                           "    values: [{}]\n",
-                           fmt::join(this->pcie_transfer_rate_.value(), ", "));
-    }
     // number of PCIe lanes
     if (this->num_pcie_lanes_.has_value()) {
-        str += fmt::format("  pcie_num_lanes:\n"
+        str += fmt::format("  num_pcie_lanes:\n"
                            "    unit: \"int\"\n"
                            "    values: [{}]\n",
                            fmt::join(this->num_pcie_lanes_.value(), ", "));
+    }
+    // PCIe transfer rate
+    if (this->pcie_link_transfer_rate_.has_value()) {
+        str += fmt::format("  pcie_link_transfer_rate:\n"
+                           "    unit: \"MT/s\"\n"
+                           "    values: [{}]\n",
+                           fmt::join(this->pcie_link_transfer_rate_.value(), ", "));
     }
 
     // remove last newline
@@ -394,18 +404,24 @@ std::string rocm_smi_memory_samples::generate_yaml_string() const {
 std::ostream &operator<<(std::ostream &out, const rocm_smi_memory_samples &samples) {
     return out << fmt::format("memory_total [B]: {}\n"
                               "visible_memory_total [B]: {}\n"
-                              "min_num_pcie_lanes [int]: {}\n"
-                              "max_num_pcie_lanes [int]: {}\n"
+                              "num_pcie_lanes_min [int]: {}\n"
+                              "num_pcie_lanes_max [int]: {}\n"
+                              "pcie_link_transfer_rate_min [MBPS]: {}\n"
+                              "pcie_link_transfer_rate_max [MBPS]: {}\n"
                               "memory_used [B]: [{}]\n"
-                              "pcie_transfer_rate [T/s]: [{}]\n"
-                              "num_pcie_lanes [int]: [{}]",
+                              "memory_free [B]: [{}]\n"
+                              "num_pcie_lanes [int]: [{}]\n"
+                              "pcie_link_transfer_rate [MBPS]: [{}]",
                               detail::value_or_default(samples.get_memory_total()),
                               detail::value_or_default(samples.get_visible_memory_total()),
-                              detail::value_or_default(samples.get_min_num_pcie_lanes()),
-                              detail::value_or_default(samples.get_max_num_pcie_lanes()),
+                              detail::value_or_default(samples.get_num_pcie_lanes_min()),
+                              detail::value_or_default(samples.get_num_pcie_lanes_max()),
+                              detail::value_or_default(samples.get_pcie_link_transfer_rate_min()),
+                              detail::value_or_default(samples.get_pcie_link_transfer_rate_max()),
                               fmt::join(detail::value_or_default(samples.get_memory_used()), ", "),
-                              fmt::join(detail::value_or_default(samples.get_pcie_transfer_rate()), ", "),
-                              fmt::join(detail::value_or_default(samples.get_num_pcie_lanes()), ", "));
+                              fmt::join(detail::value_or_default(samples.get_memory_free()), ", "),
+                              fmt::join(detail::value_or_default(samples.get_num_pcie_lanes()), ", "),
+                              fmt::join(detail::value_or_default(samples.get_pcie_link_transfer_rate()), ", "));
 }
 
 //*************************************************************************************************************************************//

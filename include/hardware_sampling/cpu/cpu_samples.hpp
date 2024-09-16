@@ -166,10 +166,10 @@ class cpu_memory_samples {
      */
     [[nodiscard]] std::string generate_yaml_string() const;
 
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, l1d_cache)                 // the size of the L1 data cache
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, l1i_cache)                 // the size of the L1 instruction cache
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, l2_cache)                  // the size of the L2 cache
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, l3_cache)                  // the size of the L2 cache
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, cache_size_L1d)            // the size of the L1 data cache
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, cache_size_L1i)            // the size of the L1 instruction cache
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, cache_size_L2)             // the size of the L2 cache
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, cache_size_L3)             // the size of the L2 cache
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(unsigned long long, memory_total)       // the total available memory in Byte
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(unsigned long long, swap_memory_total)  // the total available swap memory in Byte
 

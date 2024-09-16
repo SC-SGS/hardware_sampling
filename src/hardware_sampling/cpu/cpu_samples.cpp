@@ -374,32 +374,32 @@ std::string cpu_memory_samples::generate_yaml_string() const {
     std::string str{ "memory:\n" };
 
     // the size of the L1 data cache
-    if (this->l1d_cache_.has_value()) {
+    if (this->cache_size_L1d_.has_value()) {
         str += fmt::format("  cache_size_L1d:\n"
                            "    unit: \"string\"\n"
                            "    values: \"{}\"\n",
-                           this->l1d_cache_.value());
+                           this->cache_size_L1d_.value());
     }
     // the size of the L1 instruction cache
-    if (this->l1i_cache_.has_value()) {
+    if (this->cache_size_L1i_.has_value()) {
         str += fmt::format("  cache_size_L1i:\n"
                            "    unit: \"string\"\n"
                            "    values: \"{}\"\n",
-                           this->l1i_cache_.value());
+                           this->cache_size_L1i_.value());
     }
     // the size of the L2 cache
-    if (this->l2_cache_.has_value()) {
+    if (this->cache_size_L2_.has_value()) {
         str += fmt::format("  cache_size_L2:\n"
                            "    unit: \"string\"\n"
                            "    values: \"{}\"\n",
-                           this->l2_cache_.value());
+                           this->cache_size_L2_.value());
     }
     // the size of the L3 cache
-    if (this->l3_cache_.has_value()) {
+    if (this->cache_size_L3_.has_value()) {
         str += fmt::format("  cache_size_L3:\n"
                            "    unit: \"string\"\n"
                            "    values: \"{}\"\n",
-                           this->l3_cache_.value());
+                           this->cache_size_L3_.value());
     }
 
     // the total size of available memory
@@ -417,13 +417,6 @@ std::string cpu_memory_samples::generate_yaml_string() const {
                            this->swap_memory_total_.value());
     }
 
-    // the available free memory
-    if (this->memory_free_.has_value()) {
-        str += fmt::format("  memory_free:\n"
-                           "    unit: \"B\"\n"
-                           "    values: [{}]\n",
-                           fmt::join(this->memory_free_.value(), ", "));
-    }
     // the used memory
     if (this->memory_used_.has_value()) {
         str += fmt::format("  memory_used:\n"
@@ -431,12 +424,12 @@ std::string cpu_memory_samples::generate_yaml_string() const {
                            "    values: [{}]\n",
                            fmt::join(this->memory_used_.value(), ", "));
     }
-    // the available swap memory
-    if (this->swap_memory_free_.has_value()) {
-        str += fmt::format("  swap_memory_free:\n"
+    // the available free memory
+    if (this->memory_free_.has_value()) {
+        str += fmt::format("  memory_free:\n"
                            "    unit: \"B\"\n"
                            "    values: [{}]\n",
-                           fmt::join(this->swap_memory_free_.value(), ", "));
+                           fmt::join(this->memory_free_.value(), ", "));
     }
     // the swap memory
     if (this->swap_memory_used_.has_value()) {
@@ -444,6 +437,13 @@ std::string cpu_memory_samples::generate_yaml_string() const {
                            "    unit: \"B\"\n"
                            "    values: [{}]\n",
                            fmt::join(this->swap_memory_used_.value(), ", "));
+    }
+    // the available swap memory
+    if (this->swap_memory_free_.has_value()) {
+        str += fmt::format("  swap_memory_free:\n"
+                           "    unit: \"B\"\n"
+                           "    values: [{}]\n",
+                           fmt::join(this->swap_memory_free_.value(), ", "));
     }
 
     // remove last newline
@@ -453,26 +453,26 @@ std::string cpu_memory_samples::generate_yaml_string() const {
 }
 
 std::ostream &operator<<(std::ostream &out, const cpu_memory_samples &samples) {
-    return out << fmt::format("l1d_cache [string]: {}\n"
-                              "l1i_cache [string]: {}\n"
-                              "l2_cache [string]: {}\n"
-                              "l3_cache [string]: {}\n"
+    return out << fmt::format("cache_size_L1d [string]: {}\n"
+                              "cache_size_L1i [string]: {}\n"
+                              "cache_size_L2 [string]: {}\n"
+                              "cache_size_L3 [string]: {}\n"
                               "memory_total [B]: {}\n"
                               "swap_memory_total [B]: {}\n"
-                              "memory_free [B]: [{}]\n"
                               "memory_used [B]: [{}]\n"
-                              "swap_memory_free [B]: [{}]\n"
-                              "swap_memory_used [B]: [{}]",
-                              detail::value_or_default(samples.get_l1d_cache()),
-                              detail::value_or_default(samples.get_l1i_cache()),
-                              detail::value_or_default(samples.get_l2_cache()),
-                              detail::value_or_default(samples.get_l3_cache()),
+                              "memory_free [B]: [{}]\n"
+                              "swap_memory_used [B]: [{}]\n"
+                              "swap_memory_free [B]: [{}]",
+                              detail::value_or_default(samples.get_cache_size_L1d()),
+                              detail::value_or_default(samples.get_cache_size_L1i()),
+                              detail::value_or_default(samples.get_cache_size_L2()),
+                              detail::value_or_default(samples.get_cache_size_L3()),
                               detail::value_or_default(samples.get_memory_total()),
                               detail::value_or_default(samples.get_swap_memory_total()),
-                              fmt::join(detail::value_or_default(samples.get_memory_free()), ", "),
                               fmt::join(detail::value_or_default(samples.get_memory_used()), ", "),
-                              fmt::join(detail::value_or_default(samples.get_swap_memory_free()), ", "),
-                              fmt::join(detail::value_or_default(samples.get_swap_memory_used()), ", "));
+                              fmt::join(detail::value_or_default(samples.get_memory_free()), ", "),
+                              fmt::join(detail::value_or_default(samples.get_swap_memory_used()), ", "),
+                              fmt::join(detail::value_or_default(samples.get_swap_memory_free()), ", "));
 }
 
 //*************************************************************************************************************************************//

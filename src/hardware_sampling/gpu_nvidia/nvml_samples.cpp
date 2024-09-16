@@ -359,11 +359,25 @@ std::string nvml_memory_samples::generate_yaml_string() const {
                            this->memory_total_.value());
     }
     // maximum PCIe link speed
-    if (this->pcie_link_max_speed_.has_value()) {
-        str += fmt::format("  pcie_max_bandwidth:\n"
+    if (this->pcie_link_speed_max_.has_value()) {
+        str += fmt::format("  pcie_link_speed_max:\n"
                            "    unit: \"MBPS\"\n"
                            "    values: {}\n",
-                           this->pcie_link_max_speed_.value());
+                           this->pcie_link_speed_max_.value());
+    }
+    // maximum PCIe link generation
+    if (this->pcie_link_generation_max_.has_value()) {
+        str += fmt::format("  pcie_link_generation_max:\n"
+                           "    unit: \"int\"\n"
+                           "    values: {}\n",
+                           this->pcie_link_generation_max_.value());
+    }
+    // maximum number of available PCIe lanes
+    if (this->num_pcie_lanes_max_.has_value()) {
+        str += fmt::format("  num_pcie_lanes_max:\n"
+                           "    unit: \"int\"\n"
+                           "    values: {}\n",
+                           this->num_pcie_lanes_max_.value());
     }
     // memory bus width
     if (this->memory_bus_width_.has_value()) {
@@ -372,21 +386,7 @@ std::string nvml_memory_samples::generate_yaml_string() const {
                            "    values: {}\n",
                            this->memory_bus_width_.value());
     }
-    // maximum PCIe link generation
-    if (this->max_pcie_link_generation_.has_value()) {
-        str += fmt::format("  max_pcie_link_generation:\n"
-                           "    unit: \"int\"\n"
-                           "    values: {}\n",
-                           this->max_pcie_link_generation_.value());
-    }
 
-    // free memory size
-    if (this->memory_free_.has_value()) {
-        str += fmt::format("  memory_free:\n"
-                           "    unit: \"B\"\n"
-                           "    values: [{}]\n",
-                           fmt::join(this->memory_free_.value(), ", "));
-    }
     // used memory size
     if (this->memory_used_.has_value()) {
         str += fmt::format("  memory_used:\n"
@@ -394,19 +394,19 @@ std::string nvml_memory_samples::generate_yaml_string() const {
                            "    values: [{}]\n",
                            fmt::join(this->memory_used_.value(), ", "));
     }
-    // PCIe link speed
-    if (this->pcie_link_speed_.has_value()) {
-        str += fmt::format("  pcie_bandwidth:\n"
-                           "    unit: \"MBPS\"\n"
+    // free memory size
+    if (this->memory_free_.has_value()) {
+        str += fmt::format("  memory_free:\n"
+                           "    unit: \"B\"\n"
                            "    values: [{}]\n",
-                           fmt::join(this->pcie_link_speed_.value(), ", "));
+                           fmt::join(this->memory_free_.value(), ", "));
     }
     // PCIe link width
-    if (this->pcie_link_width_.has_value()) {
-        str += fmt::format("  pcie_link_width:\n"
+    if (this->num_pcie_lanes_.has_value()) {
+        str += fmt::format("  num_pcie_lanes:\n"
                            "    unit: \"int\"\n"
                            "    values: [{}]\n",
-                           fmt::join(this->pcie_link_width_.value(), ", "));
+                           fmt::join(this->num_pcie_lanes_.value(), ", "));
     }
     // PCIe link generation
     if (this->pcie_link_generation_.has_value()) {
@@ -414,6 +414,13 @@ std::string nvml_memory_samples::generate_yaml_string() const {
                            "    unit: \"int\"\n"
                            "    values: [{}]\n",
                            fmt::join(this->pcie_link_generation_.value(), ", "));
+    }
+    // PCIe link speed
+    if (this->pcie_link_speed_.has_value()) {
+        str += fmt::format("  pcie_link_speed:\n"
+                           "    unit: \"MBPS\"\n"
+                           "    values: [{}]\n",
+                           fmt::join(this->pcie_link_speed_.value(), ", "));
     }
 
     // remove last newline
@@ -424,23 +431,25 @@ std::string nvml_memory_samples::generate_yaml_string() const {
 
 std::ostream &operator<<(std::ostream &out, const nvml_memory_samples &samples) {
     return out << fmt::format("memory_total [B]: {}\n"
-                              "pcie_link_max_speed [MBPS]: {}\n"
+                              "pcie_link_speed_max [MBPS]: {}\n"
+                              "pcie_link_generation_max [int]: {}\n"
+                              "num_pcie_lanes_max [int]: {}\n"
                               "memory_bus_width [Bit]: {}\n"
-                              "max_pcie_link_generation [int]: {}\n"
-                              "memory_free [B]: [{}]\n"
                               "memory_used [B]: [{}]\n"
-                              "pcie_link_speed [MBPS]: [{}]\n"
-                              "pcie_link_width [int]: [{}]\n"
-                              "pcie_link_generation [int]: [{}]",
+                              "memory_free [B]: [{}]\n"
+                              "num_pcie_lanes [int]: [{}]\n"
+                              "pcie_link_generation [int]: [{}]\n"
+                              "pcie_link_speed [MBPS]: [{}]",
                               detail::value_or_default(samples.get_memory_total()),
-                              detail::value_or_default(samples.get_pcie_link_max_speed()),
+                              detail::value_or_default(samples.get_pcie_link_speed_max()),
+                              detail::value_or_default(samples.get_pcie_link_generation_max()),
+                              detail::value_or_default(samples.get_num_pcie_lanes_max()),
                               detail::value_or_default(samples.get_memory_bus_width()),
-                              detail::value_or_default(samples.get_max_pcie_link_generation()),
-                              fmt::join(detail::value_or_default(samples.get_memory_free()), ", "),
                               fmt::join(detail::value_or_default(samples.get_memory_used()), ", "),
-                              fmt::join(detail::value_or_default(samples.get_pcie_link_speed()), ", "),
-                              fmt::join(detail::value_or_default(samples.get_pcie_link_width()), ", "),
-                              fmt::join(detail::value_or_default(samples.get_pcie_link_generation()), ", "));
+                              fmt::join(detail::value_or_default(samples.get_memory_free()), ", "),
+                              fmt::join(detail::value_or_default(samples.get_num_pcie_lanes()), ", "),
+                              fmt::join(detail::value_or_default(samples.get_pcie_link_generation()), ", "),
+                              fmt::join(detail::value_or_default(samples.get_pcie_link_speed()), ", "));
 }
 
 //*************************************************************************************************************************************//

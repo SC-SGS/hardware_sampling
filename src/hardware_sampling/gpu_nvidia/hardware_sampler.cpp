@@ -347,20 +347,25 @@ void gpu_nvidia_hardware_sampler::sampling_loop() {
             memory_samples_.memory_bus_width_ = memory_bus_width;
         }
 
-        decltype(memory_samples_.max_pcie_link_generation_)::value_type max_pcie_link_generation{};
-        if (nvmlDeviceGetMaxPcieLinkGeneration(device, &max_pcie_link_generation) == NVML_SUCCESS) {
-            memory_samples_.max_pcie_link_generation_ = max_pcie_link_generation;
+        decltype(memory_samples_.num_pcie_lanes_max_)::value_type num_pcie_lanes_max{};
+        if (nvmlDeviceGetMaxPcieLinkWidth(device, &num_pcie_lanes_max) == NVML_SUCCESS) {
+            memory_samples_.num_pcie_lanes_max_ = num_pcie_lanes_max;
         }
 
-        decltype(memory_samples_.pcie_link_max_speed_)::value_type pcie_link_max_speed{};
-        if (nvmlDeviceGetPcieLinkMaxSpeed(device, &pcie_link_max_speed) == NVML_SUCCESS) {
-            memory_samples_.pcie_link_max_speed_ = pcie_link_max_speed;
+        decltype(memory_samples_.pcie_link_generation_max_)::value_type pcie_link_generation_max{};
+        if (nvmlDeviceGetMaxPcieLinkGeneration(device, &pcie_link_generation_max) == NVML_SUCCESS) {
+            memory_samples_.pcie_link_generation_max_ = pcie_link_generation_max;
+        }
+
+        decltype(memory_samples_.pcie_link_speed_max_)::value_type pcie_link_speed_max{};
+        if (nvmlDeviceGetPcieLinkMaxSpeed(device, &pcie_link_speed_max) == NVML_SUCCESS) {
+            memory_samples_.pcie_link_speed_max_ = pcie_link_speed_max;
         }
 
         // queried samples -> retrieved every iteration if available
-        decltype(memory_samples_.pcie_link_width_)::value_type::value_type pcie_link_width{};
-        if (nvmlDeviceGetCurrPcieLinkWidth(device, &pcie_link_width) == NVML_SUCCESS) {
-            memory_samples_.pcie_link_width_ = decltype(memory_samples_.pcie_link_width_)::value_type{ pcie_link_width };
+        decltype(memory_samples_.num_pcie_lanes_)::value_type::value_type num_pcie_lanes{};
+        if (nvmlDeviceGetCurrPcieLinkWidth(device, &num_pcie_lanes) == NVML_SUCCESS) {
+            memory_samples_.num_pcie_lanes_ = decltype(memory_samples_.num_pcie_lanes_)::value_type{ num_pcie_lanes };
         }
 
         decltype(memory_samples_.pcie_link_generation_)::value_type::value_type pcie_link_generation{};
@@ -498,10 +503,10 @@ void gpu_nvidia_hardware_sampler::sampling_loop() {
                     memory_samples_.memory_used_->push_back(memory_info.used);
                 }
 
-                if (memory_samples_.pcie_link_width_.has_value()) {
-                    decltype(memory_samples_.pcie_link_width_)::value_type::value_type value{};
+                if (memory_samples_.num_pcie_lanes_.has_value()) {
+                    decltype(memory_samples_.num_pcie_lanes_)::value_type::value_type value{};
                     HWS_NVML_ERROR_CHECK(nvmlDeviceGetCurrPcieLinkWidth(device, &value));
-                    memory_samples_.pcie_link_width_->push_back(value);
+                    memory_samples_.num_pcie_lanes_->push_back(value);
                 }
 
                 if (memory_samples_.pcie_link_generation_.has_value()) {

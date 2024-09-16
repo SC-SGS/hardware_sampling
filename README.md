@@ -144,34 +144,35 @@ export PYTHONPATH=${CMAKE_INSTALL_PREFIX}/lib:${PYTHONPATH}
 
 | sample                      | CPUs | NVIDIA GPUs | AMD GPUs | Intel GPUs |
 |:----------------------------|:----:|:-----------:|:--------:|:----------:|
-| cache_size_L1d              | str  |             |          |            |
-| cache_size_L1i              | str  |             |          |            |
-| cache_size_L2               | str  |             |          |            |
-| cache_size_L3               | str  |             |          |            |
+| cache_size_L1d              | str  |      -      |    -     |     -      |
+| cache_size_L1i              | str  |      -      |    -     |     -      |
+| cache_size_L2               | str  |      -      |    -     |     -      |
+| cache_size_L3               | str  |      -      |    -     |     -      |
 | memory_total                |  B   |      B      |    B     |            |
-| swap_memory_total           |  B   |             |          |            |
-| memory_free                 |  B   |      B      |    B     |            |
+| visible_memory_total        |  -   |      -      |    B     |     -      |
+| swap_memory_total           |  B   |      -      |    -     |     -      |
+| memory_total_{}             |  -   |             |          |     B      |
+| allocatable_memory_total_{} |  -   |             |          |     B      |
+| num_pcie_lanes_min          |  -   |      -      |   int    |            |
+| num_pcie_lanes_max          |  -   |     int     |   int    |            |
+| pcie_link_generation_max    |  -   |     int     |    -     |    int     |
+| pcie_link_speed_max         |  -   |    MBPS     |    -     |    BPS     |
+| pcie_link_transfer_rate_min |  -   |      -      |   MT/s   |            |
+| pcie_link_transfer_rate_max |  -   |      -      |   MT/s   |            |
+| memory_bus_width            |  -   |     Bit     |    -     |            |
 | memory_used                 |  B   |      B      |    B     |            |
-| swap_memory_free            |  B   |             |          |            |
-| swap_memory_used            |  B   |             |          |            |
-| visible_memory_total        |      |             |    B     |            |
-| min_num_pcie_lanes          |      |             |   int    |            |
-| max_num_pcie_lanes          |      |             |   int    |            |
-| pcie_bandwidth              |      |    MBPS     |   T/s    |    MBPS    |
-| num_pcie_lanes              |      |             |   int    |            |
-| memory_total_{}             |      |             |          |     B      |
-| allocatable_memory_total_{} |      |             |          |     B      |
-| pcie_max_bandwidth          |      |    MBPS     |          |    BPS     |
-| max_pcie_link_width         |      |             |          |    int     |
-| max_pcie_link_generation    |      |     int     |          |    int     |
+| memory_free                 |  B   |      B      |    B     |            |
+| swap_memory_used            |  B   |      -      |    -     |     -      |
+| swap_memory_free            |  B   |      -      |    -     |     -      |
+| num_pcie_lanes              |  -   |     int     |   int    |            |
+| pcie_link_generation        |  -   |     int     |    -     |    int     |
+| pcie_link_speed             |  -   |    MBPS     |    -     |    MBPS    |
+| pcie_link_transfer_rate     |  -   |      -      |   T/s    |     -      |
+| memory_used_{}              |      |             |          |     B      |
+| memory_free_{}              |      |             |          |     B      |
 | memory_bus_width_{}         |      |             |          |    Bit     |
 | memory_num_channels_{}      |      |             |          |    int     |
 | memory_location_{}          |      |             |          |    str     |
-| memory_free_{}              |      |             |          |     B      |
-| memory_used_{}              |      |             |          |     B      |
-| pcie_link_width             |      |     int     |          |    int     |
-| pcie_link_generation        |      |     int     |          |    int     |
-| memory_bus_width            |      |     Bit     |          |            |
 
 ### temperature-related samples
 

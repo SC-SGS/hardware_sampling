@@ -298,17 +298,20 @@ void gpu_amd_hardware_sampler::sampling_loop() {
 
         rsmi_pcie_bandwidth_t bandwidth_info{};
         if (rsmi_dev_pci_bandwidth_get(device_id_, &bandwidth_info) == RSMI_STATUS_SUCCESS) {
-            memory_samples_.min_num_pcie_lanes_ = bandwidth_info.lanes[0];
-            memory_samples_.max_num_pcie_lanes_ = bandwidth_info.lanes[bandwidth_info.transfer_rate.num_supported - 1];
+            memory_samples_.num_pcie_lanes_min_ = bandwidth_info.lanes[0];
+            memory_samples_.num_pcie_lanes_max_ = bandwidth_info.lanes[bandwidth_info.transfer_rate.num_supported - 1];
+            memory_samples_.pcie_link_transfer_rate_min_ = bandwidth_info.transfer_rate.frequency[0] / 1000000;
+            memory_samples_.pcie_link_transfer_rate_max_ = bandwidth_info.transfer_rate.frequency[bandwidth_info.transfer_rate.num_supported - 1] / 1000000;
+
             // queried samples -> retrieved every iteration if available
-            memory_samples_.pcie_transfer_rate_ = decltype(memory_samples_.pcie_transfer_rate_)::value_type{};
+            memory_samples_.pcie_link_transfer_rate_ = decltype(memory_samples_.pcie_link_transfer_rate_)::value_type{};
             memory_samples_.num_pcie_lanes_ = decltype(memory_samples_.num_pcie_lanes_)::value_type{};
             if (bandwidth_info.transfer_rate.current < RSMI_MAX_NUM_FREQUENCIES) {
-                memory_samples_.pcie_transfer_rate_->push_back(bandwidth_info.transfer_rate.frequency[bandwidth_info.transfer_rate.current]);
+                memory_samples_.pcie_link_transfer_rate_->push_back(bandwidth_info.transfer_rate.frequency[bandwidth_info.transfer_rate.current] / 1000000);
                 memory_samples_.num_pcie_lanes_->push_back(bandwidth_info.lanes[bandwidth_info.transfer_rate.current]);
             } else {
                 // the current index is (somehow) wrong
-                memory_samples_.pcie_transfer_rate_->push_back(0);
+                memory_samples_.pcie_link_transfer_rate_->push_back(0);
                 memory_samples_.num_pcie_lanes_->push_back(0);
             }
         }
@@ -317,6 +320,9 @@ void gpu_amd_hardware_sampler::sampling_loop() {
         decltype(memory_samples_.memory_used_)::value_type::value_type memory_used{};
         if (rsmi_dev_memory_usage_get(device_id_, RSMI_MEM_TYPE_VRAM, &memory_used) == RSMI_STATUS_SUCCESS) {
             memory_samples_.memory_used_ = decltype(memory_samples_.memory_used_)::value_type{ memory_used };
+            if (memory_samples_.memory_total_.has_value()) {
+                memory_samples_.memory_free_ = decltype(memory_samples_.memory_used_)::value_type{ memory_samples_.memory_total_.value() - memory_samples_.memory_used_->front() };
+            }
         }
     }
 
@@ -582,17 +588,20 @@ void gpu_amd_hardware_sampler::sampling_loop() {
                     decltype(memory_samples_.memory_used_)::value_type::value_type value{};
                     HWS_ROCM_SMI_ERROR_CHECK(rsmi_dev_memory_usage_get(device_id_, RSMI_MEM_TYPE_VRAM, &value));
                     memory_samples_.memory_used_->push_back(value);
+                    if (memory_samples_.memory_free_.has_value()) {
+                        memory_samples_.memory_free_->push_back(memory_samples_.memory_total_.value() - value);
+                    }
                 }
 
-                if (memory_samples_.pcie_transfer_rate_.has_value() && memory_samples_.num_pcie_lanes_.has_value()) {
+                if (memory_samples_.pcie_link_transfer_rate_.has_value() && memory_samples_.num_pcie_lanes_.has_value()) {
                     rsmi_pcie_bandwidth_t bandwidth_info{};
                     HWS_ROCM_SMI_ERROR_CHECK(rsmi_dev_pci_bandwidth_get(device_id_, &bandwidth_info));
                     if (bandwidth_info.transfer_rate.current < RSMI_MAX_NUM_FREQUENCIES) {
-                        memory_samples_.pcie_transfer_rate_->push_back(bandwidth_info.transfer_rate.frequency[bandwidth_info.transfer_rate.current]);
+                        memory_samples_.pcie_link_transfer_rate_->push_back(bandwidth_info.transfer_rate.frequency[bandwidth_info.transfer_rate.current] / 1000000);
                         memory_samples_.num_pcie_lanes_->push_back(bandwidth_info.lanes[bandwidth_info.transfer_rate.current]);
                     } else {
                         // the current index is (somehow) wrong
-                        memory_samples_.pcie_transfer_rate_->push_back(0);
+                        memory_samples_.pcie_link_transfer_rate_->push_back(0);
                         memory_samples_.num_pcie_lanes_->push_back(0);
                     }
                 }

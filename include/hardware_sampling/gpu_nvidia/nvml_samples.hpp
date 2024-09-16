@@ -169,15 +169,16 @@ class nvml_memory_samples {
     [[nodiscard]] std::string generate_yaml_string() const;
 
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(unsigned long, memory_total)             // the total available memory in Byte
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(unsigned int, pcie_link_max_speed)       // the maximum PCIe link speed in MBPS
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(unsigned int, num_pcie_lanes_max)        // the maximum number of PCIe lanes
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(unsigned int, pcie_link_generation_max)  // the maximum PCIe link generation (e.g., PCIe 4.0, PCIe 5.0, etc)
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(unsigned int, pcie_link_speed_max)       // the maximum PCIe link speed in MBPS
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(unsigned int, memory_bus_width)          // the memory bus with in Bit
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(unsigned int, max_pcie_link_generation)  // the current PCIe link generation (e.g., PCIe 4.0, PCIe 5.0, etc)
 
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(unsigned long long, memory_free)     // the currently free memory in Byte
     HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(unsigned long long, memory_used)     // the currently used memory in Byte
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(unsigned int, pcie_link_speed)       // the current PCIe link speed in MBPS
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(unsigned int, pcie_link_width)       // the current PCIe link width (e.g., x16, x8, x4, etc)
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(unsigned long long, memory_free)     // the currently free memory in Byte
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(unsigned int, num_pcie_lanes)        // the current PCIe link width (e.g., x16, x8, x4, etc)
     HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(unsigned int, pcie_link_generation)  // the current PCIe link generation (may change during runtime to save energy)
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(unsigned int, pcie_link_speed)       // the current PCIe link speed in MBPS
 };
 
 /**
