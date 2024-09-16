@@ -66,32 +66,31 @@ export PYTHONPATH=${CMAKE_INSTALL_PREFIX}/lib:${PYTHONPATH}
 
 ### General samples
 
-| sample              | CPUs  | NVIDIA GPUs | AMD GPUs  |  Intel GPUs  |
-|:--------------------|:-----:|:-----------:|:---------:|:------------:|
-| name                |  str  |     str     |    str    |     str      |
-| vendor_id           |  str  |  str (fix)  |    str    | str (PCIe ID |
-| architecture        |  str  |     str     |    str    |      ?       |
-| byte_order          |  str  |  str (fix)  | str (fix) |  str (fix)   |
-| compute_utilization |   %   |      %      |     %     |      ?       |
-| memory_utilization  |   -   |      %      |     %     |      ?       |
-| performance_level   |       |     int     |    int    |              |
-| num_cores           |  int  |     int     |     -     |              |
-| num_compute_units   |   -   |     int     |    int    |      ?       | TODO
-| num_threads         |  int  |      -      |     -     |      -       |
-| threads_per_core    |  int  |      -      |     -     |      -       |
-| cores_per_socket    |  int  |      -      |     -     |      -       |
-| num_sockets         |  int  |      -      |     -     |      -       |
-| numa_nodes          |  int  |             |           |              |
-| flags               |  str  |             |           |              |
-| ipc                 | float |      -      |     -     |      -       |
-| irq                 |  int  |      -      |     -     |      -       |
-| smi                 |  int  |      -      |     -     |      -       |
-| poll                |  int  |      -      |     -     |      -       |
-| poll_percent        |   %   |      -      |     -     |      -       |
-| persistence_mode    |       |    bool     |           |              |
-| standby_mode        |       |             |           |     str      |
-| num_threads_per_eu  |       |             |           |     int      |
-| eu_simd_width       |       |             |           |     int      |
+| sample              | CPUs  | NVIDIA GPUs | AMD GPUs  |  Intel GPUs   |
+|:--------------------|:-----:|:-----------:|:---------:|:-------------:|
+| architecture        |  str  |     str     |    str    |       ?       |
+| byte_order          |  str  |  str (fix)  | str (fix) |   str (fix)   |
+| num_cores           |  int  |     int     |     -     |               |
+| num_threads         |  int  |      -      |     -     |       -       |
+| threads_per_core    |  int  |      -      |     -     |       -       |
+| cores_per_socket    |  int  |      -      |     -     |       -       |
+| num_sockets         |  int  |      -      |     -     |       -       |
+| numa_nodes          |  int  |      -      |     -     |               |
+| vendor_id           |  str  |  str (fix)  |    str    | str (PCIe ID) |
+| name                |  str  |     str     |    str    |      str      |
+| flags               |  str  |      -      |     -     |               |
+| persistence_mode    |   -   |    bool     |     -     |               |
+| compute_utilization |   %   |      %      |     %     |       ?       |
+| memory_utilization  |   -   |      %      |     %     |       ?       |
+| ipc                 | float |      -      |     -     |       -       |
+| irq                 |  int  |      -      |     -     |       -       |
+| smi                 |  int  |      -      |     -     |       -       |
+| poll                |  int  |      -      |     -     |       -       |
+| poll_percent        |   %   |      -      |     -     |       -       |
+| performance_level   |   -   |     int     |    int    |               |
+| standby_mode        |       |             |           |      str      |
+| num_threads_per_eu  |       |             |           |      int      |
+| eu_simd_width       |       |             |           |      int      |
 
 ### clock-related samples
 

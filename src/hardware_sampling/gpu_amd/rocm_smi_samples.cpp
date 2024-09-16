@@ -71,7 +71,7 @@ std::string rocm_smi_general_samples::generate_yaml_string() const {
     // performance state
     if (this->performance_level_.has_value()) {
         str += fmt::format("  performance_state:\n"
-                           "    unit: \"int - see rsmi_dev_perf_level_t\"\n"
+                           "    unit: \"string\"\n"
                            "    values: [{}]\n",
                            fmt::join(this->performance_level_.value(), ", "));
     }
@@ -89,7 +89,7 @@ std::ostream &operator<<(std::ostream &out, const rocm_smi_general_samples &samp
                               "name [string]: {}\n"
                               "compute_utilization [%]: [{}]\n"
                               "memory_utilization [%]: [{}]\n"
-                              "performance_level [int]: [{}]",
+                              "performance_level [string]: [{}]",
                               detail::value_or_default(samples.get_architecture()),
                               detail::value_or_default(samples.get_byte_order()),
                               detail::value_or_default(samples.get_vendor_id()),

@@ -39,6 +39,8 @@ namespace hws::detail {
     #define HWS_NVML_ERROR_CHECK(nvml_func) nvml_func;
 #endif
 
+// TODO: move to cpp file
+
 /**
  * @brief Convert the clock throttle reason event bitmask to a string representation. If the provided bitmask represents multiple reasons, they are split using "|".
  * @param[in] clocks_event_reasons the bitmask to convert to a string

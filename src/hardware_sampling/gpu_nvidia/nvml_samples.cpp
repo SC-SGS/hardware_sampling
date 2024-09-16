@@ -99,19 +99,19 @@ std::string nvml_general_samples::generate_yaml_string() const {
 std::ostream &operator<<(std::ostream &out, const nvml_general_samples &samples) {
     return out << fmt::format("architecture [string]: {}\n"
                               "byte_order [string]: {}\n"
+                              "num_cores [int]: {}\n"
                               "vendor_id [string]: {}\n"
                               "name [string]: {}\n"
                               "persistence_mode [bool]: {}\n"
-                              "num_cores [int]: {}\n"
                               "compute_utilization [%]: [{}]\n"
                               "memory_utilization [%]: [{}]\n"
                               "performance_level [int]: [{}]",
                               detail::value_or_default(samples.get_architecture()),
                               detail::value_or_default(samples.get_byte_order()),
+                              detail::value_or_default(samples.get_num_cores()),
                               detail::value_or_default(samples.get_vendor_id()),
                               detail::value_or_default(samples.get_name()),
                               detail::value_or_default(samples.get_persistence_mode()),
-                              detail::value_or_default(samples.get_num_cores()),
                               fmt::join(detail::value_or_default(samples.get_compute_utilization()), ", "),
                               fmt::join(detail::value_or_default(samples.get_memory_utilization()), ", "),
                               fmt::join(detail::value_or_default(samples.get_performance_level()), ", "));
