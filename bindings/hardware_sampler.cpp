@@ -30,10 +30,42 @@
 
 #include <string>  // std::string
 
+namespace hws {
+
+/**
+ * @brief A struct encapsulating a single event with a relative time point.
+ */
+struct relative_event {
+    /**
+     * @brief Construct a new event given a time point and name.
+     * @param[in] time_point_p the time when the event occurred relative to the first event
+     * @param[in] name_p the name of the event
+     */
+    relative_event(const double relative_time_point_p, std::string name_p) :
+        relative_time_point{ relative_time_point_p },
+        name{ std::move(name_p) } { }
+
+    /// The relative time point this event occurred at.
+    double relative_time_point;
+    /// The name of this event.
+    std::string name;
+};
+
+}  // namespace hws
+
 namespace py = pybind11;
 
 void init_hardware_sampler(py::module_ &m) {
     const py::module_ pure_virtual_module = m.def_submodule("__pure_virtual");
+
+    // a special python only struct encapsulating a relative event, i.e., an event where its "relative_time_point" member is the time passed since the first event
+    py::class_<hws::relative_event>(m, "RelativeEvent")
+        .def(py::init<decltype(hws::relative_event::relative_time_point), decltype(hws::relative_event::name)>(), "construct a new event using a time point and a name")
+        .def_readonly("relative_time_point", &hws::relative_event::relative_time_point, "read the relative time point associated to this event")
+        .def_readonly("name", &hws::relative_event::name, "read the name associated to this event")
+        .def("__repr__", [](const hws::relative_event &self) {
+            return fmt::format("<HardWareSampling.RelativeEvent with {{ time_point: {}, name: {} }}>", self.relative_time_point, self.name);
+        });
 
     // bind the pure virtual hardware sampler base class
     py::class_<hws::hardware_sampler> pyhardware_sampler(pure_virtual_module, "__pure_virtual_base_HardwareSampler");
@@ -49,7 +81,14 @@ void init_hardware_sampler(py::module_ &m) {
         .def("add_event", py::overload_cast<decltype(hws::event::name)>(&hws::hardware_sampler::add_event), "add a new event using a name, the current time is used as time point")
         .def("num_events", &hws::hardware_sampler::num_events, "get the number of events")
         .def("get_events", &hws::hardware_sampler::get_events, "get all events")
+        .def("get_relative_events", [](const hws::hardware_sampler &self) {
+            std::vector<hws::relative_event> relative_events{};
+            for (const hws::event &e : self.get_events()) {
+                relative_events.emplace_back(hws::detail::duration_from_reference_time(e.time_point, self.get_event(0).time_point), e.name);
+            }
+            return relative_events; }, "get all relative events")
         .def("get_event", &hws::hardware_sampler::get_event, "get a specific event")
+        .def("get_relative_event", [](const hws::hardware_sampler &self, const std::size_t idx) { return hws::relative_event{ hws::detail::duration_from_reference_time(self.get_event(idx).time_point, self.get_event(0).time_point), self.get_event(idx).name }; }, "get a specific relative event")
         .def("time_points", &hws::hardware_sampler::sampling_time_points, "get the time points of the respective hardware samples")
         .def("relative_time_points", [](const hws::hardware_sampler &self) { return hws::detail::durations_from_reference_time(self.sampling_time_points(), self.get_event(0).time_point); }, "get the relative durations of the respective hardware samples in seconds (as \"normal\" number)")
         .def("sampling_interval", &hws::hardware_sampler::sampling_interval, "get the sampling interval of this hardware sampler (in ms)")

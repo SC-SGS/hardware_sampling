@@ -267,11 +267,9 @@ plt.plot(time_points, sampler.clock_samples().get_average_non_idle_clock_frequen
 
 axes = plt.gcf().axes[0]
 x_bounds = axes.get_xlim()
-for event in sampler.get_events()[1:-1]:
-    tp = (event.time_point - sampler.time_points()[0]) / datetime.timedelta(milliseconds=1000)
-
-    axes.axvline(x=tp, color='r')
-    axes.annotate(text=event.name, xy=(((tp - x_bounds[0]) / (x_bounds[1] - x_bounds[0])), 1.025), xycoords='axes fraction', rotation=270)
+for event in sampler.get_relative_events()[1:-1]:
+    axes.axvline(x=event.relative_time_point, color='r')
+    axes.annotate(text=event.name, xy=(((event.relative_time_point - x_bounds[0]) / (x_bounds[1] - x_bounds[0])), 1.025), xycoords='axes fraction', rotation=270)
 
 plt.xlabel("runtime [ms]")
 plt.ylabel("clock frequency [MHz]")

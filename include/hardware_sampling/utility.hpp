@@ -230,6 +230,18 @@ template <typename T>
 /*****************************************************************************************************/
 
 /**
+ * @brief Convert the time point to its duration in seconds (using double) truncated to three decimal places passed since the @p reference time point.
+ * @tparam TimePoint the type if the time point
+ * @param[in] time_point the time point
+ * @param[in] reference the reference time point
+ * @return the duration passed in seconds since the @p reference time point (`[[nodiscard]]`)
+ */
+template <typename TimePoint>
+[[nodiscard]] inline double duration_from_reference_time(const TimePoint &time_point, const TimePoint &reference) {
+    return std::trunc(std::chrono::duration<double>(time_point - reference).count() * 1000.0) / 1000.0;
+}
+
+/**
  * @brief Convert all time points to their duration in seconds (using double) truncated to three decimal places passed since the @p reference time point.
  * @tparam TimePoint the type if the time points
  * @param[in] time_points the time points
@@ -241,7 +253,7 @@ template <typename TimePoint>
     std::vector<double> durations(time_points.size());
 
     for (std::size_t i = 0; i < durations.size(); ++i) {
-        durations[i] = std::trunc(std::chrono::duration<double>(time_points[i] - reference).count() * 1000.0) / 1000.0;
+        durations[i] = duration_from_reference_time(time_points[i], reference);
     }
 
     return durations;
