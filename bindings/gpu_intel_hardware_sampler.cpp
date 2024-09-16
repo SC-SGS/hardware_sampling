@@ -9,13 +9,13 @@
 #include "hardware_sampling/gpu_intel/level_zero_samples.hpp"  // hws::{level_zero_general_samples, level_zero_clock_samples, level_zero_power_samples, level_zero_memory_samples, level_zero_temperature_samples}
 #include "hardware_sampling/hardware_sampler.hpp"              // hws::hardware_sampler
 
+#include "fmt/format.h"         // fmt::format
 #include "pybind11/chrono.h"    // automatic bindings for std::chrono::milliseconds
 #include "pybind11/pybind11.h"  // py::module_
 #include "pybind11/stl.h"       // bind STL types
 
 #include <chrono>   // std::chrono::milliseconds
 #include <cstddef>  // std::size_t
-#include <format>   // std::format
 
 namespace py = pybind11;
 
@@ -27,7 +27,7 @@ void init_gpu_intel_hardware_sampler(py::module_ &m) {
         .def("get_num_threads_per_eu", &hws::level_zero_general_samples::get_num_threads_per_eu, "the number of threads per EU unit")
         .def("get_eu_simd_width", &hws::level_zero_general_samples::get_eu_simd_width, "the physical EU unit SIMD width")
         .def("__repr__", [](const hws::level_zero_general_samples &self) {
-            return std::format("<HardwareSampling.LevelZeroGeneralSamples with\n{}\n>", self);
+            return fmt::format("<HardwareSampling.LevelZeroGeneralSamples with\n{}\n>", self);
         });
 
     // bind the clock samples
@@ -45,7 +45,7 @@ void init_gpu_intel_hardware_sampler(py::module_ &m) {
         .def("get_clock_mem", &hws::level_zero_clock_samples::get_clock_mem, "the current memory frequency in MHz")
         .def("get_throttle_reason_mem", &hws::level_zero_clock_samples::get_throttle_reason_mem, "the current memory frequency throttle reason")
         .def("__repr__", [](const hws::level_zero_clock_samples &self) {
-            return std::format("<HardwareSampling.LevelZeroClockSamples with\n{}\n>", self);
+            return fmt::format("<HardwareSampling.LevelZeroClockSamples with\n{}\n>", self);
         });
 
     // bind the power samples
@@ -54,7 +54,7 @@ void init_gpu_intel_hardware_sampler(py::module_ &m) {
         .def("get_energy_threshold", &hws::level_zero_power_samples::get_energy_threshold, "the energy threshold in J")
         .def("get_power_total_energy_consumption", &hws::level_zero_power_samples::get_power_total_energy_consumption, "the total power consumption since the last driver reload in mJ")
         .def("__repr__", [](const hws::level_zero_power_samples &self) {
-            return std::format("<HardwareSampling.LevelZeroPowerSamples with\n{}\n>", self);
+            return fmt::format("<HardwareSampling.LevelZeroPowerSamples with\n{}\n>", self);
         });
 
     // bind the memory samples
@@ -72,7 +72,7 @@ void init_gpu_intel_hardware_sampler(py::module_ &m) {
         .def("get_pcie_link_width", &hws::level_zero_memory_samples::get_pcie_link_width, "the current PCIe lane width")
         .def("get_pcie_link_generation", &hws::level_zero_memory_samples::get_pcie_link_generation, "the current PCIe generation")
         .def("__repr__", [](const hws::level_zero_memory_samples &self) {
-            return std::format("<HardwareSampling.LevelZeroMemorySamples with\n{}\n>", self);
+            return fmt::format("<HardwareSampling.LevelZeroMemorySamples with\n{}\n>", self);
         });
 
     // bind the temperature samples
@@ -81,7 +81,7 @@ void init_gpu_intel_hardware_sampler(py::module_ &m) {
         .def("get_temperature_psu", &hws::level_zero_temperature_samples::get_temperature_psu, "the temperature of the PSU in °C")
         .def("get_temperature", &hws::level_zero_temperature_samples::get_temperature, "the current temperature for the sensor in °C")
         .def("__repr__", [](const hws::level_zero_temperature_samples &self) {
-            return std::format("<HardwareSampling.LevelZeroTemperatureSamples with\n{}\n>", self);
+            return fmt::format("<HardwareSampling.LevelZeroTemperatureSamples with\n{}\n>", self);
         });
 
     // bind the GPU Intel hardware sampler class
@@ -96,6 +96,6 @@ void init_gpu_intel_hardware_sampler(py::module_ &m) {
         .def("memory_samples", &hws::gpu_intel_hardware_sampler::memory_samples, "get all memory related samples")
         .def("temperature_samples", &hws::gpu_intel_hardware_sampler::temperature_samples, "get all temperature related samples")
         .def("__repr__", [](const hws::gpu_intel_hardware_sampler &self) {
-            return std::format("<HardwareSampling.GpuIntelHardwareSampler with\n{}\n>", self);
+            return fmt::format("<HardwareSampling.GpuIntelHardwareSampler with\n{}\n>", self);
         });
 }

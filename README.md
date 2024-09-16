@@ -122,22 +122,22 @@ export PYTHONPATH=${CMAKE_INSTALL_PREFIX}/lib:${PYTHONPATH}
 
 ### power-related samples
 
-| sample                      |               CPUs                | NVIDIA GPUs |  AMD GPUs   | Intel GPUs |
-|:----------------------------|:---------------------------------:|:-----------:|:-----------:|:----------:|
-| power_management_limit      |                 -                 |      W      |      W      |            |
-| power_enforced_limit        |                 -                 |      W      |      W      |            |
-| power_measurement_type      |             str (fix)             |     str     |     str     |            |
-| power_management_mode       |                 -                 |    bool     |      -      |            |
-| available_power_profiles    |                 -                 | list of int | list of str |            |
-| power_usage                 |                 W                 |      W      |      W      |            |
-| core_watt                   |                 W                 |      -      |      -      |     -      |
-| dram_watt                   |                 W                 |      -      |      -      |     -      |
-| package_rapl_throttling     |                 %                 |      -      |      -      |     -      |
-| dram_rapl_throttling        |                 %                 |      -      |      -      |     -      |
-| power_total_energy_consumed | J<br>(calculated via power_usage) |      J      |      J      |     J      |
-| power_profile               |                 -                 |     int     |     str     |            |
-| energy_threshold_enabled    |                                   |             |             |    bool    |
-| energy_threshold            |                                   |             |             |     J      |
+| sample                         |               CPUs                | NVIDIA GPUs |  AMD GPUs   | Intel GPUs |
+|:-------------------------------|:---------------------------------:|:-----------:|:-----------:|:----------:|
+| power_management_limit         |                 -                 |      W      |      W      |            |
+| power_enforced_limit           |                 -                 |      W      |      W      |            |
+| power_measurement_type         |             str (fix)             |     str     |     str     |            |
+| power_management_mode          |                 -                 |    bool     |      -      |            |
+| available_power_profiles       |                 -                 | list of int | list of str |            |
+| power_usage                    |                 W                 |      W      |      W      |            |
+| core_watt                      |                 W                 |      -      |      -      |     -      |
+| dram_watt                      |                 W                 |      -      |      -      |     -      |
+| package_rapl_throttling        |                 %                 |      -      |      -      |     -      |
+| dram_rapl_throttling           |                 %                 |      -      |      -      |     -      |
+| power_total_energy_consumption | J<br>(calculated via power_usage) |      J      |      J      |     J      |
+| power_profile                  |                 -                 |     int     |     str     |            |
+| energy_threshold_enabled       |                                   |             |             |    bool    |
+| energy_threshold               |                                   |             |             |     J      |
 
 ### memory-related samples
 
@@ -175,38 +175,38 @@ export PYTHONPATH=${CMAKE_INSTALL_PREFIX}/lib:${PYTHONPATH}
 
 ### temperature-related samples
 
-| sample                   | CPUs | NVIDIA GPUs | AMD GPUs | Intel GPUs |
-|:-------------------------|:----:|:-----------:|:--------:|:----------:|
-| num_fans                 |  -   |     int     |   int    |            |
-| fan_speed_min            |  -   |      %      |    -     |            | 
-| fan_speed_max            |  -   |      %      |   RPM    |            |
-| temperature_min          |  -   |      -      |    °C    |            |
-| temperature_max          |  -   |     °C      |    °C    |            |
-| memory_temperature_min   |  -   |      -      |    °C    |            |
-| memory_temperature_max   |  -   |     °C      |    °C    |            |
-| hotspot_temperature_min  |  -   |      -      |    °C    |            |
-| hotspot_temperature_max  |  -   |      -      |    °C    |            |
-| hbm_0_temperature_min    |  -   |      -      |    °C    |            |
-| hbm_0_temperature_max    |  -   |      -      |    °C    |            |
-| hbm_1_temperature_min    |  -   |      -      |    °C    |            |
-| hbm_1_temperature_max    |  -   |      -      |    °C    |            |
-| hbm_2_temperature_min    |  -   |      -      |    °C    |            |
-| hbm_2_temperature_max    |  -   |      -      |    °C    |            |
-| hbm_3_temperature_min    |  -   |      -      |    °C    |            |
-| hbm_3_temperature_max    |  -   |      -      |    °C    |            |
-| fan_speed_percentage     |  -   |      %      |    %     |            |
-| temperature              |  °C  |     °C      |    °C    |            |
-| memory_temperature       |  -   |      -      |    °C    |            |
-| hotspot_temperature      |  -   |      -      |    °C    |            |
-| hbm_0_temperature        |  -   |      -      |    °C    |            |
-| hbm_1_temperature        |  -   |      -      |    °C    |            |
-| hbm_2_temperature        |  -   |      -      |    °C    |            |
-| hbm_3_temperature        |  -   |      -      |    °C    |            |
-| temperature_{}_max       |      |             |          |            |
-| temperature_psu          |      |             |          |            |
-| temperature_{}           |      |             |          |            |
-| core_temperature         |  °C  |      -      |    -     |     -      |
-| core_throttle_percentage |  %   |      -      |    -     |     -      |
+| sample                  | CPUs | NVIDIA GPUs | AMD GPUs | Intel GPUs |
+|:------------------------|:----:|:-----------:|:--------:|:----------:|
+| num_fans                |  -   |     int     |   int    |            |
+| fan_speed_min           |  -   |      %      |    -     |            | 
+| fan_speed_max           |  -   |      %      |   RPM    |            |
+| temperature_min         |  -   |      -      |    °C    |            |
+| temperature_max         |  -   |     °C      |    °C    |            |
+| memory_temperature_min  |  -   |      -      |    °C    |            |
+| memory_temperature_max  |  -   |     °C      |    °C    |            |
+| hotspot_temperature_min |  -   |      -      |    °C    |            |
+| hotspot_temperature_max |  -   |      -      |    °C    |            |
+| hbm_0_temperature_min   |  -   |      -      |    °C    |            |
+| hbm_0_temperature_max   |  -   |      -      |    °C    |            |
+| hbm_1_temperature_min   |  -   |      -      |    °C    |            |
+| hbm_1_temperature_max   |  -   |      -      |    °C    |            |
+| hbm_2_temperature_min   |  -   |      -      |    °C    |            |
+| hbm_2_temperature_max   |  -   |      -      |    °C    |            |
+| hbm_3_temperature_min   |  -   |      -      |    °C    |            |
+| hbm_3_temperature_max   |  -   |      -      |    °C    |            |
+| fan_speed_percentage    |  -   |      %      |    %     |            |
+| temperature             |  °C  |     °C      |    °C    |            |
+| memory_temperature      |  -   |      -      |    °C    |            |
+| hotspot_temperature     |  -   |      -      |    °C    |            |
+| hbm_0_temperature       |  -   |      -      |    °C    |            |
+| hbm_1_temperature       |  -   |      -      |    °C    |            |
+| hbm_2_temperature       |  -   |      -      |    °C    |            |
+| hbm_3_temperature       |  -   |      -      |    °C    |            |
+| temperature_{}_max      |      |             |          |            |
+| temperature_psu         |      |             |          |            |
+| temperature_{}          |      |             |          |            |
+| core_temperature        |  °C  |      -      |    -     |     -      |
+| core_throttle_percent   |  %   |      -      |    -     |     -      |
 
 ### gfx-related (iGPU) samples
 

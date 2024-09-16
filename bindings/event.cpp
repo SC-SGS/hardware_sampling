@@ -7,11 +7,10 @@
 
 #include "hardware_sampling/event.hpp"  // hws::event
 
+#include "fmt/format.h"         // fmt::format
 #include "pybind11/chrono.h"    // bind std::chrono types
 #include "pybind11/pybind11.h"  // py::module_
 #include "pybind11/stl.h"       // bind STL types
-
-#include <format>  // std::format
 
 namespace py = pybind11;
 
@@ -22,6 +21,6 @@ void init_event(py::module_ &m) {
         .def_readonly("time_point", &hws::event::time_point, "read the time point associated to this event")
         .def_readonly("name", &hws::event::name, "read the name associated to this event")
         .def("__repr__", [](const hws::event &self) {
-            return std::format("<HardWareSampling.Event with {{ time_point: {}, name: {} }}>", self.time_point.time_since_epoch(), self.name);
+            return fmt::format("<HardWareSampling.Event with {{ time_point: {}, name: {} }}>", self.time_point.time_since_epoch(), self.name);
         });
 }
