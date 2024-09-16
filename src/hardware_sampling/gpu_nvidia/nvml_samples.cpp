@@ -7,7 +7,7 @@
 
 #include "hardware_sampling/gpu_nvidia/nvml_samples.hpp"
 
-#include "hardware_sampling/utility.hpp"  // hws::detail::{value_or_default, map_entry_to_string}
+#include "hardware_sampling/utility.hpp"  // hws::detail::{value_or_default, map_entry_to_string, quote}
 
 #include "fmt/format.h"  // fmt::format
 #include "fmt/ranges.h"  // fmt::join
@@ -209,7 +209,7 @@ std::string nvml_clock_samples::generate_yaml_string() const {
         str += fmt::format("  throttle_reason:\n"
                            "    unit: \"string\"\n"
                            "    values: [{}]\n",
-                           fmt::join(this->throttle_reason_.value(), ", "));
+                           fmt::join(detail::quote(this->throttle_reason_.value()), ", "));
     }
     // clock is auto-boosted
     if (this->auto_boosted_clock_.has_value()) {

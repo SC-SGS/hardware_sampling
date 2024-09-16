@@ -129,7 +129,7 @@ void hardware_sampler::dump_yaml(const char *filename) {
     file << "---\n\n";
 
     // set the device identification
-    file << fmt::format("device_identification: {}\n\n", this->device_identification());
+    file << fmt::format("device_identification: \"{}\"\n\n", this->device_identification());
 
     // output the start date time of this hardware sampling
     file << fmt::format("start_time: \"{:%Y-%m-%d %X}\"\n\n", start_date_time_);
@@ -139,7 +139,7 @@ void hardware_sampler::dump_yaml(const char *filename) {
     std::vector<decltype(event::name)> event_names{};
     for (const auto &[time_point, name] : events_) {
         event_time_points.push_back(time_point);
-        event_names.push_back(name);
+        event_names.push_back(fmt::format("\"{}\"", name));
     }
     file << fmt::format("events:\n"
                         "  time_points:\n"
@@ -150,12 +150,14 @@ void hardware_sampler::dump_yaml(const char *filename) {
                         fmt::join(event_names, ", "));
 
     // output the sampling information
-    file << fmt::format("sampling_interval: {}\n"
+    file << fmt::format("sampling_interval:\n"
+                        "  unit: \"ms\"\n"
+                        "  values: {}\n"
                         "time_points:\n"
                         "  unit: \"s\"\n"
                         "  values: [{}]\n"
                         "{}\n\n",
-                        this->sampling_interval(),
+                        this->sampling_interval().count(),
                         fmt::join(detail::durations_from_reference_time(this->sampling_time_points(), this->get_event(0).time_point), ", "),
                         this->generate_yaml_string());
 }

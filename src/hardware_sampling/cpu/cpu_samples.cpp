@@ -7,7 +7,7 @@
 
 #include "hardware_sampling/cpu/cpu_samples.hpp"
 
-#include "hardware_sampling/utility.hpp"  // hws::detail::value_or_default
+#include "hardware_sampling/utility.hpp"  // hws::detail::{value_or_default, quote}
 
 #include "fmt/format.h"  // fmt::format
 #include "fmt/ranges.h"  // fmt::join
@@ -104,7 +104,7 @@ std::string cpu_general_samples::generate_yaml_string() const {
         str += fmt::format("  flags:\n"
                            "    unit: \"string\"\n"
                            "    values: [{}]\n",
-                           fmt::join(this->flags_.value(), ", "));
+                           fmt::join(detail::quote(this->flags_.value()), ", "));
     }
 
     // the percent the CPU was busy

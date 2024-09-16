@@ -252,6 +252,26 @@ template <typename MapType>
     return "";
 }
 
+/**
+ * @brief Quote all @p values and return a vector of strings.
+ * @details Example: calling this function with `{ 1, 2, 3, 4 }` would return a vector of strings containing `{ "1", "2", "3", "4" }`.
+ * @tparam T the type of the values to quote
+ * @param[in] values the values to quote
+ * @return the quoted values (`[[nodiscard]]`)
+ */
+template <typename T>
+[[nodiscard]] inline std::vector<std::string> quote(const std::vector<T> &values) {
+    std::vector<std::string> quoted{};
+    quoted.reserve(values.size());
+
+    // quote all values
+    for (const T &val : values) {
+        quoted.push_back(fmt::format("\"{}\"", val));
+    }
+
+    return quoted;
+}
+
 }  // namespace hws::detail
 
 #endif  // HARDWARE_SAMPLING_UTILITY_HPP_

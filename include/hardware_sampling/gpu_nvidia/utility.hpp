@@ -78,7 +78,7 @@ namespace hws::detail {
         if ((clocks_event_reasons & nvmlClocksThrottleReasonHwThermalSlowdown) != 0ull) {
             reasons.emplace_back("HwThermalSlowdown");
         }
-        return fmt::format("\"{}\"", fmt::join(reasons, "|"));
+        return fmt::format("{}", fmt::join(reasons, "|"));
     }
 }
 

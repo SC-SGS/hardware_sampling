@@ -7,7 +7,7 @@
 
 #include "hardware_sampling/gpu_amd/rocm_smi_samples.hpp"
 
-#include "hardware_sampling/utility.hpp"  // hws::detail::{value_or_default,}
+#include "hardware_sampling/utility.hpp"  // hws::detail::{value_or_default, quote}
 
 #include "fmt/format.h"         // fmt::format
 #include "fmt/ranges.h"         // fmt::join
@@ -73,7 +73,7 @@ std::string rocm_smi_general_samples::generate_yaml_string() const {
         str += fmt::format("  performance_state:\n"
                            "    unit: \"string\"\n"
                            "    values: [{}]\n",
-                           fmt::join(this->performance_level_.value(), ", "));
+                           fmt::join(detail::quote(this->performance_level_.value()), ", "));
     }
 
     // remove last newline
@@ -267,7 +267,7 @@ std::string rocm_smi_power_samples::generate_yaml_string() const {
         str += fmt::format("  available_power_profiles:\n"
                            "    unit: \"string\"\n"
                            "    values: [{}]\n",
-                           fmt::join(this->available_power_profiles_.value(), ", "));
+                           fmt::join(detail::quote(this->available_power_profiles_.value()), ", "));
     }
 
     // current power usage
@@ -289,7 +289,7 @@ std::string rocm_smi_power_samples::generate_yaml_string() const {
         str += fmt::format("  power_profile:\n"
                            "    unit: \"string\"\n"
                            "    values: [{}]\n",
-                           fmt::join(this->power_profile_.value(), ", "));
+                           fmt::join(detail::quote(this->power_profile_.value()), ", "));
     }
 
     // remove last newline

@@ -62,25 +62,25 @@ namespace hws {
 [[nodiscard]] inline std::string performance_level_to_string(const rsmi_dev_perf_level_t perf_level) {
     switch (perf_level) {
         case RSMI_DEV_PERF_LEVEL_AUTO:
-            return "\"auto\"";
+            return "auto";
         case RSMI_DEV_PERF_LEVEL_LOW:
-            return "\"low\"";
+            return "low";
         case RSMI_DEV_PERF_LEVEL_HIGH:
-            return "\"high\"";
+            return "high";
         case RSMI_DEV_PERF_LEVEL_MANUAL:
-            return "\"manual\"";
+            return "manual";
         case RSMI_DEV_PERF_LEVEL_STABLE_STD:
-            return "\"stable_std\"";
+            return "stable_std";
         case RSMI_DEV_PERF_LEVEL_STABLE_PEAK:
-            return "\"stable_peak\"";
+            return "stable_peak";
         case RSMI_DEV_PERF_LEVEL_STABLE_MIN_MCLK:
-            return "\"stable_min_mclk\"";
+            return "stable_min_mclk";
         case RSMI_DEV_PERF_LEVEL_STABLE_MIN_SCLK:
-            return "\"stable_min_sclk\"";
+            return "stable_min_sclk";
         case RSMI_DEV_PERF_LEVEL_DETERMINISM:
-            return "\"determinism\"";
+            return "determinism";
         case RSMI_DEV_PERF_LEVEL_UNKNOWN:
-            return "\"unknown\"";
+            return "unknown";
     }
 }
 
