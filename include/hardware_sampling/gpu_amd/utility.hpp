@@ -16,8 +16,9 @@
 #include "rocm_smi/rocm_smi.h"  // ROCm SMI runtime functions
 
 #include <stdexcept>  // std::runtime_error
+#include <string>     // std::string
 
-namespace hws {
+namespace hws::detail {
 
 /**
  * @def HWS_ROCM_SMI_ERROR_CHECK
@@ -52,37 +53,12 @@ namespace hws {
     #define HWS_HIP_ERROR_CHECK(hip_func) hip_func;
 #endif
 
-// TODO: move to cpp file
-
 /**
- * @brief Convert the performance level value (rsmi_dev_perf_level_t) to a string.
+ * @brief Convert the performance level value (`rsmi_dev_perf_level_t`) to a string.
  * @param[in] clocks_event_reasons the bitmask to convert to a string
- * @return all event throttle reasons
+ * @return all event throttle reasons (`[[nodiscard]]`)
  */
-[[nodiscard]] inline std::string performance_level_to_string(const rsmi_dev_perf_level_t perf_level) {
-    switch (perf_level) {
-        case RSMI_DEV_PERF_LEVEL_AUTO:
-            return "auto";
-        case RSMI_DEV_PERF_LEVEL_LOW:
-            return "low";
-        case RSMI_DEV_PERF_LEVEL_HIGH:
-            return "high";
-        case RSMI_DEV_PERF_LEVEL_MANUAL:
-            return "manual";
-        case RSMI_DEV_PERF_LEVEL_STABLE_STD:
-            return "stable_std";
-        case RSMI_DEV_PERF_LEVEL_STABLE_PEAK:
-            return "stable_peak";
-        case RSMI_DEV_PERF_LEVEL_STABLE_MIN_MCLK:
-            return "stable_min_mclk";
-        case RSMI_DEV_PERF_LEVEL_STABLE_MIN_SCLK:
-            return "stable_min_sclk";
-        case RSMI_DEV_PERF_LEVEL_DETERMINISM:
-            return "determinism";
-        case RSMI_DEV_PERF_LEVEL_UNKNOWN:
-            return "unknown";
-    }
-}
+[[nodiscard]] std::string performance_level_to_string(rsmi_dev_perf_level_t perf_level);
 
 }  // namespace hws
 

@@ -202,7 +202,8 @@ if (CUDAToolkit_FOUND)
     target_sources(${HWS_LIBRARY_NAME} PRIVATE
             $<BUILD_INTERFACE:
             ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/gpu_nvidia/hardware_sampler.cpp;
-            ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/gpu_nvidia/nvml_samples.cpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/gpu_nvidia/nvml_samples.cpp;
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/gpu_nvidia/utility.cpp
             >)
 
     # add compile definition
@@ -228,7 +229,8 @@ if (rocm_smi_FOUND)
     target_sources(${HWS_LIBRARY_NAME} PRIVATE
             $<BUILD_INTERFACE:
             ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/gpu_amd/hardware_sampler.cpp;
-            ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/gpu_amd/rocm_smi_samples.cpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/gpu_amd/rocm_smi_samples.cpp;
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/gpu_amd/utility.cpp
             >)
 
     # add compile definition
