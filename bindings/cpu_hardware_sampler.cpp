@@ -48,7 +48,7 @@ void init_cpu_hardware_sampler(py::module_ &m) {
         .def("get_clock_frequency_min", &hws::cpu_clock_samples::get_clock_frequency_min, "the minimum possible CPU frequency in MHz")
         .def("get_clock_frequency_max", &hws::cpu_clock_samples::get_clock_frequency_max, "the maximum possible CPU frequency in MHz")
         .def("get_clock_frequency", &hws::cpu_clock_samples::get_clock_frequency, "the average CPU frequency in MHz including idle cores")
-        .def("get_average_non_idle_frequency", &hws::cpu_clock_samples::get_average_non_idle_frequency, "the average CPU frequency in MHz excluding idle cores")
+        .def("get_average_non_idle_clock_frequency", &hws::cpu_clock_samples::get_average_non_idle_clock_frequency, "the average CPU frequency in MHz excluding idle cores")
         .def("get_time_stamp_counter", &hws::cpu_clock_samples::get_time_stamp_counter, "the time stamp counter")
         .def("__repr__", [](const hws::cpu_clock_samples &self) {
             return fmt::format("<HardwareSampling.CpuClockSamples with\n{}\n>", self);

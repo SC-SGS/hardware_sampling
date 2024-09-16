@@ -110,7 +110,7 @@ The sampling type `sampled` denotes samples that are gathered during the whole h
 | available_clock_frequencies        |    fixed    |  -   |    map of MHz    | list of MHz |            |
 | available_memory_clock_frequencies |    fixed    |  -   |   list of MHz    | list of MHz |            |
 | clock_frequency                    |   sampled   | MHz  |       MHz        |     MHz     |            |
-| average_non_idle_frequency         |   sampled   | MHz  |        -         |      -      |     -      |
+| average_non_idle_clock_frequency   |   sampled   | MHz  |        -         |      -      |     -      |
 | time_stamp_counter                 |   sampled   | MHz  |        -         |      -      |     -      |
 | memory_clock_frequency             |   sampled   |  -   |       MHz        |     MHz     |            |
 | socket_clock_frequency             |   sampled   |  -   |        -         |     MHz     |     -      |

@@ -95,9 +95,9 @@ class cpu_clock_samples {
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(double, clock_frequency_min)       // the minimum possible CPU frequency in MHz
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(double, clock_frequency_max)       // the maximum possible CPU frequency in MHz
 
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(unsigned int, clock_frequency)             // the average CPU frequency in MHz including idle cores
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(unsigned int, average_non_idle_frequency)  // the average CPU frequency in MHz excluding idle cores
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(unsigned int, time_stamp_counter)          // the time stamp counter
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(unsigned int, clock_frequency)                   // the average CPU frequency in MHz including idle cores
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(unsigned int, average_non_idle_clock_frequency)  // the average CPU frequency in MHz excluding idle cores
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(unsigned int, time_stamp_counter)                // the time stamp counter
 };
 
 /**

@@ -242,12 +242,12 @@ std::string cpu_clock_samples::generate_yaml_string() const {
                            fmt::join(this->clock_frequency_.value(), ", "));
     }
     // the average CPU frequency excluding idle time
-    if (this->average_non_idle_frequency_.has_value()) {
-        str += fmt::format("  average_non_idle_frequency:\n"
+    if (this->average_non_idle_clock_frequency_.has_value()) {
+        str += fmt::format("  average_non_idle_clock_frequency:\n"
                            "    turbostat_name: \"Bzy_MHz\"\n"
                            "    unit: \"MHz\"\n"
                            "    values: [{}]\n",
-                           fmt::join(this->average_non_idle_frequency_.value(), ", "));
+                           fmt::join(this->average_non_idle_clock_frequency_.value(), ", "));
     }
     // the time stamp counter
     if (this->time_stamp_counter_.has_value()) {
@@ -269,13 +269,13 @@ std::ostream &operator<<(std::ostream &out, const cpu_clock_samples &samples) {
                               "clock_frequency_min [MHz]: {}\n"
                               "clock_frequency_max [MHz]: {}\n"
                               "clock_frequency [MHz]: [{}]\n"
-                              "average_non_idle_frequency [MHz]: [{}]\n"
+                              "average_non_idle_clock_frequency [MHz]: [{}]\n"
                               "time_stamp_counter [MHz]: [{}]",
                               detail::value_or_default(samples.get_auto_boosted_clock_enabled()),
                               detail::value_or_default(samples.get_clock_frequency_min()),
                               detail::value_or_default(samples.get_clock_frequency_max()),
                               fmt::join(detail::value_or_default(samples.get_clock_frequency()), ", "),
-                              fmt::join(detail::value_or_default(samples.get_average_non_idle_frequency()), ", "),
+                              fmt::join(detail::value_or_default(samples.get_average_non_idle_clock_frequency()), ", "),
                               fmt::join(detail::value_or_default(samples.get_time_stamp_counter()), ", "));
 }
 
