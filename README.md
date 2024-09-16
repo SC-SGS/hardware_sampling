@@ -241,6 +241,7 @@ The sampling type `sampled` denotes samples that are gathered during the whole h
 import HardwareSampling
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 import datetime
 
 sampler = HardwareSampling.CpuHardwareSampler()
@@ -259,16 +260,15 @@ sampler.stop()
 sampler.dump_yaml("track.yaml")
 
 # plot the results
-time_points = sampler.time_points()
-relative_time_points = [(t - time_points[0]) / datetime.timedelta(milliseconds=1) for t in time_points]
+time_points = sampler.relative_time_points()
 
-plt.plot(relative_time_points, sampler.clock_samples().get_average_frequency(), label="average")
-plt.plot(relative_time_points, sampler.clock_samples().get_average_non_idle_frequency(), label="average non-idle")
+plt.plot(time_points, sampler.clock_samples().get_clock_frequency(), label="average")
+plt.plot(time_points, sampler.clock_samples().get_average_non_idle_clock_frequency(), label="average non-idle")
 
 axes = plt.gcf().axes[0]
 x_bounds = axes.get_xlim()
 for event in sampler.get_events()[1:-1]:
-    tp = (event.time_point - time_points[0]) / datetime.timedelta(milliseconds=1)
+    tp = (event.time_point - sampler.time_points()[0]) / datetime.timedelta(milliseconds=1000)
 
     axes.axvline(x=tp, color='r')
     axes.annotate(text=event.name, xy=(((tp - x_bounds[0]) / (x_bounds[1] - x_bounds[0])), 1.025), xycoords='axes fraction', rotation=270)
