@@ -12,8 +12,9 @@
 #define HARDWARE_SAMPLING_GPU_NVIDIA_UTILITY_HPP_
 #pragma once
 
-#include "fmt/format.h"  // fmt::format
-#include "nvml.h"        // NVML runtime functions
+#include "cuda_runtime_api.h"  // CUDA runtime functions
+#include "fmt/format.h"        // fmt::format
+#include "nvml.h"              // NVML runtime functions
 
 #include <stdexcept>  // std::runtime_error
 #include <string>     // std::string
@@ -33,14 +34,23 @@ namespace hws::detail {
                 throw std::runtime_error{ fmt::format("Error in NVML function call \"{}\": {} ({})", #nvml_func, nvmlErrorString(errc), static_cast<int>(errc)) }; \
             }                                                                                                                                                      \
         }
+
+    #define HWS_CUDA_ERROR_CHECK(cuda_func)                                                                                                                           \
+        {                                                                                                                                                             \
+            const cudaError_t errc = cuda_func;                                                                                                                       \
+            if (errc != cudaSuccess) {                                                                                                                                \
+                throw std::runtime_error{ fmt::format("Error in CUDA function call \"{}\": {} ({})", #cuda_func, cudaGetErrorName(errc), cudaGetErrorString(errc)) }; \
+            }                                                                                                                                                         \
+        }
 #else
     #define HWS_NVML_ERROR_CHECK(nvml_func) nvml_func;
+    #define HWS_CUDA_ERROR_CHECK(cuda_func) cuda_func;
 #endif
 
 /**
  * @brief Convert the clock throttle reason event bitmask to a string representation. If the provided bitmask represents multiple reasons, they are split using "|".
  * @param[in] clocks_event_reasons the bitmask to convert to a string
- * @return all event throttle reasons
+ * @return all event throttle reasons (`[[nodiscard]]`)
  */
 [[nodiscard]] std::string throttle_event_reason_to_string(unsigned long long clocks_event_reasons);
 
