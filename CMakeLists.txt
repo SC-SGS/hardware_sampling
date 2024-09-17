@@ -15,6 +15,7 @@ project("HWS - Hardware Sampling for GPUs and CPUs"
 set(HWS_SOURCES
         ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/event.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/hardware_sampler.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/system_hardware_sampler.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/utility.cpp
 )
 
@@ -86,6 +87,24 @@ else ()
     add_dependencies(${HWS_LIBRARY_NAME} fmt)
 endif ()
 target_link_libraries(${HWS_LIBRARY_NAME} PUBLIC fmt::fmt)
+
+#set(HWS_ryml_VERSION v0.7.2)
+#find_package(ryml QUIET)
+#if (fmt_FOUND)
+#    message(STATUS "Found package ryml (rapidyaml).")
+#else ()
+#    message(STATUS "Couldn't find package ryml (rapidyaml). Building version ${HWS_ryml_VERSION} from source.")
+#    # fetch yaml library ryml
+#    FetchContent_Declare(ryml
+#            GIT_REPOSITORY https://github.com/biojppm/rapidyaml
+#            GIT_TAG ${HWS_ryml_VERSION}
+#            GIT_SHALLOW FALSE
+#            QUIET
+#    )
+#    FetchContent_MakeAvailable(ryml)
+#    add_dependencies(${HWS_LIBRARY_NAME} ryml)
+#endif ()
+#target_link_libraries(${HWS_LIBRARY_NAME} PUBLIC ryml::ryml)
 
 ####################################################################################################################
 ##                                                CPU measurements                                                ##
@@ -194,7 +213,7 @@ endif ()
 # find libraries necessary for NVML and link against them
 find_package(CUDAToolkit QUIET)
 if (CUDAToolkit_FOUND)
-    target_link_libraries(${HWS_LIBRARY_NAME} PRIVATE CUDA::nvml)
+    target_link_libraries(${HWS_LIBRARY_NAME} PRIVATE CUDA::nvml CUDA::cudart)
 
     message(STATUS "Enable sampling of NVIDIA GPU information using NVML.")
 

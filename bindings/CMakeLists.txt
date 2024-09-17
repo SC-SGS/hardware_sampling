@@ -32,7 +32,9 @@ endif ()
 # set source files that are always used
 set(HWS_PYTHON_BINDINGS_SOURCES
         ${CMAKE_CURRENT_SOURCE_DIR}/event.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/relative_event.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/hardware_sampler.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/system_hardware_sampler.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
 )
 
