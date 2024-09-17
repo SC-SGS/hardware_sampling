@@ -12,7 +12,7 @@
 
 #include "fmt/format.h"  // fmt::format
 #include "fmt/ranges.h"  // fmt::join
-#include "fmt/chrono.h"  // fmt::localtime, direct formatting of std::chrono types
+#include "fmt/chrono.h"  // direct formatting of std::chrono types
 
 #include <chrono>     // std::chrono::{system_clock, steady_clock, duration_cast, milliseconds}
 #include <cstddef>    // std::size_t

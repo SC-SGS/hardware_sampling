@@ -170,7 +170,7 @@ class nvml_memory_samples {
 
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(unsigned long, memory_total)             // the total available memory in Byte
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(unsigned int, num_pcie_lanes_max)        // the maximum number of PCIe lanes
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(unsigned int, pcie_link_generation_max)  // the maximum PCIe link generation (e.g., PCIe 4.0, PCIe 5.0, etc)
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(unsigned int, pcie_link_generation_max)  // the maximum PCIe link generation (e.g., PCIe 4.0, PCIe 5.0, etc.)
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(unsigned int, pcie_link_speed_max)       // the maximum PCIe link speed in MBPS
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(unsigned int, memory_bus_width)          // the memory bus with in Bit
 

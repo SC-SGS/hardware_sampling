@@ -46,7 +46,7 @@ gpu_nvidia_hardware_sampler::gpu_nvidia_hardware_sampler(const std::size_t devic
     hardware_sampler{ sampling_interval } {
     // make sure that nvmlInit is only called once for all instances
     if (instances_++ == 0) {
-        HWS_NVML_ERROR_CHECK(nvmlInit());
+        HWS_NVML_ERROR_CHECK(nvmlInit())
         // notify that initialization has been finished
         init_finished_ = true;
     } else {
@@ -68,7 +68,7 @@ gpu_nvidia_hardware_sampler::~gpu_nvidia_hardware_sampler() {
         // the last instance must shut down the NVML runtime
         // make sure that nvmlShutdown is only called once
         if (--instances_ == 0) {
-            HWS_NVML_ERROR_CHECK(nvmlShutdown());
+            HWS_NVML_ERROR_CHECK(nvmlShutdown())
             // reset init_finished flag
             init_finished_ = false;
         }
@@ -227,7 +227,7 @@ void gpu_nvidia_hardware_sampler::sampling_loop() {
         {
             unsigned int clock_count{ 128 };
             std::vector<unsigned int> supported_clocks(clock_count);
-            if (clock_samples_.memory_clock_frequency_min_.has_value() && nvmlDeviceGetSupportedGraphicsClocks(device, clock_samples_.memory_clock_frequency_min_.value(), &clock_count, supported_clocks.data()) == NVML_SUCCESS) {
+            if (clock_samples_.memory_clock_frequency_min_.has_value() && nvmlDeviceGetSupportedGraphicsClocks(device, static_cast<unsigned int>(clock_samples_.memory_clock_frequency_min_.value()), &clock_count, supported_clocks.data()) == NVML_SUCCESS) {
                 clock_samples_.clock_frequency_min_ = static_cast<decltype(clock_samples_.clock_frequency_min_)::value_type>(*std::min_element(supported_clocks.cbegin(), supported_clocks.cbegin() + clock_count));
             }
 
@@ -427,13 +427,13 @@ void gpu_nvidia_hardware_sampler::sampling_loop() {
             {
                 if (general_samples_.performance_level_.has_value()) {
                     nvmlPstates_t pstate{};
-                    HWS_NVML_ERROR_CHECK(nvmlDeviceGetPerformanceState(device, &pstate));
+                    HWS_NVML_ERROR_CHECK(nvmlDeviceGetPerformanceState(device, &pstate))
                     general_samples_.performance_level_->push_back(static_cast<decltype(general_samples_.performance_level_)::value_type::value_type>(pstate));
                 }
 
                 if (general_samples_.compute_utilization_.has_value() && general_samples_.memory_utilization_.has_value()) {
                     nvmlUtilization_t util{};
-                    HWS_NVML_ERROR_CHECK(nvmlDeviceGetUtilizationRates(device, &util));
+                    HWS_NVML_ERROR_CHECK(nvmlDeviceGetUtilizationRates(device, &util))
                     general_samples_.compute_utilization_->push_back(util.gpu);
                     general_samples_.memory_utilization_->push_back(util.memory);
                 }
@@ -443,32 +443,32 @@ void gpu_nvidia_hardware_sampler::sampling_loop() {
             {
                 if (clock_samples_.clock_frequency_.has_value()) {
                     unsigned int value{};
-                    HWS_NVML_ERROR_CHECK(nvmlDeviceGetClockInfo(device, NVML_CLOCK_GRAPHICS, &value));
+                    HWS_NVML_ERROR_CHECK(nvmlDeviceGetClockInfo(device, NVML_CLOCK_GRAPHICS, &value))
                     clock_samples_.clock_frequency_->push_back(static_cast<decltype(clock_samples_.clock_frequency_)::value_type::value_type>(value));
                 }
 
                 if (clock_samples_.sm_clock_frequency_.has_value()) {
                     unsigned int value{};
-                    HWS_NVML_ERROR_CHECK(nvmlDeviceGetClockInfo(device, NVML_CLOCK_SM, &value));
+                    HWS_NVML_ERROR_CHECK(nvmlDeviceGetClockInfo(device, NVML_CLOCK_SM, &value))
                     clock_samples_.sm_clock_frequency_->push_back(static_cast<decltype(clock_samples_.sm_clock_frequency_)::value_type::value_type>(value));
                 }
 
                 if (clock_samples_.memory_clock_frequency_.has_value()) {
                     unsigned int value{};
-                    HWS_NVML_ERROR_CHECK(nvmlDeviceGetClockInfo(device, NVML_CLOCK_MEM, &value));
+                    HWS_NVML_ERROR_CHECK(nvmlDeviceGetClockInfo(device, NVML_CLOCK_MEM, &value))
                     clock_samples_.memory_clock_frequency_->push_back(static_cast<decltype(clock_samples_.memory_clock_frequency_)::value_type::value_type>(value));
                 }
 
                 if (clock_samples_.throttle_reason_.has_value()) {
                     unsigned long long value{};
-                    HWS_NVML_ERROR_CHECK(nvmlDeviceGetCurrentClocksEventReasons(device, &value));
+                    HWS_NVML_ERROR_CHECK(nvmlDeviceGetCurrentClocksEventReasons(device, &value))
                     clock_samples_.throttle_reason_->push_back(detail::throttle_event_reason_to_string(value));
                 }
 
                 if (clock_samples_.auto_boosted_clock_.has_value()) {
                     nvmlEnableState_t mode{};
                     nvmlEnableState_t default_mode{};
-                    HWS_NVML_ERROR_CHECK(nvmlDeviceGetAutoBoostedClocksEnabled(device, &mode, &default_mode));
+                    HWS_NVML_ERROR_CHECK(nvmlDeviceGetAutoBoostedClocksEnabled(device, &mode, &default_mode))
                     clock_samples_.auto_boosted_clock_->push_back(mode == NVML_FEATURE_ENABLED);
                 }
             }
@@ -477,19 +477,19 @@ void gpu_nvidia_hardware_sampler::sampling_loop() {
             {
                 if (power_samples_.power_profile_.has_value()) {
                     nvmlPstates_t pstate{};
-                    HWS_NVML_ERROR_CHECK(nvmlDeviceGetPowerState(device, &pstate));
+                    HWS_NVML_ERROR_CHECK(nvmlDeviceGetPowerState(device, &pstate))
                     power_samples_.power_profile_->push_back(static_cast<decltype(power_samples_.power_profile_)::value_type::value_type>(pstate));
                 }
 
                 if (power_samples_.power_usage_.has_value()) {
                     unsigned int value{};
-                    HWS_NVML_ERROR_CHECK(nvmlDeviceGetPowerUsage(device, &value));
+                    HWS_NVML_ERROR_CHECK(nvmlDeviceGetPowerUsage(device, &value))
                     power_samples_.power_usage_->push_back(static_cast<decltype(power_samples_.power_usage_)::value_type::value_type>(value - initial_power_usage) / 1000.0);
                 }
 
                 if (power_samples_.power_total_energy_consumption_.has_value()) {
                     unsigned long long value{};
-                    HWS_NVML_ERROR_CHECK(nvmlDeviceGetTotalEnergyConsumption(device, &value));
+                    HWS_NVML_ERROR_CHECK(nvmlDeviceGetTotalEnergyConsumption(device, &value))
                     power_samples_.power_total_energy_consumption_->push_back(static_cast<decltype(power_samples_.power_total_energy_consumption_)::value_type::value_type>(value) / 1000.0);
                 }
             }
@@ -498,20 +498,20 @@ void gpu_nvidia_hardware_sampler::sampling_loop() {
             {
                 if (memory_samples_.memory_free_.has_value() && memory_samples_.memory_used_.has_value()) {
                     nvmlMemory_t memory_info{};
-                    HWS_NVML_ERROR_CHECK(nvmlDeviceGetMemoryInfo(device, &memory_info));
+                    HWS_NVML_ERROR_CHECK(nvmlDeviceGetMemoryInfo(device, &memory_info))
                     memory_samples_.memory_free_->push_back(memory_info.free);
                     memory_samples_.memory_used_->push_back(memory_info.used);
                 }
 
                 if (memory_samples_.num_pcie_lanes_.has_value()) {
                     decltype(memory_samples_.num_pcie_lanes_)::value_type::value_type value{};
-                    HWS_NVML_ERROR_CHECK(nvmlDeviceGetCurrPcieLinkWidth(device, &value));
+                    HWS_NVML_ERROR_CHECK(nvmlDeviceGetCurrPcieLinkWidth(device, &value))
                     memory_samples_.num_pcie_lanes_->push_back(value);
                 }
 
                 if (memory_samples_.pcie_link_generation_.has_value()) {
                     decltype(memory_samples_.pcie_link_generation_)::value_type::value_type value{};
-                    HWS_NVML_ERROR_CHECK(nvmlDeviceGetCurrPcieLinkGeneration(device, &value));
+                    HWS_NVML_ERROR_CHECK(nvmlDeviceGetCurrPcieLinkGeneration(device, &value))
                     memory_samples_.pcie_link_generation_->push_back(value);
                 }
             }
@@ -520,13 +520,13 @@ void gpu_nvidia_hardware_sampler::sampling_loop() {
             {
                 if (temperature_samples_.fan_speed_percentage_.has_value()) {
                     unsigned int value{};
-                    HWS_NVML_ERROR_CHECK(nvmlDeviceGetFanSpeed(device, &value));
+                    HWS_NVML_ERROR_CHECK(nvmlDeviceGetFanSpeed(device, &value))
                     temperature_samples_.fan_speed_percentage_->push_back(static_cast<decltype(temperature_samples_.fan_speed_percentage_)::value_type::value_type>(value));
                 }
 
                 if (temperature_samples_.temperature_.has_value()) {
                     unsigned int value{};
-                    HWS_NVML_ERROR_CHECK(nvmlDeviceGetTemperature(device, NVML_TEMPERATURE_GPU, &value));
+                    HWS_NVML_ERROR_CHECK(nvmlDeviceGetTemperature(device, NVML_TEMPERATURE_GPU, &value))
                     temperature_samples_.temperature_->push_back(static_cast<decltype(temperature_samples_.temperature_)::value_type::value_type>(value));
                 }
             }
@@ -539,7 +539,7 @@ void gpu_nvidia_hardware_sampler::sampling_loop() {
 
 std::string gpu_nvidia_hardware_sampler::device_identification() const {
     nvmlPciInfo_st pcie_info{};
-    HWS_NVML_ERROR_CHECK(nvmlDeviceGetPciInfo_v3(device_.get_impl().device, &pcie_info));
+    HWS_NVML_ERROR_CHECK(nvmlDeviceGetPciInfo_v3(device_.get_impl().device, &pcie_info))
     return fmt::format("gpu_nvidia_device_{}_{}", pcie_info.bus, pcie_info.device);
 }
 

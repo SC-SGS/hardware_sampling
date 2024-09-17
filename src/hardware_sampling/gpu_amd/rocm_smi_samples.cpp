@@ -9,9 +9,8 @@
 
 #include "hardware_sampling/utility.hpp"  // hws::detail::{value_or_default, quote}
 
-#include "fmt/format.h"         // fmt::format
-#include "fmt/ranges.h"         // fmt::join
-#include "rocm_smi/rocm_smi.h"  // RSMI_MAX_FAN_SPEED
+#include "fmt/format.h"  // fmt::format
+#include "fmt/ranges.h"  // fmt::join
 
 #include <ostream>  // std::ostream
 #include <string>   // std::string

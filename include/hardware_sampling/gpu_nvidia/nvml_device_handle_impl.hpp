@@ -32,7 +32,7 @@ struct nvml_device_handle::nvml_device_handle_impl {
      * @param[in] device_id the device to get the handle for
      */
     explicit nvml_device_handle_impl(const std::size_t device_id) {
-        HWS_NVML_ERROR_CHECK(nvmlDeviceGetHandleByIndex(static_cast<int>(device_id), &device));
+        HWS_NVML_ERROR_CHECK(nvmlDeviceGetHandleByIndex(static_cast<int>(device_id), &device))
     }
 
     /// The wrapped NVML device handle.

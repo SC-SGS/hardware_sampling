@@ -36,10 +36,10 @@ std::string run_subprocess(const std::string_view cmd_line) {
 
     // create subprocess
     subprocess_s proc{};
-    HWS_SUBPROCESS_ERROR_CHECK(subprocess_create(cmd_ptr_split.data(), options, &proc));
+    HWS_SUBPROCESS_ERROR_CHECK(subprocess_create(cmd_ptr_split.data(), options, &proc))
     // wait until process has finished
     int return_code{};
-    HWS_SUBPROCESS_ERROR_CHECK(subprocess_join(&proc, &return_code));
+    HWS_SUBPROCESS_ERROR_CHECK(subprocess_join(&proc, &return_code))
     if (return_code != 0) {
         throw std::runtime_error{ fmt::format("Error: \"{}\" returned with {}!", cmd_line, return_code) };
     }
@@ -50,7 +50,7 @@ std::string run_subprocess(const std::string_view cmd_line) {
     const std::size_t bytes_read = std::fread(buffer.data(), sizeof(typename decltype(buffer)::value_type), buffer.size(), out_handle);
 
     // destroy subprocess
-    HWS_SUBPROCESS_ERROR_CHECK(subprocess_destroy(&proc));
+    HWS_SUBPROCESS_ERROR_CHECK(subprocess_destroy(&proc))
 
     // create output
     return buffer.substr(0, bytes_read);

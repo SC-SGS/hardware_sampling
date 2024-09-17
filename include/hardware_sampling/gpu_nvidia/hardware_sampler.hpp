@@ -121,12 +121,12 @@ class gpu_nvidia_hardware_sampler : public hardware_sampler {
     /**
      * @copydoc hws::hardware_sampler::device_identification
      */
-    std::string device_identification() const final;
+    [[nodiscard]] std::string device_identification() const final;
 
     /**
      * @copydoc hws::hardware_sampler::generate_yaml_string
      */
-    std::string generate_yaml_string() const final;
+    [[nodiscard]] std::string generate_yaml_string() const final;
 
     /// The device handle for the device to sample.
     detail::nvml_device_handle device_{};

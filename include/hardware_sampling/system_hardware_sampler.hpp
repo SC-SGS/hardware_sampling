@@ -57,6 +57,11 @@ class system_hardware_sampler {
     system_hardware_sampler &operator=(system_hardware_sampler &&) noexcept = delete;
 
     /**
+     * @brief Explicitly use the default destructor.
+     */
+    ~system_hardware_sampler() = default;
+
+    /**
      * @brief Start hardware sampling for all wrapped hardware samplers.
      */
     void start_sampling();

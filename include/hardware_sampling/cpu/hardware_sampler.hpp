@@ -113,12 +113,12 @@ class cpu_hardware_sampler : public hardware_sampler {
     /**
      * @copydoc hws::hardware_sampler::device_identification
      */
-    std::string device_identification() const final;
+    [[nodiscard]] std::string device_identification() const final;
 
     /**
      * @copydoc hws::hardware_sampler::generate_yaml_string
      */
-    std::string generate_yaml_string() const final;
+    [[nodiscard]] std::string generate_yaml_string() const final;
 
     /// The general CPU samples.
     cpu_general_samples general_samples_{};
