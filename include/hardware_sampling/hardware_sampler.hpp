@@ -86,7 +86,7 @@ class hardware_sampler {
      */
     [[nodiscard]] bool has_sampling_started() const noexcept;
     /**
-     * @brief Check whether this hardware sampler has currently sampling.
+     * @brief Check whether this hardware sampler is currently sampling.
      * @return `true` if the hardware sampler is currently sampling, `false` otherwise (`[[nodiscard]]`)
      */
     [[nodiscard]] bool is_sampling() const noexcept;
@@ -121,7 +121,7 @@ class hardware_sampler {
 
     /**
      * @brief Return the number of recorded events.
-     * @return the number of events (`[[nodiscard]]`)
+     * @return the events (`[[nodiscard]]`)
      */
     [[nodiscard]] const std::vector<event> &get_events() const noexcept { return events_; }
 
