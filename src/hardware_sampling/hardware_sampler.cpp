@@ -118,7 +118,7 @@ event hardware_sampler::get_event(const std::size_t idx) const {
     return events_[idx];
 }
 
-void hardware_sampler::dump_yaml(const char *filename) {
+void hardware_sampler::dump_yaml(const char *filename) const {
     if (!this->has_sampling_stopped()) {
         throw std::runtime_error{ "Can dump samples to the YAML file only after the sampling has been stopped!" };
     }
@@ -162,11 +162,11 @@ void hardware_sampler::dump_yaml(const char *filename) {
                         this->generate_yaml_string());
 }
 
-void hardware_sampler::dump_yaml(const std::string &filename) {
+void hardware_sampler::dump_yaml(const std::string &filename) const {
     this->dump_yaml(filename.c_str());
 }
 
-void hardware_sampler::dump_yaml(const std::filesystem::path &filename) {
+void hardware_sampler::dump_yaml(const std::filesystem::path &filename) const {
     this->dump_yaml(filename.string().c_str());
 }
 

@@ -148,15 +148,15 @@ class hardware_sampler {
      * @brief Dump the hardware samples to the YAML file with @p filename.
      * @param[in] filename the YAML file to append the hardware samples to
      */
-    void dump_yaml(const char *filename);
+    void dump_yaml(const char *filename) const;
     /**
      * @copydoc hws::hardware_sampler::dump_yaml(const char *)
      */
-    void dump_yaml(const std::string &filename);
+    void dump_yaml(const std::string &filename) const;
     /**
      * @copydoc hws::hardware_sampler::dump_yaml(const char *)
      */
-    void dump_yaml(const std::filesystem::path &filename);
+    void dump_yaml(const std::filesystem::path &filename) const;
 
   protected:
     /**
