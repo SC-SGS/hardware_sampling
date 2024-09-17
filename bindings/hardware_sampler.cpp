@@ -96,22 +96,22 @@ void init_hardware_sampler(py::module_ &m) {
         .def("__repr__", [](const hws::hardware_sampler &self) {
 #if defined(HWS_FOR_CPUS_ENABLED)
             if (dynamic_cast<const hws::cpu_hardware_sampler *>(&self)) {
-                return fmt::format("<plssvm.detail.tracking.CpuHardwareSampler with\n{}\n>", dynamic_cast<const hws::cpu_hardware_sampler &>(self));
+                return fmt::format("<HardwareSampling.CpuHardwareSampler with\n{}\n>", dynamic_cast<const hws::cpu_hardware_sampler &>(self));
             }
 #endif
 #if defined(HWS_FOR_NVIDIA_GPUS_ENABLED)
             if (dynamic_cast<const hws::gpu_nvidia_hardware_sampler *>(&self)) {
-                return fmt::format("<plssvm.detail.tracking.GpuNvidiaHardwareSampler with\n{}\n>", dynamic_cast<const hws::gpu_nvidia_hardware_sampler &>(self));
+                return fmt::format("<HardwareSampling.GpuNvidiaHardwareSampler with\n{}\n>", dynamic_cast<const hws::gpu_nvidia_hardware_sampler &>(self));
             }
 #endif
 #if defined(HWS_FOR_AMD_GPUS_ENABLED)
             if (dynamic_cast<const hws::gpu_amd_hardware_sampler *>(&self)) {
-                return fmt::format("<plssvm.detail.tracking.GpuAmdHardwareSampler with\n{}\n>", dynamic_cast<const hws::gpu_amd_hardware_sampler &>(self));
+                return fmt::format("<HardwareSampling.GpuAmdHardwareSampler with\n{}\n>", dynamic_cast<const hws::gpu_amd_hardware_sampler &>(self));
             }
 #endif
 #if defined(HWS_FOR_INTEL_GPUS_ENABLED)
             if (dynamic_cast<const hws::gpu_intel_hardware_sampler *>(&self)) {
-                return fmt::format("<plssvm.detail.tracking.GpuIntelHardwareSampler with\n{}\n>", dynamic_cast<const hws::gpu_intel_hardware_sampler &>(self));
+                return fmt::format("<HardwareSampling.GpuIntelHardwareSampler with\n{}\n>", dynamic_cast<const hws::gpu_intel_hardware_sampler &>(self));
             }
 #endif
             return std::string{ "unknown" }; });

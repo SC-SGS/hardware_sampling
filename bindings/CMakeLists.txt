@@ -4,7 +4,7 @@
 ##          See the LICENSE.md file in the project root for full license information.
 ########################################################################################################################
 
-message(STATUS "Building Python language bindings for PLSSVM.")
+message(STATUS "Building Python language bindings.")
 
 find_package(Python COMPONENTS Interpreter Development)
 
