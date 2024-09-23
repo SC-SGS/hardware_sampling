@@ -88,24 +88,6 @@ else ()
 endif ()
 target_link_libraries(${HWS_LIBRARY_NAME} PUBLIC fmt::fmt)
 
-#set(HWS_ryml_VERSION v0.7.2)
-#find_package(ryml QUIET)
-#if (fmt_FOUND)
-#    message(STATUS "Found package ryml (rapidyaml).")
-#else ()
-#    message(STATUS "Couldn't find package ryml (rapidyaml). Building version ${HWS_ryml_VERSION} from source.")
-#    # fetch yaml library ryml
-#    FetchContent_Declare(ryml
-#            GIT_REPOSITORY https://github.com/biojppm/rapidyaml
-#            GIT_TAG ${HWS_ryml_VERSION}
-#            GIT_SHALLOW FALSE
-#            QUIET
-#    )
-#    FetchContent_MakeAvailable(ryml)
-#    add_dependencies(${HWS_LIBRARY_NAME} ryml)
-#endif ()
-#target_link_libraries(${HWS_LIBRARY_NAME} PUBLIC ryml::ryml)
-
 ####################################################################################################################
 ##                                                CPU measurements                                                ##
 ####################################################################################################################
