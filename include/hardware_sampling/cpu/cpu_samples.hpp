@@ -15,6 +15,7 @@
 #include "hardware_sampling/utility.hpp"  // HWS_SAMPLE_STRUCT_FIXED_MEMBER, HWS_SAMPLE_STRUCT_SAMPLING_MEMBER
 
 #include "fmt/ostream.h"  // fmt::formatter, fmt::ostream_formatter
+#include "ryml.hpp"       // ryml::NodeRef
 
 #include <iosfwd>         // std::ostream forward declaration
 #include <optional>       // std::optional
@@ -39,9 +40,9 @@ class cpu_general_samples {
     /**
      * @brief Assemble the YAML string containing all available general hardware samples.
      * @details Hardware samples that are not supported by the current device are omitted in the YAML output.
-     * @return the YAML string (`[[nodiscard]]`)
+     * @param[in,out] root the YAML root node the data should be added to
      */
-    [[nodiscard]] std::string generate_yaml_string() const;
+    void add_yaml_entries(ryml::NodeRef &root) const;
 
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, architecture)        // the CPU architecture (e.g., x86_64)
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, byte_order)          // the byte order (e.g., little/big endian)
@@ -87,9 +88,9 @@ class cpu_clock_samples {
     /**
      * @brief Assemble the YAML string containing all available general hardware samples.
      * @details Hardware samples that are not supported by the current device are omitted in the YAML output.
-     * @return the YAML string (`[[nodiscard]]`)
+     * @param[in,out] root the YAML root node the data should be added to
      */
-    [[nodiscard]] std::string generate_yaml_string() const;
+    void add_yaml_entries(ryml::NodeRef &root) const;
 
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(bool, auto_boosted_clock_enabled)  // true if frequency boosting is enabled
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(double, clock_frequency_min)       // the minimum possible CPU frequency in MHz
@@ -124,9 +125,9 @@ class cpu_power_samples {
     /**
      * @brief Assemble the YAML string containing all available general hardware samples.
      * @details Hardware samples that are not supported by the current device are omitted in the YAML output.
-     * @return the YAML string (`[[nodiscard]]`)
+     * @param[in,out] root the YAML root node the data should be added to
      */
-    [[nodiscard]] std::string generate_yaml_string() const;
+    void add_yaml_entries(ryml::NodeRef &root) const;
 
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, power_measurement_type)  // the type of the power readings: always "instant/current"
 
@@ -162,9 +163,9 @@ class cpu_memory_samples {
     /**
      * @brief Assemble the YAML string containing all available general hardware samples.
      * @details Hardware samples that are not supported by the current device are omitted in the YAML output.
-     * @return the YAML string (`[[nodiscard]]`)
+     * @param[in,out] root the YAML root node the data should be added to
      */
-    [[nodiscard]] std::string generate_yaml_string() const;
+    void add_yaml_entries(ryml::NodeRef &root) const;
 
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, cache_size_L1d)            // the size of the L1 data cache
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, cache_size_L1i)            // the size of the L1 instruction cache
@@ -203,9 +204,9 @@ class cpu_temperature_samples {
     /**
      * @brief Assemble the YAML string containing all available general hardware samples.
      * @details Hardware samples that are not supported by the current device are omitted in the YAML output.
-     * @return the YAML string (`[[nodiscard]]`)
+     * @param[in,out] root the YAML root node the data should be added to
      */
-    [[nodiscard]] std::string generate_yaml_string() const;
+    void add_yaml_entries(ryml::NodeRef &root) const;
 
     HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, temperature)             // the current temperature of the whole package in °C
     HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(unsigned int, core_temperature)  // the current temperature of the core part of the CPU in °C
@@ -236,9 +237,9 @@ class cpu_gfx_samples {
     /**
      * @brief Assemble the YAML string containing all available general hardware samples.
      * @details Hardware samples that are not supported by the current device are omitted in the YAML output.
-     * @return the YAML string (`[[nodiscard]]`)
+     * @param[in,out] root the YAML root node the data should be added to
      */
-    [[nodiscard]] std::string generate_yaml_string() const;
+    void add_yaml_entries(ryml::NodeRef &root) const;
 
     HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(unsigned int, gfx_render_state_percent)  // the percent of time the iGPU was in the render state
     HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(unsigned int, gfx_frequency)             // the current iGPU power consumption in W
@@ -274,9 +275,9 @@ class cpu_idle_states_samples {
     /**
      * @brief Assemble the YAML string containing all available general hardware samples.
      * @details Hardware samples that are not supported by the current device are omitted in the YAML output.
-     * @return the YAML string (`[[nodiscard]]`)
+     * @param[in,out] root the YAML root node the data should be added to
      */
-    [[nodiscard]] std::string generate_yaml_string() const;
+    void add_yaml_entries(ryml::NodeRef &root) const;
 
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(map_type, idle_states)                            // the map of additional CPU idle states
     HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, all_cpus_state_c0_percent)             // the percent of time all CPUs were in idle state c0

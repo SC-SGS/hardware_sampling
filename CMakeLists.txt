@@ -88,23 +88,29 @@ else ()
 endif ()
 target_link_libraries(${HWS_LIBRARY_NAME} PUBLIC fmt::fmt)
 
-#set(HWS_ryml_VERSION v0.7.2)
-#find_package(ryml QUIET)
-#if (fmt_FOUND)
-#    message(STATUS "Found package ryml (rapidyaml).")
-#else ()
-#    message(STATUS "Couldn't find package ryml (rapidyaml). Building version ${HWS_ryml_VERSION} from source.")
-#    # fetch yaml library ryml
-#    FetchContent_Declare(ryml
-#            GIT_REPOSITORY https://github.com/biojppm/rapidyaml
-#            GIT_TAG ${HWS_ryml_VERSION}
-#            GIT_SHALLOW FALSE
-#            QUIET
-#    )
-#    FetchContent_MakeAvailable(ryml)
-#    add_dependencies(${HWS_LIBRARY_NAME} ryml)
-#endif ()
-#target_link_libraries(${HWS_LIBRARY_NAME} PUBLIC ryml::ryml)
+set(HWS_ryml_VERSION v0.7.2)
+find_package(ryml QUIET)
+if (fmt_FOUND)
+    message(STATUS "Found package ryml (rapidyaml).")
+else ()
+    message(STATUS "Couldn't find package ryml (rapidyaml). Building version ${HWS_ryml_VERSION} from source.")
+    # fetch yaml library ryml
+    FetchContent_Declare(ryml
+            GIT_REPOSITORY https://github.com/biojppm/rapidyaml
+            GIT_TAG ${HWS_ryml_VERSION}
+            GIT_SHALLOW FALSE
+            QUIET
+    )
+    FetchContent_MakeAvailable(ryml)
+    set_property(TARGET ryml PROPERTY POSITION_INDEPENDENT_CODE ON)
+    target_compile_options(ryml PUBLIC $<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang>:-Wno-extra-semi>)
+    add_dependencies(${HWS_LIBRARY_NAME} ryml)
+endif ()
+target_link_libraries(${HWS_LIBRARY_NAME} PUBLIC ryml::ryml)
+
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+target_link_libraries(${HWS_LIBRARY_NAME} PRIVATE Threads::Threads)
 
 ####################################################################################################################
 ##                                                CPU measurements                                                ##
@@ -211,52 +217,52 @@ endif ()
 ##                                          NVIDIA GPU sampling via NVML                                          ##
 ####################################################################################################################
 # find libraries necessary for NVML and link against them
-find_package(CUDAToolkit QUIET)
-if (CUDAToolkit_FOUND)
-    target_link_libraries(${HWS_LIBRARY_NAME} PRIVATE CUDA::nvml CUDA::cudart)
-
-    message(STATUS "Enable sampling of NVIDIA GPU information using NVML.")
-
-    # add source file to source file list
-    target_sources(${HWS_LIBRARY_NAME} PRIVATE
-            $<BUILD_INTERFACE:
-            ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/gpu_nvidia/hardware_sampler.cpp;
-            ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/gpu_nvidia/nvml_samples.cpp;
-            ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/gpu_nvidia/utility.cpp
-            >)
-
-    # add compile definition
-    target_compile_definitions(${HWS_LIBRARY_NAME} PUBLIC HWS_FOR_NVIDIA_GPUS_ENABLED)
-else ()
-    message(STATUS "Hardware sampling for NVIDIA GPUs disabled!")
-endif ()
+#find_package(CUDAToolkit QUIET)
+#if (CUDAToolkit_FOUND)
+#    target_link_libraries(${HWS_LIBRARY_NAME} PRIVATE CUDA::nvml CUDA::cudart)
+#
+#    message(STATUS "Enable sampling of NVIDIA GPU information using NVML.")
+#
+#    # add source file to source file list
+#    target_sources(${HWS_LIBRARY_NAME} PRIVATE
+#            $<BUILD_INTERFACE:
+#            ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/gpu_nvidia/hardware_sampler.cpp;
+#            ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/gpu_nvidia/nvml_samples.cpp;
+#            ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/gpu_nvidia/utility.cpp
+#            >)
+#
+#    # add compile definition
+#    target_compile_definitions(${HWS_LIBRARY_NAME} PUBLIC HWS_FOR_NVIDIA_GPUS_ENABLED)
+#else ()
+#    message(STATUS "Hardware sampling for NVIDIA GPUs disabled!")
+#endif ()
 
 
 ####################################################################################################################
 ##                                        AMD GPU sampling via ROCm SMI lib                                       ##
 ####################################################################################################################
 ## try finding ROCm SMI
-find_package(rocm_smi QUIET)
-if (rocm_smi_FOUND)
-    find_package(HIP REQUIRED)
-    target_link_libraries(${HWS_LIBRARY_NAME} PRIVATE -lrocm_smi64 hip::host)
-    target_include_directories(${HWS_LIBRARY_NAME} PRIVATE ${ROCM_SMI_INCLUDE_DIR})
-
-    message(STATUS "Enable sampling of AMD GPU information using ROCm SMI.")
-
-    # add source file to source file list
-    target_sources(${HWS_LIBRARY_NAME} PRIVATE
-            $<BUILD_INTERFACE:
-            ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/gpu_amd/hardware_sampler.cpp;
-            ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/gpu_amd/rocm_smi_samples.cpp;
-            ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/gpu_amd/utility.cpp
-            >)
-
-    # add compile definition
-    target_compile_definitions(${HWS_LIBRARY_NAME} PUBLIC HWS_FOR_AMD_GPUS_ENABLED)
-else ()
-    message(STATUS "Hardware sampling for AMD GPUs disabled!")
-endif ()
+#find_package(rocm_smi QUIET)
+#if (rocm_smi_FOUND)
+#    find_package(HIP REQUIRED)
+#    target_link_libraries(${HWS_LIBRARY_NAME} PRIVATE -lrocm_smi64 hip::host)
+#    target_include_directories(${HWS_LIBRARY_NAME} PRIVATE ${ROCM_SMI_INCLUDE_DIR})
+#
+#    message(STATUS "Enable sampling of AMD GPU information using ROCm SMI.")
+#
+#    # add source file to source file list
+#    target_sources(${HWS_LIBRARY_NAME} PRIVATE
+#            $<BUILD_INTERFACE:
+#            ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/gpu_amd/hardware_sampler.cpp;
+#            ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/gpu_amd/rocm_smi_samples.cpp;
+#            ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/gpu_amd/utility.cpp
+#            >)
+#
+#    # add compile definition
+#    target_compile_definitions(${HWS_LIBRARY_NAME} PUBLIC HWS_FOR_AMD_GPUS_ENABLED)
+#else ()
+#    message(STATUS "Hardware sampling for AMD GPUs disabled!")
+#endif ()
 
 
 ####################################################################################################################

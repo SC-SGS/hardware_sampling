@@ -15,6 +15,7 @@
 #include "hardware_sampling/utility.hpp"  // HWS_SAMPLE_STRUCT_FIXED_MEMBER, HWS_SAMPLE_STRUCT_SAMPLING_MEMBER
 
 #include "fmt/ostream.h"  // fmt::formatter, fmt::ostream_formatter
+#include "ryml.hpp"       // ryml::NodeRef
 
 #include <iosfwd>    // std::ostream forward declaration
 #include <map>       // std::map
@@ -39,9 +40,9 @@ class nvml_general_samples {
     /**
      * @brief Assemble the YAML string containing all available general hardware samples.
      * @details Hardware samples that are not supported by the current device are omitted in the YAML output.
-     * @return the YAML string (`[[nodiscard]]`)
+     * @param[in,out] root the YAML root node the data should be added to
      */
-    [[nodiscard]] std::string generate_yaml_string() const;
+    void add_yaml_entries(ryml::NodeRef &root) const;
 
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, architecture)  // the architecture name of the device
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, byte_order)    // the byte order (e.g., little/big endian)
@@ -81,9 +82,9 @@ class nvml_clock_samples {
     /**
      * @brief Assemble the YAML string containing all available general hardware samples.
      * @details Hardware samples that are not supported by the current device are omitted in the YAML output.
-     * @return the YAML string (`[[nodiscard]]`)
+     * @param[in,out] root the YAML root node the data should be added to
      */
-    [[nodiscard]] std::string generate_yaml_string() const;
+    void add_yaml_entries(ryml::NodeRef &root) const;
 
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(bool, auto_boosted_clock_enabled)                         // true if clock boosting is currently enabled
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(double, clock_frequency_min)                              // the minimum possible graphics clock frequency in MHz
@@ -125,9 +126,9 @@ class nvml_power_samples {
     /**
      * @brief Assemble the YAML string containing all available general hardware samples.
      * @details Hardware samples that are not supported by the current device are omitted in the YAML output.
-     * @return the YAML string (`[[nodiscard]]`)
+     * @param[in,out] root the YAML root node the data should be added to
      */
-    [[nodiscard]] std::string generate_yaml_string() const;
+    void add_yaml_entries(ryml::NodeRef &root) const;
 
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(double, power_management_limit)              // if the GPU draws more power (W) than the power management limit, the GPU may throttle
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(double, power_enforced_limit)                // the actually enforced power limit (W), may be different from power management limit if external limiters are set
@@ -164,9 +165,9 @@ class nvml_memory_samples {
     /**
      * @brief Assemble the YAML string containing all available general hardware samples.
      * @details Hardware samples that are not supported by the current device are omitted in the YAML output.
-     * @return the YAML string (`[[nodiscard]]`)
+     * @param[in,out] root the YAML root node the data should be added to
      */
-    [[nodiscard]] std::string generate_yaml_string() const;
+    void add_yaml_entries(ryml::NodeRef &root) const;
 
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(unsigned long, memory_total)             // the total available memory in Byte
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(unsigned int, num_pcie_lanes_max)        // the maximum number of PCIe lanes
@@ -205,9 +206,9 @@ class nvml_temperature_samples {
     /**
      * @brief Assemble the YAML string containing all available general hardware samples.
      * @details Hardware samples that are not supported by the current device are omitted in the YAML output.
-     * @return the YAML string (`[[nodiscard]]`)
+     * @param[in,out] root the YAML root node the data should be added to
      */
-    [[nodiscard]] std::string generate_yaml_string() const;
+    void add_yaml_entries(ryml::NodeRef &root) const;
 
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(unsigned int, num_fans)          // the number of fans (if any)
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(unsigned int, fan_speed_min)     // the minimum fan speed the user can set in %

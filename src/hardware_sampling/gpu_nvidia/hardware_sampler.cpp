@@ -543,22 +543,17 @@ std::string gpu_nvidia_hardware_sampler::device_identification() const {
     return fmt::format("gpu_nvidia_device_{}_{}", pcie_info.bus, pcie_info.device);
 }
 
-std::string gpu_nvidia_hardware_sampler::generate_yaml_string() const {
+void gpu_nvidia_hardware_sampler::add_yaml_entries(ryml::NodeRef &root) const {
     // check whether it's safe to generate the YAML entry
     if (this->is_sampling()) {
         throw std::runtime_error{ "Can't create the final YAML entry if the hardware sampler is still running!" };
     }
 
-    return fmt::format("{}\n"
-                       "{}\n"
-                       "{}\n"
-                       "{}\n"
-                       "{}",
-                       general_samples_.generate_yaml_string(),
-                       clock_samples_.generate_yaml_string(),
-                       power_samples_.generate_yaml_string(),
-                       memory_samples_.generate_yaml_string(),
-                       temperature_samples_.generate_yaml_string());
+    general_samples_.add_yaml_entries(root);
+    clock_samples_.add_yaml_entries(root);
+    power_samples_.add_yaml_entries(root);
+    memory_samples_.add_yaml_entries(root);
+    temperature_samples_.add_yaml_entries(root);
 }
 
 std::ostream &operator<<(std::ostream &out, const gpu_nvidia_hardware_sampler &sampler) {

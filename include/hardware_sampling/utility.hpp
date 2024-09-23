@@ -14,6 +14,8 @@
 
 #include "fmt/format.h"  // fmt::format
 #include "fmt/ranges.h"  // fmt::join
+#include "ryml.hpp"      // ryml::NodeRef, ryml::key, ryml::csubstr, ryml::MAP, ryml::SEQ, ryml::FLOW_SL, ryml::VAL_SQUO
+#include "ryml_std.hpp"  // standard library interoperability
 
 #include <charconv>      // std::from_chars
 #include <chrono>        // std::chrono::duration
@@ -212,17 +214,61 @@ template <typename MapType>
  * @param[in] values the values to quote
  * @return the quoted values (`[[nodiscard]]`)
  */
+//template <typename T>
+//[[nodiscard]] inline std::vector<std::string> quote(const std::vector<T> &values) {
+//    std::vector<std::string> quoted{};
+//    quoted.reserve(values.size());
+//
+//    // quote all values
+//    for (const T &val : values) {
+//        quoted.push_back(fmt::format("\"{}\"", val));
+//    }
+//
+//    return quoted;
+//}
+
+/*****************************************************************************************************/
+/**                                        YAML manipulation                                        **/
+/*****************************************************************************************************/
+
+/**
+ * @brief Add a new YAML entry to the @p node.
+ * @tparam T the type of the YAML entry
+ * @param[in,out] node the node to add this entry to
+ * @param[in] entry_name the name of the entry
+ * @param[in] entry_unit the unit of the entry
+ * @param[in] entry_value the value of the entry
+ * @param[in] turbostat_name optional: for turbostat entries the original turbostat name
+ */
 template <typename T>
-[[nodiscard]] inline std::vector<std::string> quote(const std::vector<T> &values) {
-    std::vector<std::string> quoted{};
-    quoted.reserve(values.size());
+void add_yaml_entry(ryml::NodeRef &node, const ryml::csubstr entry_name, const ryml::csubstr entry_unit, const std::optional<T> &entry_value, std::optional<ryml::csubstr> turbostat_name = std::nullopt) {
+    if (entry_value.has_value()) {
+        ryml::NodeRef entry = node.append_child() << ryml::key(entry_name);
+        entry |= ryml::MAP;
 
-    // quote all values
-    for (const T &val : values) {
-        quoted.push_back(fmt::format("\"{}\"", val));
+        // if a turbostat name is provided, set it
+        if (turbostat_name.has_value()) {
+            entry.append_child() << ryml::key("turbostat_name") << turbostat_name.value();
+        }
+
+        // set the unit
+        entry.append_child() << ryml::key("unit") << entry_unit;
+
+        // set values based on whether it's a vector or not
+        if constexpr (is_vector_v<T>) {
+            ryml::NodeRef values = entry["values"];
+            values |= ryml::SEQ | ryml::FLOW_SL;
+            values << entry_value.value();
+        } else if constexpr (std::is_same_v<T, std::string>) {
+            ryml::NodeRef values = entry["values"];
+            values |= ryml::VAL_SQUO;
+            values << entry_value.value();
+        } else if constexpr (std::is_same_v<T, bool>) {
+            entry.append_child() << ryml::key("values") << fmt::format("{}", entry_value.value());
+        } else {
+            entry.append_child() << ryml::key("values") << entry_value.value();
+        }
     }
-
-    return quoted;
 }
 
 /*****************************************************************************************************/

@@ -16,7 +16,8 @@
 #include "hardware_sampling/gpu_nvidia/nvml_samples.hpp"        // hws::{nvml_general_samples, nvml_clock_samples, nvml_power_samples, nvml_memory_samples, nvml_temperature_samples}
 #include "hardware_sampling/hardware_sampler.hpp"               // hws::hardware_sampler
 
-#include "fmt/format.h"  // fmt::formatter, fmt::ostream_formatter
+#include "fmt/ostream.h"  // fmt::formatter, fmt::ostream_formatter
+#include "ryml.hpp"       // ryml::NodeRef
 
 #include <atomic>   // std::atomic
 #include <chrono>   // std::chrono::milliseconds, std::chrono_literals namespace
@@ -124,9 +125,9 @@ class gpu_nvidia_hardware_sampler : public hardware_sampler {
     [[nodiscard]] std::string device_identification() const final;
 
     /**
-     * @copydoc hws::hardware_sampler::generate_yaml_string
+     * @copydoc hws::hardware_sampler::add_yaml_entries
      */
-    [[nodiscard]] std::string generate_yaml_string() const final;
+    void add_yaml_entries(ryml::NodeRef &root) const final;
 
     /// The device handle for the device to sample.
     detail::nvml_device_handle device_{};

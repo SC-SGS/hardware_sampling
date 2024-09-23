@@ -16,6 +16,7 @@
 #include "hardware_sampling/hardware_sampler.hpp"  // hws::hardware_sampler
 
 #include "fmt/ostream.h"  // fmt::formatter, fmt::ostream_formatter
+#include "ryml.hpp"       // ryml::NodeRef
 
 #include <chrono>  // std::chrono::milliseconds, std::chrono_literals namespace
 #include <iosfwd>  // std::ostream forward declaration
@@ -116,9 +117,9 @@ class cpu_hardware_sampler : public hardware_sampler {
     [[nodiscard]] std::string device_identification() const final;
 
     /**
-     * @copydoc hws::hardware_sampler::generate_yaml_string
+     * @copydoc hws::hardware_sampler::add_yaml_entries
      */
-    [[nodiscard]] std::string generate_yaml_string() const final;
+    void add_yaml_entries(ryml::NodeRef &root) const final;
 
     /// The general CPU samples.
     cpu_general_samples general_samples_{};

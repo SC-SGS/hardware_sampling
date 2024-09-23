@@ -14,6 +14,8 @@
 
 #include "hardware_sampling/event.hpp"  // hws::event
 
+#include "ryml.hpp"  // ryml::NodeRef
+
 #include <atomic>      // std::atomic
 #include <chrono>      // std::chrono::{system_clock::time_point, steady_clock::time_point, milliseconds}
 #include <cstddef>     // std::size_t
@@ -172,11 +174,10 @@ class hardware_sampler {
 
     /**
      * @brief Assemble the YAML string containing all hardware samples.
-     * @param[in] start_time_point the reference time point the hardware samples occurred relative to
+     * @param[in,out] root the YAML root node the data should be added to
      * @throws std::runtime_error if sampling is still running
-     * @return the YAML string (`[[nodiscard]]`)
      */
-    [[nodiscard]] virtual std::string generate_yaml_string() const = 0;
+    virtual void add_yaml_entries(ryml::NodeRef &root) const = 0;
 
     /**
      * @brief Add a new time point to this hardware sampler. Called during the sampling loop.

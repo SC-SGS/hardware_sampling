@@ -7,10 +7,11 @@
 
 #include "hardware_sampling/cpu/cpu_samples.hpp"
 
-#include "hardware_sampling/utility.hpp"  // hws::detail::{value_or_default, quote}
+#include "hardware_sampling/utility.hpp"  // hws::detail::{value_or_default, add_yaml_entry}
 
 #include "fmt/format.h"  // fmt::format
 #include "fmt/ranges.h"  // fmt::join
+#include "ryml.hpp"      // ryml::NodeRef, ryml::MAP
 
 #include <array>        // std::array
 #include <cstddef>      // std::size_t
@@ -26,140 +27,45 @@ namespace hws {
 //                                                           general samples                                                           //
 //*************************************************************************************************************************************//
 
-std::string cpu_general_samples::generate_yaml_string() const {
-    std::string str{ "general:\n" };
+void cpu_general_samples::add_yaml_entries(ryml::NodeRef &root) const {
+    ryml::NodeRef general_samples = root["general"];
+    general_samples |= ryml::MAP;
 
     // architecture
-    if (this->architecture_.has_value()) {
-        str += fmt::format("  architecture:\n"
-                           "    unit: \"string\"\n"
-                           "    values: \"{}\"\n",
-                           this->architecture_.value());
-    }
+    detail::add_yaml_entry(general_samples, "architecture", "string", this->architecture_);
     // byte order
-    if (this->byte_order_.has_value()) {
-        str += fmt::format("  byte_order:\n"
-                           "    unit: \"string\"\n"
-                           "    values: \"{}\"\n",
-                           this->byte_order_.value());
-    }
+    detail::add_yaml_entry(general_samples, "byte_order", "string", this->byte_order_);
     // number of cores
-    if (this->num_cores_.has_value()) {
-        str += fmt::format("  num_cores:\n"
-                           "    unit: \"int\"\n"
-                           "    values: {}\n",
-                           this->num_cores_.value());
-    }
+    detail::add_yaml_entry(general_samples, "num_cores", "int", this->num_cores_);
     // number of threads including hyper-threads
-    if (this->num_threads_.has_value()) {
-        str += fmt::format("  num_threads:\n"
-                           "    unit: \"int\"\n"
-                           "    values: {}\n",
-                           this->num_threads_.value());
-    }
+    detail::add_yaml_entry(general_samples, "num_threads", "int", this->num_threads_);
     // number of threads per core
-    if (this->threads_per_core_.has_value()) {
-        str += fmt::format("  threads_per_core:\n"
-                           "    unit: \"int\"\n"
-                           "    values: {}\n",
-                           this->threads_per_core_.value());
-    }
+    detail::add_yaml_entry(general_samples, "threads_per_core", "int", this->threads_per_core_);
     // number of cores per socket
-    if (this->cores_per_socket_.has_value()) {
-        str += fmt::format("  cores_per_socket:\n"
-                           "    unit: \"int\"\n"
-                           "    values: {}\n",
-                           this->cores_per_socket_.value());
-    }
+    detail::add_yaml_entry(general_samples, "cores_per_socket", "int", this->cores_per_socket_);
     // number of cores per socket
-    if (this->num_sockets_.has_value()) {
-        str += fmt::format("  num_sockets:\n"
-                           "    unit: \"int\"\n"
-                           "    values: {}\n",
-                           this->num_sockets_.value());
-    }
+    detail::add_yaml_entry(general_samples, "num_sockets", "int", this->num_sockets_);
     // number of NUMA nodes
-    if (this->numa_nodes_.has_value()) {
-        str += fmt::format("  numa_nodes:\n"
-                           "    unit: \"int\"\n"
-                           "    values: {}\n",
-                           this->numa_nodes_.value());
-    }
+    detail::add_yaml_entry(general_samples, "numa_nodes", "int", this->numa_nodes_);
     // the vendor specific ID
-    if (this->vendor_id_.has_value()) {
-        str += fmt::format("  vendor_id:\n"
-                           "    unit: \"string\"\n"
-                           "    values: \"{}\"\n",
-                           this->vendor_id_.value());
-    }
+    detail::add_yaml_entry(general_samples, "vendor_id", "string", this->vendor_id_);
     // the CPU name
-    if (this->name_.has_value()) {
-        str += fmt::format("  name:\n"
-                           "    unit: \"string\"\n"
-                           "    values: \"{}\"\n",
-                           this->name_.value());
-    }
+    detail::add_yaml_entry(general_samples, "name", "string", this->name_);
     // CPU specific flags (like SSE, AVX, ...)
-    if (this->flags_.has_value()) {
-        str += fmt::format("  flags:\n"
-                           "    unit: \"string\"\n"
-                           "    values: [{}]\n",
-                           fmt::join(detail::quote(this->flags_.value()), ", "));
-    }
+    detail::add_yaml_entry(general_samples, "flags", "string", this->flags_);
 
     // the percent the CPU was busy
-    if (this->compute_utilization_.has_value()) {
-        str += fmt::format("  compute_utilization:\n"
-                           "    turbostat_name: \"Busy%\"\n"
-                           "    unit: \"percentage\"\n"
-                           "    values: [{}]\n",
-                           fmt::join(this->compute_utilization_.value(), ", "));
-    }
+    detail::add_yaml_entry(general_samples, "compute_utilization", "percentage", this->compute_utilization_, "Busy%");
     // the instructions per cycle count
-    if (this->ipc_.has_value()) {
-        str += fmt::format("  instructions_per_cycle:\n"
-                           "    turbostat_name: \"IPC\"\n"
-                           "    unit: \"float\"\n"
-                           "    values: [{}]\n",
-                           fmt::join(this->ipc_.value(), ", "));
-    }
+    detail::add_yaml_entry(general_samples, "instructions_per_cycle", "float", this->ipc_, "IPC");
     // the number of interrupts
-    if (this->irq_.has_value()) {
-        str += fmt::format("  interrupts:\n"
-                           "    turbostat_name: \"IRQ\"\n"
-                           "    unit: \"int\"\n"
-                           "    values: [{}]\n",
-                           fmt::join(this->irq_.value(), ", "));
-    }
+    detail::add_yaml_entry(general_samples, "interrupts", "int", this->irq_, "IRQ");
     // the number of system management interrupts
-    if (this->smi_.has_value()) {
-        str += fmt::format("  system_management_interrupts:\n"
-                           "    turbostat_name: \"SMI\"\n"
-                           "    unit: \"int\"\n"
-                           "    values: [{}]\n",
-                           fmt::join(this->smi_.value(), ", "));
-    }
+    detail::add_yaml_entry(general_samples, "system_management_interrupts", "int", this->smi_, "SMI");
     // the number of times the CPU was in the poll state
-    if (this->poll_.has_value()) {
-        str += fmt::format("  polling_state:\n"
-                           "    turbostat_name: \"POLL\"\n"
-                           "    unit: \"int\"\n"
-                           "    values: [{}]\n",
-                           fmt::join(this->poll_.value(), ", "));
-    }
+    detail::add_yaml_entry(general_samples, "polling_state", "int", this->poll_, "POLL");
     // the percent the CPU was in the polling state
-    if (this->poll_percent_.has_value()) {
-        str += fmt::format("  polling_percentage:\n"
-                           "    turbostat_name: \"POLL%\"\n"
-                           "    unit: \"percentage\"\n"
-                           "    values: [{}]\n",
-                           fmt::join(this->poll_percent_.value(), ", "));
-    }
-
-    // remove last newline
-    str.pop_back();
-
-    return str;
+    detail::add_yaml_entry(general_samples, "polling_percentage", "percentage", this->poll_percent_, "POLL%");
 }
 
 std::ostream &operator<<(std::ostream &out, const cpu_general_samples &samples) {
@@ -208,60 +114,23 @@ std::ostream &operator<<(std::ostream &out, const cpu_general_samples &samples) 
 //                                                            clock samples                                                            //
 //*************************************************************************************************************************************//
 
-std::string cpu_clock_samples::generate_yaml_string() const {
-    std::string str{ "clock:\n" };
+void cpu_clock_samples::add_yaml_entries(ryml::NodeRef &root) const {
+    ryml::NodeRef clock_samples = root["clock"];
+    clock_samples |= ryml::MAP;
 
     // true if frequency boost is enabled
-    if (this->auto_boosted_clock_enabled_.has_value()) {
-        str += fmt::format("  auto_boosted_clock_enabled:\n"
-                           "    unit: \"bool\"\n"
-                           "    values: {}\n",
-                           this->auto_boosted_clock_enabled_.value());
-    }
+    detail::add_yaml_entry(clock_samples, "auto_boosted_clock_enabled", "bool", this->auto_boosted_clock_enabled_);
     // the minimal CPU frequency
-    if (this->clock_frequency_min_.has_value()) {
-        str += fmt::format("  clock_frequency_min:\n"
-                           "    unit: \"MHz\"\n"
-                           "    values: {}\n",
-                           this->clock_frequency_min_.value());
-    }
+    detail::add_yaml_entry(clock_samples, "clock_frequency_min", "MHz", this->clock_frequency_min_);
     // the maximum CPU frequency
-    if (this->clock_frequency_max_.has_value()) {
-        str += fmt::format("  clock_frequency_max:\n"
-                           "    unit: \"MHz\"\n"
-                           "    values: {}\n",
-                           this->clock_frequency_max_.value());
-    }
+    detail::add_yaml_entry(clock_samples, "clock_frequency_max", "MHz", this->clock_frequency_max_);
 
     // the average CPU frequency
-    if (this->clock_frequency_.has_value()) {
-        str += fmt::format("  clock_frequency:\n"
-                           "    turbostat_name: \"Avg_MHz\"\n"
-                           "    unit: \"MHz\"\n"
-                           "    values: [{}]\n",
-                           fmt::join(this->clock_frequency_.value(), ", "));
-    }
+    detail::add_yaml_entry(clock_samples, "clock_frequency", "MHz", this->clock_frequency_, "Avg_MHz");
     // the average CPU frequency excluding idle time
-    if (this->average_non_idle_clock_frequency_.has_value()) {
-        str += fmt::format("  average_non_idle_clock_frequency:\n"
-                           "    turbostat_name: \"Bzy_MHz\"\n"
-                           "    unit: \"MHz\"\n"
-                           "    values: [{}]\n",
-                           fmt::join(this->average_non_idle_clock_frequency_.value(), ", "));
-    }
+    detail::add_yaml_entry(clock_samples, "average_non_idle_clock_frequency", "MHz", this->average_non_idle_clock_frequency_, "Bzy_MHz");
     // the time stamp counter
-    if (this->time_stamp_counter_.has_value()) {
-        str += fmt::format("  time_stamp_counter:\n"
-                           "    turbostat_name: \"TSC_MHz\"\n"
-                           "    unit: \"MHz\"\n"
-                           "    values: [{}]\n",
-                           fmt::join(this->time_stamp_counter_.value(), ", "));
-    }
-
-    // remove last newline
-    str.pop_back();
-
-    return str;
+    detail::add_yaml_entry(clock_samples, "time_stamp_counter", "MHz", this->time_stamp_counter_, "TSC_MHz");
 }
 
 std::ostream &operator<<(std::ostream &out, const cpu_clock_samples &samples) {
@@ -283,70 +152,25 @@ std::ostream &operator<<(std::ostream &out, const cpu_clock_samples &samples) {
 //                                                            power samples                                                            //
 //*************************************************************************************************************************************//
 
-std::string cpu_power_samples::generate_yaml_string() const {
-    std::string str{ "power:\n" };
+void cpu_power_samples::add_yaml_entries(ryml::NodeRef &root) const {
+    ryml::NodeRef power_samples = root["power"];
+    power_samples |= ryml::MAP;
 
     // power measurement type
-    if (this->power_measurement_type_.has_value()) {
-        str += fmt::format("  power_measurement_type:\n"
-                           "    unit: \"string\"\n"
-                           "    values: \"{}\"\n",
-                           this->power_measurement_type_.value());
-    }
-
+    detail::add_yaml_entry(power_samples, "power_measurement_type", "string", this->power_measurement_type_);
     // the package Watt
-    if (this->power_usage_.has_value()) {
-        str += fmt::format("  power_usage:\n"
-                           "    turbostat_name: \"PkgWatt\"\n"
-                           "    unit: \"W\"\n"
-                           "    values: [{}]\n",
-                           fmt::join(this->power_usage_.value(), ", "));
-    }
+    detail::add_yaml_entry(power_samples, "power_usage", "W", this->power_usage_, "PkgWatt");
     // total energy consumed
-    if (this->power_total_energy_consumption_.has_value()) {
-        str += fmt::format("  power_total_energy_consumed:\n"
-                           "    unit: \"J\"\n"
-                           "    values: [{}]\n",
-                           fmt::join(this->power_total_energy_consumption_.value(), ", "));
-    }
+    detail::add_yaml_entry(power_samples, "power_total_energy_consumed", "J", this->power_total_energy_consumption_);
 
     // the core Watt
-    if (this->core_watt_.has_value()) {
-        str += fmt::format("  core_power:\n"
-                           "    turbostat_name: \"CorWatt\"\n"
-                           "    unit: \"W\"\n"
-                           "    values: [{}]\n",
-                           fmt::join(this->core_watt_.value(), ", "));
-    }
+    detail::add_yaml_entry(power_samples, "core_power", "W", this->core_watt_, "CorWatt");
     // the DRAM Watt
-    if (this->ram_watt_.has_value()) {
-        str += fmt::format("  dram_power:\n"
-                           "    turbostat_name: \"RAMWatt\"\n"
-                           "    unit: \"W\"\n"
-                           "    values: [{}]\n",
-                           fmt::join(this->ram_watt_.value(), ", "));
-    }
+    detail::add_yaml_entry(power_samples, "dram_power", "W", this->ram_watt_, "RAMWatt");
     // the percent of time when the RAPL package throttle was active
-    if (this->package_rapl_throttle_percent_.has_value()) {
-        str += fmt::format("  package_rapl_throttling:\n"
-                           "    turbostat_name: \"PKG_%\"\n"
-                           "    unit: \"percentage\"\n"
-                           "    values: [{}]\n",
-                           fmt::join(this->package_rapl_throttle_percent_.value(), ", "));
-    }
+    detail::add_yaml_entry(power_samples, "package_rapl_throttling", "percentage", this->package_rapl_throttle_percent_, "PKG_%");
     // the percent of time when the RAPL DRAM throttle was active
-    if (this->dram_rapl_throttle_percent_.has_value()) {
-        str += fmt::format("  dram_rapl_throttling:\n"
-                           "    turbostat_name: \"RAM_%\"\n"
-                           "    unit: \"percentage\"\n"
-                           "    values: [{}]\n",
-                           fmt::join(this->dram_rapl_throttle_percent_.value(), ", "));
-    }
-
-    // remove last newline
-    str.pop_back();
-
-    return str;
+    detail::add_yaml_entry(power_samples, "dram_rapl_throttling", "percentage", this->dram_rapl_throttle_percent_, "RAM_%");
 }
 
 std::ostream &operator<<(std::ostream &out, const cpu_power_samples &samples) {
@@ -370,86 +194,32 @@ std::ostream &operator<<(std::ostream &out, const cpu_power_samples &samples) {
 //                                                            memory samples                                                           //
 //*************************************************************************************************************************************//
 
-std::string cpu_memory_samples::generate_yaml_string() const {
-    std::string str{ "memory:\n" };
+void cpu_memory_samples::add_yaml_entries(ryml::NodeRef &root) const {
+    ryml::NodeRef memory_samples = root["memory"];
+    memory_samples |= ryml::MAP;
 
     // the size of the L1 data cache
-    if (this->cache_size_L1d_.has_value()) {
-        str += fmt::format("  cache_size_L1d:\n"
-                           "    unit: \"string\"\n"
-                           "    values: \"{}\"\n",
-                           this->cache_size_L1d_.value());
-    }
+    detail::add_yaml_entry(memory_samples, "cache_size_L1d", "string", this->cache_size_L1d_);
     // the size of the L1 instruction cache
-    if (this->cache_size_L1i_.has_value()) {
-        str += fmt::format("  cache_size_L1i:\n"
-                           "    unit: \"string\"\n"
-                           "    values: \"{}\"\n",
-                           this->cache_size_L1i_.value());
-    }
+    detail::add_yaml_entry(memory_samples, "cache_size_L1i", "string", this->cache_size_L1i_);
     // the size of the L2 cache
-    if (this->cache_size_L2_.has_value()) {
-        str += fmt::format("  cache_size_L2:\n"
-                           "    unit: \"string\"\n"
-                           "    values: \"{}\"\n",
-                           this->cache_size_L2_.value());
-    }
+    detail::add_yaml_entry(memory_samples, "cache_size_L2", "string", this->cache_size_L2_);
     // the size of the L3 cache
-    if (this->cache_size_L3_.has_value()) {
-        str += fmt::format("  cache_size_L3:\n"
-                           "    unit: \"string\"\n"
-                           "    values: \"{}\"\n",
-                           this->cache_size_L3_.value());
-    }
+    detail::add_yaml_entry(memory_samples, "cache_size_L3", "string", this->cache_size_L3_);
 
     // the total size of available memory
-    if (this->memory_total_.has_value()) {
-        str += fmt::format("  memory_total:\n"
-                           "    unit: \"B\"\n"
-                           "    values: {}\n",
-                           this->memory_total_.value());
-    }
+    detail::add_yaml_entry(memory_samples, "memory_total", "B", this->memory_total_);
     // the total size of the swap memory
-    if (this->swap_memory_total_.has_value()) {
-        str += fmt::format("  swap_memory_total:\n"
-                           "    unit: \"B\"\n"
-                           "    values: {}\n",
-                           this->swap_memory_total_.value());
-    }
+    detail::add_yaml_entry(memory_samples, "swap_memory_total", "B", this->swap_memory_total_);
 
     // the used memory
-    if (this->memory_used_.has_value()) {
-        str += fmt::format("  memory_used:\n"
-                           "    unit: \"B\"\n"
-                           "    values: [{}]\n",
-                           fmt::join(this->memory_used_.value(), ", "));
-    }
+    detail::add_yaml_entry(memory_samples, "memory_used", "B", this->memory_used_);
     // the available free memory
-    if (this->memory_free_.has_value()) {
-        str += fmt::format("  memory_free:\n"
-                           "    unit: \"B\"\n"
-                           "    values: [{}]\n",
-                           fmt::join(this->memory_free_.value(), ", "));
-    }
+    detail::add_yaml_entry(memory_samples, "memory_free", "B", this->memory_free_);
     // the swap memory
-    if (this->swap_memory_used_.has_value()) {
-        str += fmt::format("  swap_memory_used:\n"
-                           "    unit: \"B\"\n"
-                           "    values: [{}]\n",
-                           fmt::join(this->swap_memory_used_.value(), ", "));
-    }
+    detail::add_yaml_entry(memory_samples, "swap_memory_used", "B", this->swap_memory_used_);
     // the available swap memory
-    if (this->swap_memory_free_.has_value()) {
-        str += fmt::format("  swap_memory_free:\n"
-                           "    unit: \"B\"\n"
-                           "    values: [{}]\n",
-                           fmt::join(this->swap_memory_free_.value(), ", "));
-    }
-
-    // remove last newline
-    str.pop_back();
-
-    return str;
+    detail::add_yaml_entry(memory_samples, "swap_memory_free", "B", this->swap_memory_free_);
 }
 
 std::ostream &operator<<(std::ostream &out, const cpu_memory_samples &samples) {
@@ -479,38 +249,16 @@ std::ostream &operator<<(std::ostream &out, const cpu_memory_samples &samples) {
 //                                                         temperature samples                                                         //
 //*************************************************************************************************************************************//
 
-std::string cpu_temperature_samples::generate_yaml_string() const {
-    std::string str{ "temperature:\n" };
+void cpu_temperature_samples::add_yaml_entries(ryml::NodeRef &root) const {
+    ryml::NodeRef temperature_samples = root["temperature"];
+    temperature_samples |= ryml::MAP;
 
     // the temperature of the whole package
-    if (this->temperature_.has_value()) {
-        str += fmt::format("  temperature:\n"
-                           "    turbostat_name: \"PkgTmp\"\n"
-                           "    unit: \"°C\"\n"
-                           "    values: [{}]\n",
-                           fmt::join(this->temperature_.value(), ", "));
-    }
+    detail::add_yaml_entry(temperature_samples, "temperature", "°C", this->temperature_, "PkgTmp");
     // the temperature of the cores
-    if (this->core_temperature_.has_value()) {
-        str += fmt::format("  core_temperature:\n"
-                           "    turbostat_name: \"CoreTmp\"\n"
-                           "    unit: \"°C\"\n"
-                           "    values: [{}]\n",
-                           fmt::join(this->core_temperature_.value(), ", "));
-    }
+    detail::add_yaml_entry(temperature_samples, "core_temperature", "°C", this->core_temperature_, "CoreTmp");
     // the percentage of time the core throttled due the temperature constraints
-    if (this->core_throttle_percent_.has_value()) {
-        str += fmt::format("  core_throttle_percentage:\n"
-                           "    turbostat_name: \"CoreThr\"\n"
-                           "    unit: \"percentage\"\n"
-                           "    values: [{}]\n",
-                           fmt::join(this->core_throttle_percent_.value(), ", "));
-    }
-
-    // remove last newline
-    str.pop_back();
-
-    return str;
+    detail::add_yaml_entry(temperature_samples, "core_throttle_percentage", "percentage", this->core_throttle_percent_, "CoreThr");
 }
 
 std::ostream &operator<<(std::ostream &out, const cpu_temperature_samples &samples) {
@@ -526,62 +274,22 @@ std::ostream &operator<<(std::ostream &out, const cpu_temperature_samples &sampl
 //                                                          gfx (iGPU) samples                                                         //
 //*************************************************************************************************************************************//
 
-std::string cpu_gfx_samples::generate_yaml_string() const {
-    std::string str{ "integrated_gpu:\n" };
+void cpu_gfx_samples::add_yaml_entries(ryml::NodeRef &root) const {
+    ryml::NodeRef gfx_samples = root["integrated_gpu"];
+    gfx_samples |= ryml::MAP;
 
     // the percentage of time the iGPU was in the render state
-    if (this->gfx_render_state_percent_.has_value()) {
-        str += fmt::format("  graphics_render_state:\n"
-                           "    turbostat_name: \"GFX%rc6\"\n"
-                           "    unit: \"percentage\"\n"
-                           "    values: [{}]\n",
-                           fmt::join(this->gfx_render_state_percent_.value(), ", "));
-    }
+    detail::add_yaml_entry(gfx_samples, "graphics_render_state", "percentage", this->gfx_render_state_percent_, "GFX%rc6");
     // the core frequency of the iGPU
-    if (this->gfx_frequency_.has_value()) {
-        str += fmt::format("  graphics_frequency:\n"
-                           "    turbostat_name: \"GFXMHz\"\n"
-                           "    unit: \"MHz\"\n"
-                           "    values: [{}]\n",
-                           fmt::join(this->gfx_frequency_.value(), ", "));
-    }
+    detail::add_yaml_entry(gfx_samples, "graphics_frequency", "MHz", this->gfx_frequency_, "GFXMHz");
     // the average core frequency of the iGPU
-    if (this->average_gfx_frequency_.has_value()) {
-        str += fmt::format("  average_graphics_frequency:\n"
-                           "    turbostat_name: \"GFXAMHz\"\n"
-                           "    unit: \"MHz\"\n"
-                           "    values: [{}]\n",
-                           fmt::join(this->average_gfx_frequency_.value(), ", "));
-    }
+    detail::add_yaml_entry(gfx_samples, "average_graphics_frequency", "MHz", this->average_gfx_frequency_, "GFXAMHz");
     // the percentage of time the iGPU was in the c0 state
-    if (this->gfx_state_c0_percent_.has_value()) {
-        str += fmt::format("  gpu_state_c0:\n"
-                           "    turbostat_name: \"GFX%C0\"\n"
-                           "    unit: \"percentage\"\n"
-                           "    values: [{}]\n",
-                           fmt::join(this->gfx_state_c0_percent_.value(), ", "));
-    }
+    detail::add_yaml_entry(gfx_samples, "gpu_state_c0", "percentage", this->gfx_state_c0_percent_, "GFX%C0");
     // the percentage of time the CPU worked for the iGPU
-    if (this->cpu_works_for_gpu_percent_.has_value()) {
-        str += fmt::format("  cpu_works_for_gpu:\n"
-                           "    turbostat_name: \"CPUGFX%\"\n"
-                           "    unit: \"percentage\"\n"
-                           "    values: [{}]\n",
-                           fmt::join(this->cpu_works_for_gpu_percent_.value(), ", "));
-    }
+    detail::add_yaml_entry(gfx_samples, "cpu_works_for_gpu", "percentage", this->cpu_works_for_gpu_percent_, "CPUGFX%");
     // the iGPU Watt
-    if (this->gfx_watt_.has_value()) {
-        str += fmt::format("  graphics_power:\n"
-                           "    turbostat_name: \"GFXWatt\"\n"
-                           "    unit: \"W\"\n"
-                           "    values: [{}]\n",
-                           fmt::join(this->gfx_watt_.value(), ", "));
-    }
-
-    // remove last newline
-    str.pop_back();
-
-    return str;
+    detail::add_yaml_entry(gfx_samples, "graphics_power", "W", this->gfx_watt_, "GFXWatt");
 }
 
 std::ostream &operator<<(std::ostream &out, const cpu_gfx_samples &samples) {
@@ -603,49 +311,20 @@ std::ostream &operator<<(std::ostream &out, const cpu_gfx_samples &samples) {
 //                                                          idle state samples                                                         //
 //*************************************************************************************************************************************//
 
-std::string cpu_idle_states_samples::generate_yaml_string() const {
-    std::string str{ "idle_states:\n" };
+void cpu_idle_states_samples::add_yaml_entries(ryml::NodeRef &root) const {
+    ryml::NodeRef idle_states_samples = root["idle_states"];
+    idle_states_samples |= ryml::MAP;
 
     // the percentage of time all CPUs were in the c0 state
-    if (this->all_cpus_state_c0_percent_.has_value()) {
-        str += fmt::format("  all_cpus_state_c0:\n"
-                           "    turbostat_name: \"Totl%C0\"\n"
-                           "    unit: \"percentage\"\n"
-                           "    values: [{}]\n",
-                           fmt::join(this->all_cpus_state_c0_percent_.value(), ", "));
-    }
+    detail::add_yaml_entry(idle_states_samples, "all_cpus_state_c0", "percentage", this->all_cpus_state_c0_percent_, "Totl%C0");
     // the percentage of time any CPU was in the c0 state
-    if (this->any_cpu_state_c0_percent_.has_value()) {
-        str += fmt::format("  any_cpu_state_c0:\n"
-                           "    turbostat_name: \"Any%C0\"\n"
-                           "    unit: \"percentage\"\n"
-                           "    values: [{}]\n",
-                           fmt::join(this->any_cpu_state_c0_percent_.value(), ", "));
-    }
+    detail::add_yaml_entry(idle_states_samples, "any_cpu_state_c0", "percentage", this->any_cpu_state_c0_percent_, "Any%C0");
     // the percentage of time the CPUs were in the low power idle state
-    if (this->low_power_idle_state_percent_.has_value()) {
-        str += fmt::format("  lower_power_idle_state:\n"
-                           "    turbostat_name: \"CPU%LPI\"\n"
-                           "    unit: \"percentage\"\n"
-                           "    values: [{}]\n",
-                           fmt::join(this->low_power_idle_state_percent_.value(), ", "));
-    }
+    detail::add_yaml_entry(idle_states_samples, "lower_power_idle_state", "percentage", this->low_power_idle_state_percent_, "CPU%LPI");
     // the percentage of time the CPUs were in the system low power idle state
-    if (this->system_low_power_idle_state_percent_.has_value()) {
-        str += fmt::format("  system_lower_power_idle_state:\n"
-                           "    turbostat_name: \"SYS%LPI\"\n"
-                           "    unit: \"percentage\"\n"
-                           "    values: [{}]\n",
-                           fmt::join(this->system_low_power_idle_state_percent_.value(), ", "));
-    }
+    detail::add_yaml_entry(idle_states_samples, "system_lower_power_idle_state", "percentage", this->system_low_power_idle_state_percent_, "SYS%LPI");
     // the percentage of time the package was in the low power idle state
-    if (this->package_low_power_idle_state_percent_.has_value()) {
-        str += fmt::format("  package_lower_power_idle_state:\n"
-                           "    turbostat_name: \"Pkg%LPI\"\n"
-                           "    unit: \"percentage\"\n"
-                           "    values: [{}]\n",
-                           fmt::join(this->package_low_power_idle_state_percent_.value(), ", "));
-    }
+    detail::add_yaml_entry(idle_states_samples, "package_lower_power_idle_state", "percentage", this->package_low_power_idle_state_percent_, "Pkg%LPI");
 
     // the other core idle states
     if (this->idle_states_.has_value()) {
@@ -673,24 +352,14 @@ std::string cpu_idle_states_samples::generate_yaml_string() const {
                     std::string entry_name_with_state{};
                     std::regex_replace(std::back_inserter(entry_name_with_state), entry_name_placeholder.begin(), entry_name_placeholder.end(), placeholder_reg, std::string{ state });
 
-                    str += fmt::format("  {}:\n"
-                                       "    turbostat_name: \"{}\"\n"
-                                       "    unit: \"{}\"\n"
-                                       "    values: [{}]\n",
-                                       entry_name_with_state,
-                                       entry,
-                                       entry_unit,
-                                       fmt::join(values, ", "));
-                    break;
+                    const std::string entry_unit_str{ entry_unit };
+                    const std::string entry_str{ entry };
+
+                    detail::add_yaml_entry(idle_states_samples, entry_name_with_state.c_str(), entry_unit_str.c_str(), std::make_optional(values), entry_str.c_str());
                 }
             }
         }
     }
-
-    // remove last newline
-    str.pop_back();
-
-    return str;
 }
 
 std::ostream &operator<<(std::ostream &out, const cpu_idle_states_samples &samples) {

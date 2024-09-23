@@ -10,15 +10,18 @@
 #include "hardware_sampling/event.hpp"    // hws::event
 #include "hardware_sampling/utility.hpp"  // hws::detail::durations_from_reference_time
 
+#include "fmt/chrono.h"  // direct formatting of std::chrono types
 #include "fmt/format.h"  // fmt::format
 #include "fmt/ranges.h"  // fmt::join
-#include "fmt/chrono.h"  // direct formatting of std::chrono types
+#include "ryml.hpp"
+#include "ryml_std.hpp"
 
 #include <chrono>     // std::chrono::{system_clock, steady_clock, duration_cast, milliseconds}
 #include <cstddef>    // std::size_t
 #include <exception>  // std::exception
 #include <fstream>    // std::ofstream
 #include <iostream>   // std::cerr, std::endl
+#include <numeric>
 #include <stdexcept>  // std::runtime_error, std::out_of_range
 #include <thread>     // std::thread
 #include <utility>    // std::move
@@ -128,38 +131,62 @@ void hardware_sampler::dump_yaml(const char *filename) const {
     // begin a new YAML document (only with "---" multiple YAML documents in a single file are allowed)
     file << "---\n\n";
 
+    // create new empty tree
+    ryml::Tree tree{};
+    ryml::NodeRef root = tree.rootref();
+    root |= ryml::DOCMAP;
+
     // set the device identification
-    file << fmt::format("device_identification: \"{}\"\n\n", this->device_identification());
+    root.append_child() << ryml::key("device_identification") << this->device_identification();
 
     // output the start date time of this hardware sampling
-    file << fmt::format("start_time: \"{:%Y-%m-%d %X}\"\n\n", start_date_time_);
+    root.append_child() << ryml::key("start_time") << fmt::format("{:%Y-%m-%d %X}", start_date_time_);
 
     // output the event information
     std::vector<decltype(event::time_point)> event_time_points{};
     std::vector<decltype(event::name)> event_names{};
     for (const auto &[time_point, name] : events_) {
         event_time_points.push_back(time_point);
-        event_names.push_back(fmt::format("\"{}\"", name));
+        event_names.push_back(fmt::format("{}", name));
     }
-    file << fmt::format("events:\n"
-                        "  time_points:\n"
-                        "    unit: \"s\"\n"
-                        "    values: [{}]\n"
-                        "  names: [{}]\n\n",
-                        fmt::join(detail::durations_from_reference_time(event_time_points, this->get_event(0).time_point), ", "),
-                        fmt::join(event_names, ", "));
 
-    // output the sampling information
-    file << fmt::format("sampling_interval:\n"
-                        "  unit: \"ms\"\n"
-                        "  values: {}\n"
-                        "time_points:\n"
-                        "  unit: \"s\"\n"
-                        "  values: [{}]\n"
-                        "{}\n\n",
-                        this->sampling_interval().count(),
-                        fmt::join(detail::durations_from_reference_time(this->sampling_time_points(), this->get_event(0).time_point), ", "),
-                        this->generate_yaml_string());
+    // add events
+    {
+        ryml::NodeRef events = root["events"];
+        events |= ryml::MAP;
+
+        ryml::NodeRef time_points = events["time_points"];
+        time_points |= ryml::MAP;
+        time_points.append_child() << ryml::key("unit") << "s";
+        ryml::NodeRef values = time_points["values"];
+        values |= ryml::SEQ | ryml::FLOW_SL;
+        values << detail::durations_from_reference_time(event_time_points, this->get_event(0).time_point);
+
+        ryml::NodeRef names = events["names"];
+        names |= ryml::SEQ | ryml::FLOW_SL;
+        names << event_names;
+    }
+
+    // add sampling information
+    {
+        ryml::NodeRef sampling_interval = root["sampling_interval"];
+        sampling_interval |= ryml::MAP;
+        sampling_interval.append_child() << ryml::key("unit") << "ms";
+        sampling_interval.append_child() << ryml::key("values") << this->sampling_interval().count();
+
+        ryml::NodeRef time_points = root["time_points"];
+        time_points |= ryml::MAP;
+        time_points.append_child() << ryml::key("unit") << "s";
+        ryml::NodeRef values = time_points["values"];
+        values |= ryml::SEQ | ryml::FLOW_SL;
+        values << detail::durations_from_reference_time(this->time_points_, this->time_points_.front());
+    }
+
+    // add samples
+    this->add_yaml_entries(root);
+
+    // output yaml to file
+    file << tree << '\n';
 }
 
 void hardware_sampler::dump_yaml(const std::string &filename) const {

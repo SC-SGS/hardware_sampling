@@ -7,10 +7,11 @@
 
 #include "hardware_sampling/gpu_nvidia/nvml_samples.hpp"
 
-#include "hardware_sampling/utility.hpp"  // hws::detail::{value_or_default, map_entry_to_string, quote}
+#include "hardware_sampling/utility.hpp"  // hws::detail::{value_or_default, map_entry_to_string, add_yaml_entry}
 
 #include "fmt/format.h"  // fmt::format
 #include "fmt/ranges.h"  // fmt::join
+#include "ryml.hpp"      // ryml::NodeRef, ryml::MAP
 
 #include <ostream>  // std::ostream
 #include <string>   // std::string
@@ -21,79 +22,29 @@ namespace hws {
 //                                                           general samples                                                           //
 //*************************************************************************************************************************************//
 
-std::string nvml_general_samples::generate_yaml_string() const {
-    std::string str{ "general:\n" };
+void nvml_general_samples::add_yaml_entries(ryml::NodeRef &root) const {
+    ryml::NodeRef general_samples = root["general"];
+    general_samples |= ryml::MAP;
 
     // device architecture
-    if (this->architecture_.has_value()) {
-        str += fmt::format("  architecture:\n"
-                           "    unit: \"string\"\n"
-                           "    values: \"{}\"\n",
-                           this->architecture_.value());
-    }
+    detail::add_yaml_entry(general_samples, "architecture", "string", this->architecture_);
     // device byte order
-    if (this->byte_order_.has_value()) {
-        str += fmt::format("  byte_order:\n"
-                           "    unit: \"string\"\n"
-                           "    values: \"{}\"\n",
-                           this->byte_order_.value());
-    }
+    detail::add_yaml_entry(general_samples, "byte_order", "string", this->byte_order_);
     // the vendor specific ID
-    if (this->vendor_id_.has_value()) {
-        str += fmt::format("  vendor_id:\n"
-                           "    unit: \"string\"\n"
-                           "    values: \"{}\"\n",
-                           this->vendor_id_.value());
-    }
+    detail::add_yaml_entry(general_samples, "vendor_id", "string", this->vendor_id_);
     // device name
-    if (this->name_.has_value()) {
-        str += fmt::format("  name:\n"
-                           "    unit: \"string\"\n"
-                           "    values: \"{}\"\n",
-                           this->name_.value());
-    }
+    detail::add_yaml_entry(general_samples, "name", "string", this->name_);
     // persistence mode enabled
-    if (this->persistence_mode_.has_value()) {
-        str += fmt::format("  persistence_mode:\n"
-                           "    unit: \"bool\"\n"
-                           "    values: {}\n",
-                           this->persistence_mode_.value());
-    }
+    detail::add_yaml_entry(general_samples, "persistence_mode", "bool", this->persistence_mode_);
     // number of cores
-    if (this->num_cores_.has_value()) {
-        str += fmt::format("  num_cores:\n"
-                           "    unit: \"int\"\n"
-                           "    values: {}\n",
-                           this->num_cores_.value());
-    }
+    detail::add_yaml_entry(general_samples, "num_cores", "int", this->num_cores_);
 
     // device compute utilization
-    if (this->compute_utilization_.has_value()) {
-        str += fmt::format("  compute_utilization:\n"
-                           "    unit: \"percentage\"\n"
-                           "    values: [{}]\n",
-                           fmt::join(this->compute_utilization_.value(), ", "));
-    }
-
+    detail::add_yaml_entry(general_samples, "compute_utilization", "percentage", this->compute_utilization_);
     // device memory utilization
-    if (this->memory_utilization_.has_value()) {
-        str += fmt::format("  memory_utilization:\n"
-                           "    unit: \"percentage\"\n"
-                           "    values: [{}]\n",
-                           fmt::join(this->memory_utilization_.value(), ", "));
-    }
+    detail::add_yaml_entry(general_samples, "memory_utilization", "percentage", this->memory_utilization_);
     // performance state
-    if (this->performance_level_.has_value()) {
-        str += fmt::format("  performance_level:\n"
-                           "    unit: \"0 - maximum performance; 15 - minimum performance; 32 - unknown\"\n"
-                           "    values: [{}]\n",
-                           fmt::join(this->performance_level_.value(), ", "));
-    }
-
-    // remove last newline
-    str.pop_back();
-
-    return str;
+    detail::add_yaml_entry(general_samples, "performance_level", "0 - maximum performance; 15 - minimum performance; 32 - unknown", this->performance_level_);
 }
 
 std::ostream &operator<<(std::ostream &out, const nvml_general_samples &samples) {
@@ -121,108 +72,45 @@ std::ostream &operator<<(std::ostream &out, const nvml_general_samples &samples)
 //                                                            clock samples                                                            //
 //*************************************************************************************************************************************//
 
-std::string nvml_clock_samples::generate_yaml_string() const {
-    std::string str{ "clock:\n" };
+void nvml_clock_samples::add_yaml_entries(ryml::NodeRef &root) const {
+    ryml::NodeRef clock_samples = root["clock"];
+    clock_samples |= ryml::MAP;
 
     // adaptive clock status
-    if (this->auto_boosted_clock_enabled_.has_value()) {
-        str += fmt::format("  auto_boosted_clock_enabled:\n"
-                           "    unit: \"bool\"\n"
-                           "    values: {}\n",
-                           this->auto_boosted_clock_enabled_.value());
-    }
+    detail::add_yaml_entry(clock_samples, "auto_boosted_clock_enabled", "bool", this->auto_boosted_clock_enabled_);
     // minimum graph clock
-    if (this->clock_frequency_min_.has_value()) {
-        str += fmt::format("  clock_frequency_min:\n"
-                           "    unit: \"MHz\"\n"
-                           "    values: {}\n",
-                           this->clock_frequency_min_.value());
-    }
+    detail::add_yaml_entry(clock_samples, "clock_frequency_min", "MHz", this->clock_frequency_min_);
     // maximum graph clock
-    if (this->clock_frequency_max_.has_value()) {
-        str += fmt::format("  clock_frequency_max:\n"
-                           "    unit: \"MHz\"\n"
-                           "    values: {}\n",
-                           this->clock_frequency_max_.value());
-    }
+    detail::add_yaml_entry(clock_samples, "clock_frequency_max", "MHz", this->clock_frequency_max_);
     // minimum memory clock
-    if (this->memory_clock_frequency_min_.has_value()) {
-        str += fmt::format("  memory_clock_frequency_min:\n"
-                           "    unit: \"MHz\"\n"
-                           "    values: {}\n",
-                           this->memory_clock_frequency_min_.value());
-    }
+    detail::add_yaml_entry(clock_samples, "memory_clock_frequency_min", "MHz", this->memory_clock_frequency_min_);
     // maximum memory clock
-    if (this->memory_clock_frequency_max_.has_value()) {
-        str += fmt::format("  memory_clock_frequency_max:\n"
-                           "    unit: \"MHz\"\n"
-                           "    values: {}\n",
-                           this->memory_clock_frequency_max_.value());
-    }
+    detail::add_yaml_entry(clock_samples, "memory_clock_frequency_max", "MHz", this->memory_clock_frequency_max_);
     // maximum SM clock
-    if (this->sm_clock_frequency_max_.has_value()) {
-        str += fmt::format("  sm_clock_frequency_max:\n"
-                           "    unit: \"MHz\"\n"
-                           "    values: {}\n",
-                           this->sm_clock_frequency_max_.value());
-    }
-    // the available clock frequencies
-    if (this->available_clock_frequencies_.has_value()) {
-        str += fmt::format("  available_clock_frequencies:\n"
-                           "    unit: \"MHz\"\n"
-                           "    values:\n");
-        for (const auto &[key, value] : this->available_clock_frequencies_.value()) {
-            str += fmt::format("      memory_clock_frequency_{}: [{}]\n", key, fmt::join(value, ", "));
-        }
-    }
+    detail::add_yaml_entry(clock_samples, "sm_clock_frequency_max", "MHz", this->sm_clock_frequency_max_);
+    // the available clock frequencies // TODO:
+//    detail::add_yaml_entry(clock_samples, "available_clock_frequencies", "MHz", this->available_clock_frequencies_);
+//    if (this->available_clock_frequencies_.has_value()) {
+//        str += fmt::format("  available_clock_frequencies:\n"
+//                           "    unit: \"MHz\"\n"
+//                           "    values:\n");
+//        for (const auto &[key, value] : this->available_clock_frequencies_.value()) {
+//            str += fmt::format("      memory_clock_frequency_{}: [{}]\n", key, fmt::join(value, ", "));
+//        }
+//    }
     // the available memory clock frequencies
-    if (this->available_memory_clock_frequencies_.has_value()) {
-        str += fmt::format("  available_memory_clock_frequencies:\n"
-                           "    unit: \"MHz\"\n"
-                           "    values: [{}]\n",
-                           fmt::join(this->available_memory_clock_frequencies_.value(), ", "));
-    }
+    detail::add_yaml_entry(clock_samples, "available_memory_clock_frequencies", "MHz", this->available_memory_clock_frequencies_);
 
     // graph clock
-    if (this->clock_frequency_.has_value()) {
-        str += fmt::format("  clock_frequency:\n"
-                           "    unit: \"MHz\"\n"
-                           "    values: [{}]\n",
-                           fmt::join(this->clock_frequency_.value(), ", "));
-    }
+    detail::add_yaml_entry(clock_samples, "clock_frequency", "MHz", this->clock_frequency_);
     // memory clock
-    if (this->memory_clock_frequency_.has_value()) {
-        str += fmt::format("  memory_clock_frequency:\n"
-                           "    unit: \"MHz\"\n"
-                           "    values: [{}]\n",
-                           fmt::join(this->memory_clock_frequency_.value(), ", "));
-    }
+    detail::add_yaml_entry(clock_samples, "memory_clock_frequency", "MHz", this->memory_clock_frequency_);
     // SM clock
-    if (this->sm_clock_frequency_.has_value()) {
-        str += fmt::format("  sm_clock_frequency:\n"
-                           "    unit: \"MHz\"\n"
-                           "    values: [{}]\n",
-                           fmt::join(this->sm_clock_frequency_.value(), ", "));
-    }
+    detail::add_yaml_entry(clock_samples, "sm_clock_frequency", "MHz", this->sm_clock_frequency_);
     // clock throttle reason
-    if (this->throttle_reason_.has_value()) {
-        str += fmt::format("  throttle_reason:\n"
-                           "    unit: \"string\"\n"
-                           "    values: [{}]\n",
-                           fmt::join(detail::quote(this->throttle_reason_.value()), ", "));
-    }
+    detail::add_yaml_entry(clock_samples, "throttle_reason", "string", this->throttle_reason_);
     // clock is auto-boosted
-    if (this->auto_boosted_clock_.has_value()) {
-        str += fmt::format("  auto_boosted_clock:\n"
-                           "    unit: \"bool\"\n"
-                           "    values: [{}]\n",
-                           fmt::join(this->auto_boosted_clock_.value(), ", "));
-    }
-
-    // remove last newline
-    str.pop_back();
-
-    return str;
+    detail::add_yaml_entry(clock_samples, "auto_boosted_clock", "bool", this->auto_boosted_clock_);  // TODO: output
 }
 
 std::ostream &operator<<(std::ostream &out, const nvml_clock_samples &samples) {
@@ -258,71 +146,27 @@ std::ostream &operator<<(std::ostream &out, const nvml_clock_samples &samples) {
 //                                                            power samples                                                            //
 //*************************************************************************************************************************************//
 
-std::string nvml_power_samples::generate_yaml_string() const {
-    std::string str{ "power:\n" };
+void nvml_power_samples::add_yaml_entries(ryml::NodeRef &root) const {
+    ryml::NodeRef power_samples = root["power"];
+    power_samples |= ryml::MAP;
 
     // power management limit
-    if (this->power_management_limit_.has_value()) {
-        str += fmt::format("  power_management_limit:\n"
-                           "    unit: \"W\"\n"
-                           "    values: {}\n",
-                           this->power_management_limit_.value());
-    }
+    detail::add_yaml_entry(power_samples, "power_management_limit", "W", this->power_management_limit_);
     // power enforced limit
-    if (this->power_enforced_limit_.has_value()) {
-        str += fmt::format("  power_enforced_limit:\n"
-                           "    unit: \"W\"\n"
-                           "    values: {}\n",
-                           this->power_enforced_limit_.value());
-    }
+    detail::add_yaml_entry(power_samples, "power_enforced_limit", "W", this->power_enforced_limit_);
     // power measurement type
-    if (this->power_measurement_type_.has_value()) {
-        str += fmt::format("  power_measurement_type:\n"
-                           "    unit: \"string\"\n"
-                           "    values: \"{}\"\n",
-                           this->power_measurement_type_.value());
-    }
+    detail::add_yaml_entry(power_samples, "power_measurement_type", "string", this->power_measurement_type_);
     // the power management mode
-    if (this->power_management_mode_.has_value()) {
-        str += fmt::format("  power_management_mode:\n"
-                           "    unit: \"bool\"\n"
-                           "    values: {}\n",
-                           this->power_management_mode_.value());
-    }
+    detail::add_yaml_entry(power_samples, "power_management_mode", "bool", this->power_management_mode_);
     // available power levels
-    if (this->available_power_profiles_.has_value()) {
-        str += fmt::format("  available_power_profiles:\n"
-                           "    unit: \"int\"\n"
-                           "    values: [{}]\n",
-                           fmt::join(this->available_power_profiles_.value(), ", "));
-    }
+    detail::add_yaml_entry(power_samples, "available_power_profiles", "int", this->available_power_profiles_);
 
     // current power usage
-    if (this->power_usage_.has_value()) {
-        str += fmt::format("  power_usage:\n"
-                           "    unit: \"W\"\n"
-                           "    values: [{}]\n",
-                           fmt::join(this->power_usage_.value(), ", "));
-    }
+    detail::add_yaml_entry(power_samples, "power_usage", "W", this->power_usage_);
     // total energy consumed
-    if (this->power_total_energy_consumption_.has_value()) {
-        str += fmt::format("  power_total_energy_consumed:\n"
-                           "    unit: \"J\"\n"
-                           "    values: [{}]\n",
-                           fmt::join(this->power_total_energy_consumption_.value(), ", "));
-    }
+    detail::add_yaml_entry(power_samples, "power_total_energy_consumed", "J", this->power_total_energy_consumption_);
     // power state
-    if (this->power_profile_.has_value()) {
-        str += fmt::format("  power_profile:\n"
-                           "    unit: \"int\"\n"
-                           "    values: [{}]\n",
-                           fmt::join(this->power_profile_.value(), ", "));
-    }
-
-    // remove last newline
-    str.pop_back();
-
-    return str;
+    detail::add_yaml_entry(power_samples, "power_profile", "int", this->power_profile_);
 }
 
 std::ostream &operator<<(std::ostream &out, const nvml_power_samples &samples) {
@@ -348,23 +192,14 @@ std::ostream &operator<<(std::ostream &out, const nvml_power_samples &samples) {
 //                                                            memory samples                                                           //
 //*************************************************************************************************************************************//
 
-std::string nvml_memory_samples::generate_yaml_string() const {
-    std::string str{ "memory:\n" };
+void nvml_memory_samples::add_yaml_entries(ryml::NodeRef &root) const {
+    ryml::NodeRef memory_samples = root["memory"];
+    memory_samples |= ryml::MAP;
 
     // total memory size
-    if (this->memory_total_.has_value()) {
-        str += fmt::format("  memory_total:\n"
-                           "    unit: \"B\"\n"
-                           "    values: {}\n",
-                           this->memory_total_.value());
-    }
+    detail::add_yaml_entry(memory_samples, "memory_total", "B", this->memory_total_);
     // maximum PCIe link speed
-    if (this->pcie_link_speed_max_.has_value()) {
-        str += fmt::format("  pcie_link_speed_max:\n"
-                           "    unit: \"MBPS\"\n"
-                           "    values: {}\n",
-                           this->pcie_link_speed_max_.value());
-    }
+    detail::add_yaml_entry(memory_samples, "pcie_link_speed_max", "MBPS", this->pcie_link_speed_max_);
     // maximum PCIe link generation
     if (this->pcie_link_generation_max_.has_value()) {
         str += fmt::format("  pcie_link_generation_max:\n"

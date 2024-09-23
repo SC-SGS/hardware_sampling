@@ -14,6 +14,7 @@
 
 #include "fmt/format.h"  // fmt::format
 #include "fmt/ranges.h"  // fmt::join
+#include "ryml.hpp"      // ryml::NodeRef
 
 #include <cassert>        // assert
 #include <chrono>         // std::chrono::{steady_clock, milliseconds}
@@ -422,26 +423,19 @@ std::string cpu_hardware_sampler::device_identification() const {
     return "cpu_device";
 }
 
-std::string cpu_hardware_sampler::generate_yaml_string() const {
+void cpu_hardware_sampler::add_yaml_entries(ryml::NodeRef &root) const {
     // check whether it's safe to generate the YAML entry
     if (this->is_sampling()) {
         throw std::runtime_error{ "Can't create the final YAML entry if the hardware sampler is still running!" };
     }
 
-    return fmt::format("{}\n"
-                       "{}\n"
-                       "{}\n"
-                       "{}\n"
-                       "{}\n"
-                       "{}\n"
-                       "{}",
-                       general_samples_.generate_yaml_string(),
-                       clock_samples_.generate_yaml_string(),
-                       power_samples_.generate_yaml_string(),
-                       memory_samples_.generate_yaml_string(),
-                       temperature_samples_.generate_yaml_string(),
-                       gfx_samples_.generate_yaml_string(),
-                       idle_state_samples_.generate_yaml_string());
+    general_samples_.add_yaml_entries(root);
+    clock_samples_.add_yaml_entries(root);
+    power_samples_.add_yaml_entries(root);
+    memory_samples_.add_yaml_entries(root);
+    temperature_samples_.add_yaml_entries(root);
+    gfx_samples_.add_yaml_entries(root);
+    idle_state_samples_.add_yaml_entries(root);
 }
 
 std::ostream &operator<<(std::ostream &out, const cpu_hardware_sampler &sampler) {
