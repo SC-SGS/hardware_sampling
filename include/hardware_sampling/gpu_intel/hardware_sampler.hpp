@@ -15,6 +15,7 @@
 #include "hardware_sampling/gpu_intel/level_zero_device_handle.hpp"  // hws::detail::level_zero_device_handle
 #include "hardware_sampling/gpu_intel/level_zero_samples.hpp"        // hws::{level_zero_general_samples, level_zero_clock_samples, level_zero_power_samples, level_zero_memory_samples, level_zero_temperature_samples}
 #include "hardware_sampling/hardware_sampler.hpp"                    // hws::hardware_sampler
+#include "hardware_sampling/sample_category.hpp"                     // hws::sample_category
 
 #include "fmt/format.h"  // fmt::formatter, fmt::ostream_formatter
 
@@ -37,27 +38,31 @@ class gpu_intel_hardware_sampler : public hardware_sampler {
     /**
      * @brief Construct a new Intel GPU hardware sampler for the default device with the default sampling interval.
      * @details If this is the first Intel GPU sampler, initializes the Level Zero environment.
+     * @param[in] category the sample categories that are enabled for hardware sampling (default: all)
      */
-    gpu_intel_hardware_sampler();
+    explicit gpu_intel_hardware_sampler(sample_category category = sample_category::all);
     /**
      * @brief Construct a new Intel GPU hardware sampler for device @p device_id with the default sampling interval.
      * @details If this is the first Intel GPU sampler, initializes the Level Zero environment.
      * @param[in] device_id the ID of the device to sample
+     * @param[in] category the sample categories that are enabled for hardware sampling (default: all)
      */
-    explicit gpu_intel_hardware_sampler(std::size_t device_id);
+    explicit gpu_intel_hardware_sampler(std::size_t device_id, sample_category category = sample_category::all);
     /**
      * @brief Construct a new Intel GPU hardware sampler for the default device with the @p sampling_interval.
      * @details If this is the first Intel GPU sampler, initializes the Level Zero environment.
      * @param[in] sampling_interval the used sampling interval
+     * @param[in] category the sample categories that are enabled for hardware sampling (default: all)
      */
-    explicit gpu_intel_hardware_sampler(std::chrono::milliseconds sampling_interval);
+    explicit gpu_intel_hardware_sampler(std::chrono::milliseconds sampling_interval, sample_category category = sample_category::all);
     /**
      * @brief Construct a new Intel GPU hardware sampler for device @p device_id with the @p sampling_interval.
      * @details If this is the first Intel GPU sampler, initializes the Level Zero environment.
      * @param[in] device_id the ID of the device to sample
      * @param[in] sampling_interval the used sampling interval
+     * @param[in] category the sample categories that are enabled for hardware sampling (default: all)
      */
-    gpu_intel_hardware_sampler(std::size_t device_id, std::chrono::milliseconds sampling_interval);
+    gpu_intel_hardware_sampler(std::size_t device_id, std::chrono::milliseconds sampling_interval, sample_category category = sample_category::all);
 
     /**
      * @brief Delete the copy-constructor (already implicitly deleted due to the base class's std::atomic member).

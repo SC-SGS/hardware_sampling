@@ -14,6 +14,7 @@
 
 #include "hardware_sampling/cpu/cpu_samples.hpp"   // hws::{cpu_general_samples, clock_samples, power_samples, memory_samples, temperature_samples, gfx_samples, idle_state_samples}
 #include "hardware_sampling/hardware_sampler.hpp"  // hws::hardware_sampler
+#include "hardware_sampling/sample_category.hpp"                // hws::sample_category
 
 #include "fmt/ostream.h"  // fmt::formatter, fmt::ostream_formatter
 
@@ -32,13 +33,15 @@ class cpu_hardware_sampler : public hardware_sampler {
   public:
     /**
      * @brief Construct a new CPU hardware sampler with the default sampling interval.
+     * @param[in] category the sample categories that are enabled for hardware sampling (default: all)
      */
-    cpu_hardware_sampler();
+    explicit cpu_hardware_sampler(sample_category category = sample_category::all);
     /**
      * @brief Construct a new CPU hardware sampler with the @p sampling_interval.
      * @param[in] sampling_interval the used sampling interval
+     * @param[in] category the sample categories that are enabled for hardware sampling (default: all)
      */
-    explicit cpu_hardware_sampler(std::chrono::milliseconds sampling_interval);
+    explicit cpu_hardware_sampler(std::chrono::milliseconds sampling_interval, sample_category category = sample_category::all);
 
     /**
      * @brief Delete the copy-constructor (already implicitly deleted due to the base class's std::atomic member).

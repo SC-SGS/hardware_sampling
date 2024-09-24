@@ -7,8 +7,9 @@
 
 #include "hardware_sampling/system_hardware_sampler.hpp"  // hws::system_hardware_sampler
 
-#include "hardware_sampling/event.hpp"    // hws::event
-#include "hardware_sampling/utility.hpp"  // hws::detail::durations_from_reference_time
+#include "hardware_sampling/event.hpp"            // hws::event
+#include "hardware_sampling/sample_category.hpp"  // hws::sample_category
+#include "hardware_sampling/utility.hpp"          // hws::detail::durations_from_reference_time
 
 #include "fmt/format.h"         // fmt::format
 #include "pybind11/chrono.h"    // bind std::chrono types
@@ -24,7 +25,9 @@ void init_system_hardware_sampler(py::module_ &m) {
     // bind the pure virtual hardware sampler base class
     py::class_<hws::system_hardware_sampler>(m, "SystemHardwareSampler")
         .def(py::init<>(), "construct a new system hardware sampler with the default sampling interval")
+        .def(py::init<hws::sample_category>(), "construct a new system hardware sampler with the default sampling interval sampling only the provided sample_category samples")
         .def(py::init<std::chrono::milliseconds>(), "construct a new system hardware sampler for with the specified sampling interval")
+        .def(py::init<std::chrono::milliseconds, hws::sample_category>(), "construct a new system hardware sampler for with the specified sampling interval sampling only the provided sample_category samples")
         .def("start", &hws::system_hardware_sampler::start_sampling, "start hardware sampling for all available hardware samplers")
         .def("stop", &hws::system_hardware_sampler::stop_sampling, "stop hardware sampling for all available hardware samplers")
         .def("pause", &hws::system_hardware_sampler::pause_sampling, "pause hardware sampling for all available hardware samplers")

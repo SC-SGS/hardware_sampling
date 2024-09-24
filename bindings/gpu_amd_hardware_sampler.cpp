@@ -8,6 +8,7 @@
 #include "hardware_sampling/gpu_amd/hardware_sampler.hpp"  // hws::gpu_amd_hardware_sampler
 #include "hardware_sampling/gpu_amd/rocm_smi_samples.hpp"  // hws::{rocm_smi_general_samples, rocm_smi_clock_samples, rocm_smi_power_samples, rocm_smi_memory_samples, rocm_smi_temperature_samples}
 #include "hardware_sampling/hardware_sampler.hpp"          // hws::hardware_sampler
+#include "hardware_sampling/sample_category.hpp"           // hws::sample_category
 
 #include "fmt/format.h"         // fmt::format
 #include "pybind11/chrono.h"    // automatic bindings for std::chrono::milliseconds
@@ -119,9 +120,13 @@ void init_gpu_amd_hardware_sampler(py::module_ &m) {
     // bind the GPU AMD hardware sampler class
     py::class_<hws::gpu_amd_hardware_sampler, hws::hardware_sampler>(m, "GpuAmdHardwareSampler")
         .def(py::init<>(), "construct a new AMD GPU hardware sampler for the default device with the default sampling interval")
+        .def(py::init<hws::sample_category>(), "construct a new AMD GPU hardware sampler for the default device with the default sampling interval sampling only the provided sample_category samples")
         .def(py::init<std::size_t>(), "construct a new AMD GPU hardware sampler for the specified device with the default sampling interval")
+        .def(py::init<std::size_t, hws::sample_category>(), "construct a new AMD GPU hardware sampler for the specified device with the default sampling interval sampling only the provided sample_category samples")
         .def(py::init<std::chrono::milliseconds>(), "construct a new AMD GPU hardware sampler for the default device with the specified sampling interval")
+        .def(py::init<std::chrono::milliseconds, hws::sample_category>(), "construct a new AMD GPU hardware sampler for the default device with the specified sampling interval sampling only the provided sample_category samples")
         .def(py::init<std::size_t, std::chrono::milliseconds>(), "construct a new AMD GPU hardware sampler for the specified device and sampling interval")
+        .def(py::init<std::size_t, std::chrono::milliseconds, hws::sample_category>(), "construct a new AMD GPU hardware sampler for the specified device and sampling interval sampling only the provided sample_category samples")
         .def("general_samples", &hws::gpu_amd_hardware_sampler::general_samples, "get all general samples")
         .def("clock_samples", &hws::gpu_amd_hardware_sampler::clock_samples, "get all clock related samples")
         .def("power_samples", &hws::gpu_amd_hardware_sampler::power_samples, "get all power related samples")

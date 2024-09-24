@@ -7,7 +7,8 @@
 
 #include "hardware_sampling/system_hardware_sampler.hpp"
 
-#include "hardware_sampling/event.hpp"  // hws::event
+#include "hardware_sampling/event.hpp"            // hws::event
+#include "hardware_sampling/sample_category.hpp"  // hws::sample_category
 
 #if defined(HWS_FOR_CPUS_ENABLED)
     #include "hardware_sampling/cpu/hardware_sampler.hpp"  // hws::cpu_hardware_sampler
@@ -37,14 +38,14 @@
 
 namespace hws {
 
-system_hardware_sampler::system_hardware_sampler() :
-    system_hardware_sampler{ HWS_SAMPLING_INTERVAL } { }
+system_hardware_sampler::system_hardware_sampler(const sample_category category) :
+    system_hardware_sampler{ HWS_SAMPLING_INTERVAL, category } { }
 
-system_hardware_sampler::system_hardware_sampler(const std::chrono::milliseconds sampling_interval) {
+system_hardware_sampler::system_hardware_sampler(const std::chrono::milliseconds sampling_interval, sample_category category) {
     // create the hardware samplers based on the available hardware
 #if defined(HWS_FOR_CPUS_ENABLED)
     {
-        samplers_.push_back(std::make_unique<cpu_hardware_sampler>(sampling_interval));
+        samplers_.push_back(std::make_unique<cpu_hardware_sampler>(sampling_interval, category));
     }
 #endif
 #if defined(HWS_FOR_NVIDIA_GPUS_ENABLED)
@@ -52,7 +53,7 @@ system_hardware_sampler::system_hardware_sampler(const std::chrono::milliseconds
         int device_count{};
         HWS_CUDA_ERROR_CHECK(cudaGetDeviceCount(&device_count));
         for (int device = 0; device < device_count; ++device) {
-            samplers_.push_back(std::make_unique<gpu_nvidia_hardware_sampler>(static_cast<std::size_t>(device), sampling_interval));
+            samplers_.push_back(std::make_unique<gpu_nvidia_hardware_sampler>(static_cast<std::size_t>(device), sampling_interval, category));
         }
     }
 #endif
@@ -61,7 +62,7 @@ system_hardware_sampler::system_hardware_sampler(const std::chrono::milliseconds
         int device_count{};
         HWS_HIP_ERROR_CHECK(hipGetDeviceCount(&device_count));
         for (int device = 0; device < device_count; ++device) {
-            samplers_.push_back(std::make_unique<gpu_amd_hardware_sampler>(static_cast<std::size_t>(device), sampling_interval));
+            samplers_.push_back(std::make_unique<gpu_amd_hardware_sampler>(static_cast<std::size_t>(device), sampling_interval, category));
         }
     }
 #endif

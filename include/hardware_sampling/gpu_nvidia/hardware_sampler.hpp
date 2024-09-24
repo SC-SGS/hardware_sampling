@@ -15,6 +15,7 @@
 #include "hardware_sampling/gpu_nvidia/nvml_device_handle.hpp"  // hws::nvml_device_handle
 #include "hardware_sampling/gpu_nvidia/nvml_samples.hpp"        // hws::{nvml_general_samples, nvml_clock_samples, nvml_power_samples, nvml_memory_samples, nvml_temperature_samples}
 #include "hardware_sampling/hardware_sampler.hpp"               // hws::hardware_sampler
+#include "hardware_sampling/sample_category.hpp"                // hws::sample_category
 
 #include "fmt/format.h"  // fmt::formatter, fmt::ostream_formatter
 
@@ -37,27 +38,31 @@ class gpu_nvidia_hardware_sampler : public hardware_sampler {
     /**
      * @brief Construct a new NVIDIA GPU hardware sampler for the default device with the default sampling interval.
      * @details If this is the first NVIDIA GPU sampler, initializes the NVML environment.
+     * @param[in] category the sample categories that are enabled for hardware sampling (default: all)
      */
-    gpu_nvidia_hardware_sampler();
+    explicit gpu_nvidia_hardware_sampler(sample_category category = sample_category::all);
     /**
      * @brief Construct a new NVIDIA GPU hardware sampler for device @p device_id with the default sampling interval.
      * @details If this is the first NVIDIA GPU sampler, initializes the NVML environment.
      * @param[in] device_id the ID of the device to sample
+     * @param[in] category the sample categories that are enabled for hardware sampling (default: all)
      */
-    explicit gpu_nvidia_hardware_sampler(std::size_t device_id);
+    explicit gpu_nvidia_hardware_sampler(std::size_t device_id, sample_category category = sample_category::all);
     /**
      * @brief Construct a new NVIDIA GPU hardware sampler for the default device with the @p sampling_interval.
      * @details If this is the first NVIDIA GPU sampler, initializes the NVML environment.
      * @param[in] sampling_interval the used sampling interval
+     * @param[in] category the sample categories that are enabled for hardware sampling (default: all)
      */
-    explicit gpu_nvidia_hardware_sampler(std::chrono::milliseconds sampling_interval);
+    explicit gpu_nvidia_hardware_sampler(std::chrono::milliseconds sampling_interval, sample_category category = sample_category::all);
     /**
      * @brief Construct a new NVIDIA GPU hardware sampler for device @p device_id with the @p sampling_interval.
      * @details If this is the first NVIDIA GPU sampler, initializes the NVML environment.
      * @param[in] device_id the ID of the device to sample
      * @param[in] sampling_interval the used sampling interval
+     * @param[in] category the sample categories that are enabled for hardware sampling (default: all)
      */
-    gpu_nvidia_hardware_sampler(std::size_t device_id, std::chrono::milliseconds sampling_interval);
+    gpu_nvidia_hardware_sampler(std::size_t device_id, std::chrono::milliseconds sampling_interval, sample_category category = sample_category::all);
 
     /**
      * @brief Delete the copy-constructor (already implicitly deleted due to the base class's std::atomic member).

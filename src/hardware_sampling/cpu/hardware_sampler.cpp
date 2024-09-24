@@ -10,6 +10,7 @@
 #include "hardware_sampling/cpu/cpu_samples.hpp"   // hws::{cpu_general_samples, clock_samples, power_samples, memory_samples, temperature_samples, gfx_samples, idle_state_samples}
 #include "hardware_sampling/cpu/utility.hpp"       // HWS_SUBPROCESS_ERROR_CHECK, hws::detail::run_subprocess
 #include "hardware_sampling/hardware_sampler.hpp"  // hws::tracking::hardware_sampler
+#include "hardware_sampling/sample_category.hpp"   // hws::sample_category
 #include "hardware_sampling/utility.hpp"           // hws::detail::{split, split_as, trim, convert_to, starts_with}
 
 #include "fmt/format.h"  // fmt::format
@@ -33,11 +34,11 @@
 
 namespace hws {
 
-cpu_hardware_sampler::cpu_hardware_sampler() :
-    cpu_hardware_sampler{ HWS_SAMPLING_INTERVAL } { }
+cpu_hardware_sampler::cpu_hardware_sampler(const sample_category category) :
+    cpu_hardware_sampler{ HWS_SAMPLING_INTERVAL, category } { }
 
-cpu_hardware_sampler::cpu_hardware_sampler(const std::chrono::milliseconds sampling_interval) :
-    hardware_sampler{ sampling_interval } { }
+cpu_hardware_sampler::cpu_hardware_sampler(const std::chrono::milliseconds sampling_interval, const sample_category category) :
+    hardware_sampler{ sampling_interval, category } { }
 
 cpu_hardware_sampler::~cpu_hardware_sampler() {
     try {
@@ -71,53 +72,63 @@ void cpu_hardware_sampler::sampling_loop() {
             value = detail::trim(value);
 
             // check the lines if the start with an entry that we want to sample
-            if (detail::starts_with(line, "Architecture")) {
-                general_samples_.architecture_ = detail::convert_to<decltype(general_samples_.architecture_)::value_type>(value);
-            } else if (detail::starts_with(line, "Byte Order")) {
-                general_samples_.byte_order_ = detail::convert_to<decltype(general_samples_.byte_order_)::value_type>(value);
-            } else if (detail::starts_with(line, "CPU(s)")) {
-                general_samples_.num_threads_ = detail::convert_to<decltype(general_samples_.num_threads_)::value_type>(value);
-            } else if (detail::starts_with(line, "Thread(s) per core")) {
-                general_samples_.threads_per_core_ = detail::convert_to<decltype(general_samples_.threads_per_core_)::value_type>(value);
-            } else if (detail::starts_with(line, "Core(s) per socket")) {
-                general_samples_.cores_per_socket_ = detail::convert_to<decltype(general_samples_.cores_per_socket_)::value_type>(value);
-            } else if (detail::starts_with(line, "Socket(s)")) {
-                general_samples_.num_sockets_ = detail::convert_to<decltype(general_samples_.num_sockets_)::value_type>(value);
-            } else if (detail::starts_with(line, "NUMA node(s)")) {
-                general_samples_.numa_nodes_ = detail::convert_to<decltype(general_samples_.numa_nodes_)::value_type>(value);
-            } else if (detail::starts_with(line, "Vendor ID")) {
-                general_samples_.vendor_id_ = detail::convert_to<decltype(general_samples_.vendor_id_)::value_type>(value);
-            } else if (detail::starts_with(line, "Model name")) {
-                general_samples_.name_ = detail::convert_to<decltype(general_samples_.name_)::value_type>(value);
-            } else if (detail::starts_with(line, "Flags")) {
-                general_samples_.flags_ = detail::split_as<decltype(general_samples_.flags_)::value_type::value_type>(value, ' ');
-            } else if (detail::starts_with(line, "Frequency boost")) {
-                clock_samples_.auto_boosted_clock_enabled_ = value == "enabled";
-            } else if (detail::starts_with(line, "CPU max MHz")) {
-                clock_samples_.clock_frequency_max_ = detail::convert_to<decltype(clock_samples_.clock_frequency_max_)::value_type>(value);
-            } else if (detail::starts_with(line, "CPU min MHz")) {
-                clock_samples_.clock_frequency_min_ = detail::convert_to<decltype(clock_samples_.clock_frequency_min_)::value_type>(value);
-            } else if (detail::starts_with(line, "L1d cache")) {
-                memory_samples_.cache_size_L1d_ = detail::convert_to<decltype(memory_samples_.cache_size_L1d_)::value_type>(value);
-            } else if (detail::starts_with(line, "L1i cache")) {
-                memory_samples_.cache_size_L1i_ = detail::convert_to<decltype(memory_samples_.cache_size_L1i_)::value_type>(value);
-            } else if (detail::starts_with(line, "L2 cache")) {
-                memory_samples_.cache_size_L2_ = detail::convert_to<decltype(memory_samples_.cache_size_L2_)::value_type>(value);
-            } else if (detail::starts_with(line, "L3 cache")) {
-                memory_samples_.cache_size_L3_ = detail::convert_to<decltype(memory_samples_.cache_size_L3_)::value_type>(value);
+            if (this->sample_category_enabled(sample_category::general)) {
+                if (detail::starts_with(line, "Architecture")) {
+                    general_samples_.architecture_ = detail::convert_to<decltype(general_samples_.architecture_)::value_type>(value);
+                } else if (detail::starts_with(line, "Byte Order")) {
+                    general_samples_.byte_order_ = detail::convert_to<decltype(general_samples_.byte_order_)::value_type>(value);
+                } else if (detail::starts_with(line, "CPU(s)")) {
+                    general_samples_.num_threads_ = detail::convert_to<decltype(general_samples_.num_threads_)::value_type>(value);
+                } else if (detail::starts_with(line, "Thread(s) per core")) {
+                    general_samples_.threads_per_core_ = detail::convert_to<decltype(general_samples_.threads_per_core_)::value_type>(value);
+                } else if (detail::starts_with(line, "Core(s) per socket")) {
+                    general_samples_.cores_per_socket_ = detail::convert_to<decltype(general_samples_.cores_per_socket_)::value_type>(value);
+                } else if (detail::starts_with(line, "Socket(s)")) {
+                    general_samples_.num_sockets_ = detail::convert_to<decltype(general_samples_.num_sockets_)::value_type>(value);
+                } else if (detail::starts_with(line, "NUMA node(s)")) {
+                    general_samples_.numa_nodes_ = detail::convert_to<decltype(general_samples_.numa_nodes_)::value_type>(value);
+                } else if (detail::starts_with(line, "Vendor ID")) {
+                    general_samples_.vendor_id_ = detail::convert_to<decltype(general_samples_.vendor_id_)::value_type>(value);
+                } else if (detail::starts_with(line, "Model name")) {
+                    general_samples_.name_ = detail::convert_to<decltype(general_samples_.name_)::value_type>(value);
+                } else if (detail::starts_with(line, "Flags")) {
+                    general_samples_.flags_ = detail::split_as<decltype(general_samples_.flags_)::value_type::value_type>(value, ' ');
+                }
+            }
+            if (this->sample_category_enabled(sample_category::clock)) {
+                if (detail::starts_with(line, "Frequency boost")) {
+                    clock_samples_.auto_boosted_clock_enabled_ = value == "enabled";
+                } else if (detail::starts_with(line, "CPU max MHz")) {
+                    clock_samples_.clock_frequency_max_ = detail::convert_to<decltype(clock_samples_.clock_frequency_max_)::value_type>(value);
+                } else if (detail::starts_with(line, "CPU min MHz")) {
+                    clock_samples_.clock_frequency_min_ = detail::convert_to<decltype(clock_samples_.clock_frequency_min_)::value_type>(value);
+                }
+            }
+            if (this->sample_category_enabled(sample_category::memory)) {
+                if (detail::starts_with(line, "L1d cache")) {
+                    memory_samples_.cache_size_L1d_ = detail::convert_to<decltype(memory_samples_.cache_size_L1d_)::value_type>(value);
+                } else if (detail::starts_with(line, "L1i cache")) {
+                    memory_samples_.cache_size_L1i_ = detail::convert_to<decltype(memory_samples_.cache_size_L1i_)::value_type>(value);
+                } else if (detail::starts_with(line, "L2 cache")) {
+                    memory_samples_.cache_size_L2_ = detail::convert_to<decltype(memory_samples_.cache_size_L2_)::value_type>(value);
+                } else if (detail::starts_with(line, "L3 cache")) {
+                    memory_samples_.cache_size_L3_ = detail::convert_to<decltype(memory_samples_.cache_size_L3_)::value_type>(value);
+                }
             }
         }
 
-        // check if the number of cores can be derived from the otherwise found values
-        if (general_samples_.num_threads_.has_value() && general_samples_.threads_per_core_.has_value()) {
-            general_samples_.num_cores_ = general_samples_.num_threads_.value() / general_samples_.threads_per_core_.value();
+        if (this->sample_category_enabled(sample_category::general)) {
+            // check if the number of cores can be derived from the otherwise found values
+            if (general_samples_.num_threads_.has_value() && general_samples_.threads_per_core_.has_value()) {
+                general_samples_.num_cores_ = general_samples_.num_threads_.value() / general_samples_.threads_per_core_.value();
+            }
         }
     }
 #endif
 
 #if defined(HWS_VIA_FREE_ENABLED)
     const std::regex whitespace_replace_reg{ "[ ]+", std::regex::extended };
-    {
+    if (this->sample_category_enabled(sample_category::memory)) {
         std::string free_output = detail::run_subprocess("free -b");
         free_output = std::regex_replace(free_output, whitespace_replace_reg, " ");
         const std::vector<std::string_view> free_lines = detail::split(detail::trim(free_output), '\n');
@@ -164,104 +175,121 @@ void cpu_hardware_sampler::sampling_loop() {
         const std::vector<std::string_view> values = detail::split(data[1], '\t');
 
         for (std::size_t i = 0; i < header.size(); ++i) {
-            if (header[i] == "Avg_MHz") {
-                using vector_type = decltype(clock_samples_.clock_frequency_)::value_type;
-                clock_samples_.clock_frequency_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
-            } else if (header[i] == "Busy%") {
-                using vector_type = decltype(general_samples_.compute_utilization_)::value_type;
-                general_samples_.compute_utilization_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
-            } else if (header[i] == "Bzy_MHz") {
-                using vector_type = decltype(clock_samples_.average_non_idle_clock_frequency_)::value_type;
-                clock_samples_.average_non_idle_clock_frequency_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
-            } else if (header[i] == "TSC_MHz") {
-                using vector_type = decltype(clock_samples_.time_stamp_counter_)::value_type;
-                clock_samples_.time_stamp_counter_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
-            } else if (header[i] == "IPC") {
-                using vector_type = decltype(general_samples_.ipc_)::value_type;
-                general_samples_.ipc_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
-            } else if (header[i] == "IRQ") {
-                using vector_type = decltype(general_samples_.irq_)::value_type;
-                general_samples_.irq_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
-            } else if (header[i] == "SMI") {
-                using vector_type = decltype(general_samples_.smi_)::value_type;
-                general_samples_.smi_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
-            } else if (header[i] == "POLL") {
-                using vector_type = decltype(general_samples_.poll_)::value_type;
-                general_samples_.poll_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
-            } else if (header[i] == "POLL%") {
-                using vector_type = decltype(general_samples_.poll_percent_)::value_type;
-                general_samples_.poll_percent_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
-            } else if (header[i] == "CoreTmp") {
-                using vector_type = decltype(temperature_samples_.core_temperature_)::value_type;
-                temperature_samples_.core_temperature_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
-            } else if (header[i] == "CoreThr") {
-                using vector_type = decltype(temperature_samples_.core_throttle_percent_)::value_type;
-                temperature_samples_.core_throttle_percent_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
-            } else if (header[i] == "PkgTmp") {
-                using vector_type = decltype(temperature_samples_.temperature_)::value_type;
-                temperature_samples_.temperature_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
-            } else if (header[i] == "GFX%rc6") {
-                using vector_type = decltype(gfx_samples_.gfx_render_state_percent_)::value_type;
-                gfx_samples_.gfx_render_state_percent_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
-            } else if (header[i] == "GFXMHz") {
-                using vector_type = decltype(gfx_samples_.gfx_frequency_)::value_type;
-                gfx_samples_.gfx_frequency_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
-            } else if (header[i] == "GFXAMHz") {
-                using vector_type = decltype(gfx_samples_.average_gfx_frequency_)::value_type;
-                gfx_samples_.average_gfx_frequency_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
-            } else if (header[i] == "Totl%C0") {
-                using vector_type = decltype(idle_state_samples_.all_cpus_state_c0_percent_)::value_type;
-                idle_state_samples_.all_cpus_state_c0_percent_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
-            } else if (header[i] == "Any%C0") {
-                using vector_type = decltype(idle_state_samples_.any_cpu_state_c0_percent_)::value_type;
-                idle_state_samples_.any_cpu_state_c0_percent_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
-            } else if (header[i] == "GFX%C0") {
-                using vector_type = decltype(gfx_samples_.gfx_state_c0_percent_)::value_type;
-                gfx_samples_.gfx_state_c0_percent_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
-            } else if (header[i] == "CPUGFX%") {
-                using vector_type = decltype(gfx_samples_.cpu_works_for_gpu_percent_)::value_type;
-                gfx_samples_.cpu_works_for_gpu_percent_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
-            } else if (header[i] == "CPU%LPI") {
-                using vector_type = decltype(idle_state_samples_.low_power_idle_state_percent_)::value_type;
-                idle_state_samples_.low_power_idle_state_percent_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
-            } else if (header[i] == "SYS%LPI") {
-                using vector_type = decltype(idle_state_samples_.system_low_power_idle_state_percent_)::value_type;
-                idle_state_samples_.system_low_power_idle_state_percent_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
-            } else if (header[i] == "Pkg%LPI") {
-                using vector_type = decltype(idle_state_samples_.package_low_power_idle_state_percent_)::value_type;
-                idle_state_samples_.package_low_power_idle_state_percent_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
-            } else if (header[i] == "PkgWatt") {
-                using vector_type = decltype(power_samples_.power_usage_)::value_type;
-                power_samples_.power_usage_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
-                power_samples_.power_measurement_type_ = "current/instant";
-                power_samples_.power_total_energy_consumption_ = decltype(power_samples_.power_total_energy_consumption_)::value_type{ 0 };
-            } else if (header[i] == "CorWatt") {
-                using vector_type = decltype(power_samples_.core_watt_)::value_type;
-                power_samples_.core_watt_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
-            } else if (header[i] == "GFXWatt") {
-                using vector_type = decltype(gfx_samples_.gfx_watt_)::value_type;
-                gfx_samples_.gfx_watt_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
-            } else if (header[i] == "RAMWatt") {
-                using vector_type = decltype(power_samples_.ram_watt_)::value_type;
-                power_samples_.ram_watt_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
-            } else if (header[i] == "PKG_%") {
-                using vector_type = decltype(power_samples_.package_rapl_throttle_percent_)::value_type;
-                power_samples_.package_rapl_throttle_percent_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
-            } else if (header[i] == "RAM_%") {
-                using vector_type = decltype(power_samples_.dram_rapl_throttle_percent_)::value_type;
-                power_samples_.dram_rapl_throttle_percent_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
-            } else {
-                // test against regex
-                const std::string header_str{ header[i] };
-                const std::regex reg{ std::string{ "CPU%[0-9a-zA-Z]+|Pkg%[0-9a-zA-Z]+|Pk%[0-9a-zA-Z]+|C[0-9a-zA-Z]+%|C[0-9a-zA-Z]+" }, std::regex::extended };
-                if (std::regex_match(header_str, reg)) {
-                    // first time this branch is reached -> create optional value
-                    if (!idle_state_samples_.idle_states_.has_value()) {
-                        idle_state_samples_.idle_states_ = std::make_optional<typename cpu_idle_states_samples::map_type>();
-                    }
+            if (this->sample_category_enabled(sample_category::general)) {
+                if (header[i] == "Busy%") {
+                    using vector_type = decltype(general_samples_.compute_utilization_)::value_type;
+                    general_samples_.compute_utilization_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
+                } else if (header[i] == "IPC") {
+                    using vector_type = decltype(general_samples_.ipc_)::value_type;
+                    general_samples_.ipc_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
+                } else if (header[i] == "IRQ") {
+                    using vector_type = decltype(general_samples_.irq_)::value_type;
+                    general_samples_.irq_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
+                } else if (header[i] == "SMI") {
+                    using vector_type = decltype(general_samples_.smi_)::value_type;
+                    general_samples_.smi_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
+                } else if (header[i] == "POLL") {
+                    using vector_type = decltype(general_samples_.poll_)::value_type;
+                    general_samples_.poll_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
+                } else if (header[i] == "POLL%") {
+                    using vector_type = decltype(general_samples_.poll_percent_)::value_type;
+                    general_samples_.poll_percent_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
+                }
+            }
+            if (this->sample_category_enabled(sample_category::clock)) {
+                if (header[i] == "Avg_MHz") {
+                    using vector_type = decltype(clock_samples_.clock_frequency_)::value_type;
+                    clock_samples_.clock_frequency_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
+                } else if (header[i] == "Bzy_MHz") {
+                    using vector_type = decltype(clock_samples_.average_non_idle_clock_frequency_)::value_type;
+                    clock_samples_.average_non_idle_clock_frequency_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
+                } else if (header[i] == "TSC_MHz") {
+                    using vector_type = decltype(clock_samples_.time_stamp_counter_)::value_type;
+                    clock_samples_.time_stamp_counter_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
+                }
+            }
+            if (this->sample_category_enabled(sample_category::power)) {
+                if (header[i] == "PkgWatt") {
+                    using vector_type = decltype(power_samples_.power_usage_)::value_type;
+                    power_samples_.power_usage_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
+                    power_samples_.power_measurement_type_ = "current/instant";
+                    power_samples_.power_total_energy_consumption_ = decltype(power_samples_.power_total_energy_consumption_)::value_type{ 0 };
+                } else if (header[i] == "CorWatt") {
+                    using vector_type = decltype(power_samples_.core_watt_)::value_type;
+                    power_samples_.core_watt_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
+                } else if (header[i] == "RAMWatt") {
+                    using vector_type = decltype(power_samples_.ram_watt_)::value_type;
+                    power_samples_.ram_watt_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
+                } else if (header[i] == "PKG_%") {
+                    using vector_type = decltype(power_samples_.package_rapl_throttle_percent_)::value_type;
+                    power_samples_.package_rapl_throttle_percent_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
+                } else if (header[i] == "RAM_%") {
+                    using vector_type = decltype(power_samples_.dram_rapl_throttle_percent_)::value_type;
+                    power_samples_.dram_rapl_throttle_percent_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
+                }
+            }
+            if (this->sample_category_enabled(sample_category::temperature)) {
+                if (header[i] == "CoreTmp") {
+                    using vector_type = decltype(temperature_samples_.core_temperature_)::value_type;
+                    temperature_samples_.core_temperature_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
+                } else if (header[i] == "CoreThr") {
+                    using vector_type = decltype(temperature_samples_.core_throttle_percent_)::value_type;
+                    temperature_samples_.core_throttle_percent_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
+                } else if (header[i] == "PkgTmp") {
+                    using vector_type = decltype(temperature_samples_.temperature_)::value_type;
+                    temperature_samples_.temperature_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
+                }
+            }
+            if (this->sample_category_enabled(sample_category::gfx)) {
+                if (header[i] == "GFX%rc6") {
+                    using vector_type = decltype(gfx_samples_.gfx_render_state_percent_)::value_type;
+                    gfx_samples_.gfx_render_state_percent_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
+                } else if (header[i] == "GFXMHz") {
+                    using vector_type = decltype(gfx_samples_.gfx_frequency_)::value_type;
+                    gfx_samples_.gfx_frequency_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
+                } else if (header[i] == "GFXAMHz") {
+                    using vector_type = decltype(gfx_samples_.average_gfx_frequency_)::value_type;
+                    gfx_samples_.average_gfx_frequency_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
+                } else if (header[i] == "GFX%C0") {
+                    using vector_type = decltype(gfx_samples_.gfx_state_c0_percent_)::value_type;
+                    gfx_samples_.gfx_state_c0_percent_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
+                } else if (header[i] == "CPUGFX%") {
+                    using vector_type = decltype(gfx_samples_.cpu_works_for_gpu_percent_)::value_type;
+                    gfx_samples_.cpu_works_for_gpu_percent_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
+                } else if (header[i] == "GFXWatt") {
+                    using vector_type = decltype(gfx_samples_.gfx_watt_)::value_type;
+                    gfx_samples_.gfx_watt_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
+                }
+            }
+            if (this->sample_category_enabled(sample_category::idle_state)) {
+                if (header[i] == "Totl%C0") {
+                    using vector_type = decltype(idle_state_samples_.all_cpus_state_c0_percent_)::value_type;
+                    idle_state_samples_.all_cpus_state_c0_percent_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
+                } else if (header[i] == "Any%C0") {
+                    using vector_type = decltype(idle_state_samples_.any_cpu_state_c0_percent_)::value_type;
+                    idle_state_samples_.any_cpu_state_c0_percent_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
+                } else if (header[i] == "CPU%LPI") {
+                    using vector_type = decltype(idle_state_samples_.low_power_idle_state_percent_)::value_type;
+                    idle_state_samples_.low_power_idle_state_percent_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
+                } else if (header[i] == "SYS%LPI") {
+                    using vector_type = decltype(idle_state_samples_.system_low_power_idle_state_percent_)::value_type;
+                    idle_state_samples_.system_low_power_idle_state_percent_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
+                } else if (header[i] == "Pkg%LPI") {
+                    using vector_type = decltype(idle_state_samples_.package_low_power_idle_state_percent_)::value_type;
+                    idle_state_samples_.package_low_power_idle_state_percent_ = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
+                } else {
+                    // test against regex
+                    const std::string header_str{ header[i] };
+                    const std::regex reg{ std::string{ "CPU%[0-9a-zA-Z]+|Pkg%[0-9a-zA-Z]+|Pk%[0-9a-zA-Z]+|C[0-9a-zA-Z]+%|C[0-9a-zA-Z]+" }, std::regex::extended };
+                    if (std::regex_match(header_str, reg)) {
+                        // first time this branch is reached -> create optional value
+                        if (!idle_state_samples_.idle_states_.has_value()) {
+                            idle_state_samples_.idle_states_ = std::make_optional<typename cpu_idle_states_samples::map_type>();
+                        }
 
-                    using vector_type = cpu_idle_states_samples::map_type::mapped_type;
-                    idle_state_samples_.idle_states_.value()[header_str] = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
+                        using vector_type = cpu_idle_states_samples::map_type::mapped_type;
+                        idle_state_samples_.idle_states_.value()[header_str] = vector_type{ detail::convert_to<typename vector_type::value_type>(values[i]) };
+                    }
                 }
             }
         }
@@ -279,7 +307,7 @@ void cpu_hardware_sampler::sampling_loop() {
             this->add_time_point(std::chrono::steady_clock::now());
 
 #if defined(HWS_VIA_FREE_ENABLED)
-            {
+            if (this->sample_category_enabled(sample_category::memory)) {
                 // run free
                 std::string free_output = detail::run_subprocess("free -b");
                 free_output = std::regex_replace(free_output, whitespace_replace_reg, " ");
@@ -311,101 +339,118 @@ void cpu_hardware_sampler::sampling_loop() {
 
                 // add values to the respective sample entries
                 for (std::size_t i = 0; i < header.size(); ++i) {
-                    if (header[i] == "Avg_MHz") {
-                        using vector_type = decltype(clock_samples_.clock_frequency_)::value_type;
-                        clock_samples_.clock_frequency_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
-                    } else if (header[i] == "Busy%") {
-                        using vector_type = decltype(general_samples_.compute_utilization_)::value_type;
-                        general_samples_.compute_utilization_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
-                    } else if (header[i] == "Bzy_MHz") {
-                        using vector_type = decltype(clock_samples_.average_non_idle_clock_frequency_)::value_type;
-                        clock_samples_.average_non_idle_clock_frequency_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
-                    } else if (header[i] == "TSC_MHz") {
-                        using vector_type = decltype(clock_samples_.time_stamp_counter_)::value_type;
-                        clock_samples_.time_stamp_counter_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
-                    } else if (header[i] == "IPC") {
-                        using vector_type = decltype(general_samples_.ipc_)::value_type;
-                        general_samples_.ipc_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
-                    } else if (header[i] == "IRQ") {
-                        using vector_type = decltype(general_samples_.irq_)::value_type;
-                        general_samples_.irq_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
-                    } else if (header[i] == "SMI") {
-                        using vector_type = decltype(general_samples_.smi_)::value_type;
-                        general_samples_.smi_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
-                    } else if (header[i] == "POLL") {
-                        using vector_type = decltype(general_samples_.poll_)::value_type;
-                        general_samples_.poll_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
-                    } else if (header[i] == "POLL%") {
-                        using vector_type = decltype(general_samples_.poll_percent_)::value_type;
-                        general_samples_.poll_percent_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
-                    } else if (header[i] == "CoreTmp") {
-                        using vector_type = decltype(temperature_samples_.core_temperature_)::value_type;
-                        temperature_samples_.core_temperature_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
-                    } else if (header[i] == "CoreThr") {
-                        using vector_type = decltype(temperature_samples_.core_throttle_percent_)::value_type;
-                        temperature_samples_.core_throttle_percent_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
-                    } else if (header[i] == "PkgTmp") {
-                        using vector_type = decltype(temperature_samples_.temperature_)::value_type;
-                        temperature_samples_.temperature_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
-                    } else if (header[i] == "GFX%rc6") {
-                        using vector_type = decltype(gfx_samples_.gfx_render_state_percent_)::value_type;
-                        gfx_samples_.gfx_render_state_percent_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
-                    } else if (header[i] == "GFXMHz") {
-                        using vector_type = decltype(gfx_samples_.gfx_frequency_)::value_type;
-                        gfx_samples_.gfx_frequency_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
-                    } else if (header[i] == "GFXAMHz") {
-                        using vector_type = decltype(gfx_samples_.average_gfx_frequency_)::value_type;
-                        gfx_samples_.average_gfx_frequency_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
-                    } else if (header[i] == "Totl%C0") {
-                        using vector_type = decltype(idle_state_samples_.all_cpus_state_c0_percent_)::value_type;
-                        idle_state_samples_.all_cpus_state_c0_percent_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
-                    } else if (header[i] == "Any%C0") {
-                        using vector_type = decltype(idle_state_samples_.any_cpu_state_c0_percent_)::value_type;
-                        idle_state_samples_.any_cpu_state_c0_percent_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
-                    } else if (header[i] == "GFX%C0") {
-                        using vector_type = decltype(gfx_samples_.gfx_state_c0_percent_)::value_type;
-                        gfx_samples_.gfx_state_c0_percent_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
-                    } else if (header[i] == "CPUGFX%") {
-                        using vector_type = decltype(gfx_samples_.cpu_works_for_gpu_percent_)::value_type;
-                        gfx_samples_.cpu_works_for_gpu_percent_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
-                    } else if (header[i] == "CPU%LPI") {
-                        using vector_type = decltype(idle_state_samples_.low_power_idle_state_percent_)::value_type;
-                        idle_state_samples_.low_power_idle_state_percent_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
-                    } else if (header[i] == "SYS%LPI") {
-                        using vector_type = decltype(idle_state_samples_.system_low_power_idle_state_percent_)::value_type;
-                        idle_state_samples_.system_low_power_idle_state_percent_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
-                    } else if (header[i] == "Pkg%LPI") {
-                        using vector_type = decltype(idle_state_samples_.package_low_power_idle_state_percent_)::value_type;
-                        idle_state_samples_.package_low_power_idle_state_percent_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
-                    } else if (header[i] == "PkgWatt") {
-                        using vector_type = decltype(power_samples_.power_usage_)::value_type;
-                        power_samples_.power_usage_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
-                        // calculate total energy consumption
-                        using value_type = decltype(power_samples_.power_total_energy_consumption_)::value_type::value_type;
-                        const std::size_t num_time_points = this->sampling_time_points().size();
-                        const value_type time_difference = std::chrono::duration<value_type>(this->sampling_time_points()[num_time_points - 1] - this->sampling_time_points()[num_time_points - 2]).count();
-                        const auto current = power_samples_.power_usage_->back() * time_difference;
-                        power_samples_.power_total_energy_consumption_->push_back(power_samples_.power_total_energy_consumption_->back() + current);
-                    } else if (header[i] == "CorWatt") {
-                        using vector_type = decltype(power_samples_.core_watt_)::value_type;
-                        power_samples_.core_watt_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
-                    } else if (header[i] == "GFXWatt") {
-                        using vector_type = decltype(gfx_samples_.gfx_watt_)::value_type;
-                        gfx_samples_.gfx_watt_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
-                    } else if (header[i] == "RAMWatt") {
-                        using vector_type = decltype(power_samples_.ram_watt_)::value_type;
-                        power_samples_.ram_watt_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
-                    } else if (header[i] == "PKG_%") {
-                        using vector_type = decltype(power_samples_.package_rapl_throttle_percent_)::value_type;
-                        power_samples_.package_rapl_throttle_percent_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
-                    } else if (header[i] == "RAM_%") {
-                        using vector_type = decltype(power_samples_.dram_rapl_throttle_percent_)::value_type;
-                        power_samples_.dram_rapl_throttle_percent_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
-                    } else {
-                        const std::string header_str{ header[i] };
-                        if (idle_state_samples_.idle_states_.value().count(header_str) > decltype(idle_state_samples_)::map_type::size_type{ 0 }) {
-                            using vector_type = cpu_idle_states_samples::map_type::mapped_type;
-                            idle_state_samples_.idle_states_.value()[header_str].push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
+                    if (this->sample_category_enabled(sample_category::general)) {
+                        if (header[i] == "Busy%") {
+                            using vector_type = decltype(general_samples_.compute_utilization_)::value_type;
+                            general_samples_.compute_utilization_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
+                        } else if (header[i] == "IPC") {
+                            using vector_type = decltype(general_samples_.ipc_)::value_type;
+                            general_samples_.ipc_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
+                        } else if (header[i] == "IRQ") {
+                            using vector_type = decltype(general_samples_.irq_)::value_type;
+                            general_samples_.irq_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
+                        } else if (header[i] == "SMI") {
+                            using vector_type = decltype(general_samples_.smi_)::value_type;
+                            general_samples_.smi_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
+                        } else if (header[i] == "POLL") {
+                            using vector_type = decltype(general_samples_.poll_)::value_type;
+                            general_samples_.poll_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
+                        } else if (header[i] == "POLL%") {
+                            using vector_type = decltype(general_samples_.poll_percent_)::value_type;
+                            general_samples_.poll_percent_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
+                        }
+                    }
+                    if (this->sample_category_enabled(sample_category::clock)) {
+                        if (header[i] == "Avg_MHz") {
+                            using vector_type = decltype(clock_samples_.clock_frequency_)::value_type;
+                            clock_samples_.clock_frequency_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
+                        } else if (header[i] == "Bzy_MHz") {
+                            using vector_type = decltype(clock_samples_.average_non_idle_clock_frequency_)::value_type;
+                            clock_samples_.average_non_idle_clock_frequency_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
+                        } else if (header[i] == "TSC_MHz") {
+                            using vector_type = decltype(clock_samples_.time_stamp_counter_)::value_type;
+                            clock_samples_.time_stamp_counter_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
+                        }
+                    }
+                    if (this->sample_category_enabled(sample_category::power)) {
+                        if (header[i] == "PkgWatt") {
+                            using vector_type = decltype(power_samples_.power_usage_)::value_type;
+                            power_samples_.power_usage_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
+                            // calculate total energy consumption
+                            using value_type = decltype(power_samples_.power_total_energy_consumption_)::value_type::value_type;
+                            const std::size_t num_time_points = this->sampling_time_points().size();
+                            const value_type time_difference = std::chrono::duration<value_type>(this->sampling_time_points()[num_time_points - 1] - this->sampling_time_points()[num_time_points - 2]).count();
+                            const auto current = power_samples_.power_usage_->back() * time_difference;
+                            power_samples_.power_total_energy_consumption_->push_back(power_samples_.power_total_energy_consumption_->back() + current);
+                        } else if (header[i] == "CorWatt") {
+                            using vector_type = decltype(power_samples_.core_watt_)::value_type;
+                            power_samples_.core_watt_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
+                        } else if (header[i] == "RAMWatt") {
+                            using vector_type = decltype(power_samples_.ram_watt_)::value_type;
+                            power_samples_.ram_watt_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
+                        } else if (header[i] == "PKG_%") {
+                            using vector_type = decltype(power_samples_.package_rapl_throttle_percent_)::value_type;
+                            power_samples_.package_rapl_throttle_percent_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
+                        } else if (header[i] == "RAM_%") {
+                            using vector_type = decltype(power_samples_.dram_rapl_throttle_percent_)::value_type;
+                            power_samples_.dram_rapl_throttle_percent_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
+                        }
+                    }
+                    if (this->sample_category_enabled(sample_category::temperature)) {
+                        if (header[i] == "CoreTmp") {
+                            using vector_type = decltype(temperature_samples_.core_temperature_)::value_type;
+                            temperature_samples_.core_temperature_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
+                        } else if (header[i] == "CoreThr") {
+                            using vector_type = decltype(temperature_samples_.core_throttle_percent_)::value_type;
+                            temperature_samples_.core_throttle_percent_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
+                        } else if (header[i] == "PkgTmp") {
+                            using vector_type = decltype(temperature_samples_.temperature_)::value_type;
+                            temperature_samples_.temperature_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
+                        }
+                    }
+                    if (this->sample_category_enabled(sample_category::gfx)) {
+                        if (header[i] == "GFX%rc6") {
+                            using vector_type = decltype(gfx_samples_.gfx_render_state_percent_)::value_type;
+                            gfx_samples_.gfx_render_state_percent_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
+                        } else if (header[i] == "GFXMHz") {
+                            using vector_type = decltype(gfx_samples_.gfx_frequency_)::value_type;
+                            gfx_samples_.gfx_frequency_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
+                        } else if (header[i] == "GFXAMHz") {
+                            using vector_type = decltype(gfx_samples_.average_gfx_frequency_)::value_type;
+                            gfx_samples_.average_gfx_frequency_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
+                        } else if (header[i] == "GFX%C0") {
+                            using vector_type = decltype(gfx_samples_.gfx_state_c0_percent_)::value_type;
+                            gfx_samples_.gfx_state_c0_percent_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
+                        } else if (header[i] == "CPUGFX%") {
+                            using vector_type = decltype(gfx_samples_.cpu_works_for_gpu_percent_)::value_type;
+                            gfx_samples_.cpu_works_for_gpu_percent_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
+                        } else if (header[i] == "GFXWatt") {
+                            using vector_type = decltype(gfx_samples_.gfx_watt_)::value_type;
+                            gfx_samples_.gfx_watt_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
+                        }
+                    }
+                    if (this->sample_category_enabled(sample_category::idle_state)) {
+                        if (header[i] == "Totl%C0") {
+                            using vector_type = decltype(idle_state_samples_.all_cpus_state_c0_percent_)::value_type;
+                            idle_state_samples_.all_cpus_state_c0_percent_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
+                        } else if (header[i] == "Any%C0") {
+                            using vector_type = decltype(idle_state_samples_.any_cpu_state_c0_percent_)::value_type;
+                            idle_state_samples_.any_cpu_state_c0_percent_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
+                        } else if (header[i] == "CPU%LPI") {
+                            using vector_type = decltype(idle_state_samples_.low_power_idle_state_percent_)::value_type;
+                            idle_state_samples_.low_power_idle_state_percent_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
+                        } else if (header[i] == "SYS%LPI") {
+                            using vector_type = decltype(idle_state_samples_.system_low_power_idle_state_percent_)::value_type;
+                            idle_state_samples_.system_low_power_idle_state_percent_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
+                        } else if (header[i] == "Pkg%LPI") {
+                            using vector_type = decltype(idle_state_samples_.package_low_power_idle_state_percent_)::value_type;
+                            idle_state_samples_.package_low_power_idle_state_percent_->push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
+                        } else {
+                            const std::string header_str{ header[i] };
+                            if (idle_state_samples_.idle_states_.value().count(header_str) > decltype(idle_state_samples_)::map_type::size_type{ 0 }) {
+                                using vector_type = cpu_idle_states_samples::map_type::mapped_type;
+                                idle_state_samples_.idle_states_.value()[header_str].push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
+                            }
                         }
                     }
                 }

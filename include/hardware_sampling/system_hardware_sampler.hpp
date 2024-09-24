@@ -13,6 +13,7 @@
 
 #include "hardware_sampling/event.hpp"             // hws::event
 #include "hardware_sampling/hardware_sampler.hpp"  // hws::hardware_sampler
+#include "hardware_sampling/sample_category.hpp"   // hws::sample_category
 
 #include <chrono>      // std::chrono::{milliseconds, steady_clock::time_point}
 #include <cstddef>     // std::size_t
@@ -31,13 +32,15 @@ class system_hardware_sampler {
   public:
     /**
      * @brief Construct hardware samplers with the default sampling interval.
+     * @param[in] category the sample categories that are enabled for hardware sampling (default: all)
      */
-    system_hardware_sampler();
+    explicit system_hardware_sampler(sample_category category = sample_category::all);
     /**
      * @brief Construct hardware samplers with the provided @p sampling_interval.
      * @param[in] sampling_interval the used sampling interval
+     * @param[in] category the sample categories that are enabled for hardware sampling (default: all)
      */
-    explicit system_hardware_sampler(std::chrono::milliseconds sampling_interval);
+    explicit system_hardware_sampler(std::chrono::milliseconds sampling_interval, sample_category category = sample_category::all);
 
     /**
      * @brief Delete the copy-constructor.

@@ -12,7 +12,8 @@
 #define HARDWARE_SAMPLING_HARDWARE_SAMPLER_HPP_
 #pragma once
 
-#include "hardware_sampling/event.hpp"  // hws::event
+#include "hardware_sampling/event.hpp"            // hws::event
+#include "hardware_sampling/sample_category.hpp"  // hws::sample_category
 
 #include <atomic>      // std::atomic
 #include <chrono>      // std::chrono::{system_clock::time_point, steady_clock::time_point, milliseconds}
@@ -32,8 +33,9 @@ class hardware_sampler {
     /**
      * @brief Construct a new hardware sampler with the provided @p sampling_interval.
      * @param[in] sampling_interval the used sampling interval
+     * @param[in] category the sample categories that are enabled for hardware sampling
      */
-    explicit hardware_sampler(std::chrono::milliseconds sampling_interval);
+    hardware_sampler(std::chrono::milliseconds sampling_interval, sample_category category);
 
     /**
      * @brief Delete the copy-constructor (already implicitly deleted due to the std::atomic member).
@@ -182,7 +184,14 @@ class hardware_sampler {
      * @brief Add a new time point to this hardware sampler. Called during the sampling loop.
      * @param time_point the new time point to add
      */
-    void add_time_point(const std::chrono::steady_clock::time_point time_point) { time_points_.push_back(time_point); }
+    void add_time_point(std::chrono::steady_clock::time_point time_point);
+
+    /**
+     * @brief Check whether the @p category is currently enabled for hardware sampling or not.
+     * @param[in] category the sample_category to check
+     * @return Returns `true` if @p category is enabled for sampling, otherwise `false` (`[[nodiscard]]`)
+     */
+    [[nodiscard]] bool sample_category_enabled(sample_category category) const noexcept;
 
   private:
     /// A boolean flag indicating whether the sampling has already started.
@@ -206,6 +215,9 @@ class hardware_sampler {
 
     /// The sampling interval of this hardware sampler.
     const std::chrono::milliseconds sampling_interval_{};
+
+    /// The bitmask of sample categories to use.
+    const sample_category sample_category_{};
 };
 
 }  // namespace hws

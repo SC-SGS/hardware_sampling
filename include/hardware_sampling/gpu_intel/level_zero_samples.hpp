@@ -54,7 +54,6 @@ class level_zero_general_samples {
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, vendor_id)           // the vendor ID
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, name)                // the model name of the device
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::vector<std::string>, flags)  // potential GPU flags (e.g. integrated device)
-
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, standby_mode)          // the enabled standby mode (power saving or never)
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::uint32_t, num_threads_per_eu)  // the number of threads per EU unit
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::uint32_t, eu_simd_width)       // the physical EU unit SIMD width

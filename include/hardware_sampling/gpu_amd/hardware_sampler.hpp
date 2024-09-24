@@ -14,6 +14,7 @@
 
 #include "hardware_sampling/gpu_amd/rocm_smi_samples.hpp"  // hws::{rocm_smi_general_samples, rocm_smi_clock_samples, rocm_smi_power_samples, rocm_smi_memory_samples, rocm_smi_temperature_samples}
 #include "hardware_sampling/hardware_sampler.hpp"          // hws::hardware_sampler
+#include "hardware_sampling/sample_category.hpp"           // hws::sample_category
 
 #include "fmt/ostream.h"  // fmt::formatter, fmt::ostream_formatter
 
@@ -36,27 +37,31 @@ class gpu_amd_hardware_sampler : public hardware_sampler {
     /**
      * @brief Construct a new AMD GPU hardware sampler for the default device with the default sampling interval.
      * @details If this is the first AMD GPU sampler, initializes the ROCm SMI environment.
+     * @param[in] category the sample categories that are enabled for hardware sampling (default: all)
      */
-    gpu_amd_hardware_sampler();
+    explicit gpu_amd_hardware_sampler(sample_category category = sample_category::all);
     /**
      * @brief Construct a new AMD GPU hardware sampler for device @p device_id with the default sampling interval.
      * @details If this is the first AMD GPU sampler, initializes the ROCm SMI environment.
      * @param[in] device_id the ID of the device to sample
+     * @param[in] category the sample categories that are enabled for hardware sampling (default: all)
      */
-    explicit gpu_amd_hardware_sampler(std::size_t device_id);
+    explicit gpu_amd_hardware_sampler(std::size_t device_id, sample_category category = sample_category::all);
     /**
      * @brief Construct a new AMD GPU hardware sampler for the default device with the @p sampling_interval.
      * @details If this is the first AMD GPU sampler, initializes the ROCm SMI environment.
      * @param[in] sampling_interval the used sampling interval
+     * @param[in] category the sample categories that are enabled for hardware sampling (default: all)
      */
-    explicit gpu_amd_hardware_sampler(std::chrono::milliseconds sampling_interval);
+    explicit gpu_amd_hardware_sampler(std::chrono::milliseconds sampling_interval, sample_category category = sample_category::all);
     /**
      * @brief Construct a new AMD GPU hardware sampler for device @p device_id with the @p sampling_interval.
      * @details If this is the first AMD GPU sampler, initializes the ROCm SMI environment.
      * @param[in] device_id the ID of the device to sample
      * @param[in] sampling_interval the used sampling interval
+     * @param[in] category the sample categories that are enabled for hardware sampling (default: all)
      */
-    gpu_amd_hardware_sampler(std::size_t device_id, std::chrono::milliseconds sampling_interval);
+    gpu_amd_hardware_sampler(std::size_t device_id, std::chrono::milliseconds sampling_interval, sample_category category = sample_category::all);
 
     /**
      * @brief Delete the copy-constructor (already implicitly deleted due to the base class's std::atomic member).

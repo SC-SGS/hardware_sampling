@@ -8,6 +8,7 @@
 #include "hardware_sampling/cpu/cpu_samples.hpp"       // hws::{cpu_general_samples, clock_samples, power_samples, memory_samples, temperature_samples, gfx_samples, idle_state_samples}
 #include "hardware_sampling/cpu/hardware_sampler.hpp"  // hws::cpu_hardware_sampler
 #include "hardware_sampling/hardware_sampler.hpp"      // hws::hardware_sampler
+#include "hardware_sampling/sample_category.hpp"       // hws::sample_category
 
 #include "fmt/format.h"         // fmt::format
 #include "pybind11/chrono.h"    // automatic bindings for std::chrono::milliseconds
@@ -126,7 +127,9 @@ void init_cpu_hardware_sampler(py::module_ &m) {
     // bind the CPU hardware sampler class
     py::class_<hws::cpu_hardware_sampler, hws::hardware_sampler>(m, "CpuHardwareSampler")
         .def(py::init<>(), "construct a new CPU hardware sampler")
+        .def(py::init<hws::sample_category>(), "construct a new CPU hardware sampler sampling only the provided sample_category samples")
         .def(py::init<std::chrono::milliseconds>(), "construct a new CPU hardware sampler specifying the used sampling interval")
+        .def(py::init<std::chrono::milliseconds, hws::sample_category>(), "construct a new CPU hardware sampler specifying the used sampling interval sampling only the provided sample_category samples")
         .def("general_samples", &hws::cpu_hardware_sampler::general_samples, "get all general samples")
         .def("clock_samples", &hws::cpu_hardware_sampler::clock_samples, "get all clock related samples")
         .def("power_samples", &hws::cpu_hardware_sampler::power_samples, "get all power related samples")

@@ -11,6 +11,7 @@
 #include "hardware_sampling/gpu_intel/level_zero_samples.hpp"             // hws::{level_zero_general_samples, level_zero_clock_samples, level_zero_power_samples, level_zero_memory_samples, level_zero_temperature_samples}
 #include "hardware_sampling/gpu_intel/utility.hpp"                        // HWS_LEVEL_ZERO_ERROR_CHECK
 #include "hardware_sampling/hardware_sampler.hpp"                         // hws::hardware_sampler
+#include "hardware_sampling/sample_category.hpp"                          // hws::sample_category
 #include "hardware_sampling/utility.hpp"                                  // hws::{durations_from_reference_time, join}
 
 #include "fmt/format.h"          // fmt::format
@@ -31,17 +32,17 @@
 
 namespace hws {
 
-gpu_intel_hardware_sampler::gpu_intel_hardware_sampler() :
-    gpu_intel_hardware_sampler{ 0, HWS_SAMPLING_INTERVAL } { }
+gpu_intel_hardware_sampler::gpu_intel_hardware_sampler(const sample_category category) :
+    gpu_intel_hardware_sampler{ 0, HWS_SAMPLING_INTERVAL, category } { }
 
-gpu_intel_hardware_sampler::gpu_intel_hardware_sampler(const std::size_t device_id) :
-    gpu_intel_hardware_sampler{ device_id, HWS_SAMPLING_INTERVAL } { }
+gpu_intel_hardware_sampler::gpu_intel_hardware_sampler(const std::size_t device_id, const sample_category category) :
+    gpu_intel_hardware_sampler{ device_id, HWS_SAMPLING_INTERVAL, category } { }
 
-gpu_intel_hardware_sampler::gpu_intel_hardware_sampler(const std::chrono::milliseconds sampling_interval) :
-    gpu_intel_hardware_sampler{ 0, sampling_interval } { }
+gpu_intel_hardware_sampler::gpu_intel_hardware_sampler(const std::chrono::milliseconds sampling_interval, const sample_category category) :
+    gpu_intel_hardware_sampler{ 0, sampling_interval, category } { }
 
-gpu_intel_hardware_sampler::gpu_intel_hardware_sampler(const std::size_t device_id, const std::chrono::milliseconds sampling_interval) :
-    hardware_sampler{ sampling_interval } {
+gpu_intel_hardware_sampler::gpu_intel_hardware_sampler(const std::size_t device_id, const std::chrono::milliseconds sampling_interval, const sample_category category) :
+    hardware_sampler{ sampling_interval, category } {
     // make sure that zeInit is only called once for all instances
     if (instances_++ == 0) {
         HWS_LEVEL_ZERO_ERROR_CHECK(zeInit(ZE_INIT_FLAG_GPU_ONLY))
@@ -90,7 +91,7 @@ void gpu_intel_hardware_sampler::sampling_loop() {
     double initial_total_power_consumption{};  // initial total power consumption in J
 
     // retrieve initial general information
-    {
+    if (this->sample_category_enabled(sample_category::general)) {
         // the byte order is given by Intel directly
         general_samples_.byte_order_ = "Little Endian";
 
@@ -137,7 +138,7 @@ void gpu_intel_hardware_sampler::sampling_loop() {
     }
 
     // retrieve initial clock related information
-    {
+    if (this->sample_category_enabled(sample_category::clock)) {
         std::uint32_t num_frequency_domains{ 0 };
         if (zesDeviceEnumFrequencyDomains(device, &num_frequency_domains, nullptr) == ZE_RESULT_SUCCESS) {
             frequency_handles.resize(num_frequency_domains);
@@ -226,7 +227,7 @@ void gpu_intel_hardware_sampler::sampling_loop() {
     }
 
     // retrieve initial power related information
-    {
+    if (this->sample_category_enabled(sample_category::power)) {
         std::uint32_t num_power_domains{ 0 };
         if (zesDeviceEnumPowerDomains(device, &num_power_domains, nullptr) == ZE_RESULT_SUCCESS) {
             power_handles.resize(num_power_domains);
@@ -281,7 +282,7 @@ void gpu_intel_hardware_sampler::sampling_loop() {
     }
 
     // retrieve initial memory related information
-    {
+    if (this->sample_category_enabled(sample_category::memory)) {
         std::uint32_t num_memory_modules{ 0 };
         if (zesDeviceEnumMemoryModules(device, &num_memory_modules, nullptr) == ZE_RESULT_SUCCESS) {
             memory_handles.resize(num_memory_modules);
@@ -378,7 +379,7 @@ void gpu_intel_hardware_sampler::sampling_loop() {
     }
 
     // retrieve initial temperature related information
-    {
+    if (this->sample_category_enabled(sample_category::temperature)) {
         std::uint32_t num_fans{ 0 };
         if (zesDeviceEnumFans(device, &num_fans, nullptr) == ZE_RESULT_SUCCESS) {
             temperature_samples_.num_fans_ = num_fans;
@@ -503,7 +504,7 @@ void gpu_intel_hardware_sampler::sampling_loop() {
             this->add_time_point(std::chrono::steady_clock::now());
 
             // retrieve clock related samples
-            {
+            if (this->sample_category_enabled(sample_category::clock)) {
                 for (zes_freq_handle_t handle : frequency_handles) {
                     // get frequency properties
                     zes_freq_properties_t prop{};
@@ -550,7 +551,7 @@ void gpu_intel_hardware_sampler::sampling_loop() {
             }
 
             // retrieve power related samples
-            {
+            if (this->sample_category_enabled(sample_category::power)) {
                 if (!power_handles.empty()) {
                     // NOTE: only the first power domain is used here
                     if (power_samples_.power_total_energy_consumption_.has_value()) {
@@ -572,7 +573,7 @@ void gpu_intel_hardware_sampler::sampling_loop() {
             }
 
             // retrieve memory related samples
-            {
+            if (this->sample_category_enabled(sample_category::memory)) {
                 for (zes_mem_handle_t handle : memory_handles) {
                     zes_mem_properties_t prop{};
                     HWS_LEVEL_ZERO_ERROR_CHECK(zesMemoryGetProperties(handle, &prop))
@@ -610,7 +611,7 @@ void gpu_intel_hardware_sampler::sampling_loop() {
             }
 
             // retrieve temperature related samples
-            {
+            if (this->sample_category_enabled(sample_category::temperature)) {
                 if (!psu_handles.empty()) {
                     if (temperature_samples_.psu_temperature_.has_value()) {
                         // NOTE: only the first PSU is used here

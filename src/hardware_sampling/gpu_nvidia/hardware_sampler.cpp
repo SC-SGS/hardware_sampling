@@ -11,6 +11,7 @@
 #include "hardware_sampling/gpu_nvidia/nvml_samples.hpp"             // hws::{nvml_general_samples, nvml_clock_samples, nvml_power_samples, nvml_memory_samples, nvml_temperature_samples}
 #include "hardware_sampling/gpu_nvidia/utility.hpp"                  // HWS_NVML_ERROR_CHECK
 #include "hardware_sampling/hardware_sampler.hpp"                    // hws::hardware_sampler
+#include "hardware_sampling/sample_category.hpp"                     // hws::sample_category
 #include "hardware_sampling/utility.hpp"                             // hws::detail::time_points_to_epoch
 
 #include "fmt/format.h"  // fmt::format
@@ -33,17 +34,17 @@
 
 namespace hws {
 
-gpu_nvidia_hardware_sampler::gpu_nvidia_hardware_sampler() :
-    gpu_nvidia_hardware_sampler{ 0, HWS_SAMPLING_INTERVAL } { }
+gpu_nvidia_hardware_sampler::gpu_nvidia_hardware_sampler(const sample_category category) :
+    gpu_nvidia_hardware_sampler{ 0, HWS_SAMPLING_INTERVAL, category } { }
 
-gpu_nvidia_hardware_sampler::gpu_nvidia_hardware_sampler(const std::size_t device_id) :
-    gpu_nvidia_hardware_sampler{ device_id, HWS_SAMPLING_INTERVAL } { }
+gpu_nvidia_hardware_sampler::gpu_nvidia_hardware_sampler(const std::size_t device_id, const sample_category category) :
+    gpu_nvidia_hardware_sampler{ device_id, HWS_SAMPLING_INTERVAL, category } { }
 
-gpu_nvidia_hardware_sampler::gpu_nvidia_hardware_sampler(const std::chrono::milliseconds sampling_interval) :
-    gpu_nvidia_hardware_sampler{ 0, sampling_interval } { }
+gpu_nvidia_hardware_sampler::gpu_nvidia_hardware_sampler(const std::chrono::milliseconds sampling_interval, const sample_category category) :
+    gpu_nvidia_hardware_sampler{ 0, sampling_interval, category } { }
 
-gpu_nvidia_hardware_sampler::gpu_nvidia_hardware_sampler(const std::size_t device_id, const std::chrono::milliseconds sampling_interval) :
-    hardware_sampler{ sampling_interval } {
+gpu_nvidia_hardware_sampler::gpu_nvidia_hardware_sampler(const std::size_t device_id, const std::chrono::milliseconds sampling_interval, const sample_category category) :
+    hardware_sampler{ sampling_interval, category } {
     // make sure that nvmlInit is only called once for all instances
     if (instances_++ == 0) {
         HWS_NVML_ERROR_CHECK(nvmlInit())
@@ -91,7 +92,7 @@ void gpu_nvidia_hardware_sampler::sampling_loop() {
     double initial_total_power_consumption{};  // initial total power consumption in J
 
     // retrieve initial general information
-    {
+    if (this->sample_category_enabled(sample_category::general)) {
         // fixed information -> only retrieved once
         nvmlDeviceArchitecture_t device_arch{};
         if (nvmlDeviceGetArchitecture(device, &device_arch) == NVML_SUCCESS) {
@@ -186,7 +187,7 @@ void gpu_nvidia_hardware_sampler::sampling_loop() {
     }
 
     // retrieve initial clock related information
-    {
+    if (this->sample_category_enabled(sample_category::clock)) {
         // fixed information -> only retrieved once
         unsigned int adaptive_clock_status{};
         if (nvmlDeviceGetAdaptiveClockInfoStatus(device, &adaptive_clock_status) == NVML_SUCCESS) {
@@ -278,7 +279,7 @@ void gpu_nvidia_hardware_sampler::sampling_loop() {
     }
 
     // retrieve initial power related information
-    {
+    if (this->sample_category_enabled(sample_category::power)) {
         // fixed information -> only retrieved once
         nvmlEnableState_t mode{};
         if (nvmlDeviceGetPowerManagementMode(device, &mode) == NVML_SUCCESS) {
@@ -334,7 +335,7 @@ void gpu_nvidia_hardware_sampler::sampling_loop() {
     }
 
     // retrieve initial memory related information
-    {
+    if (this->sample_category_enabled(sample_category::memory)) {
         // fixed information -> only retrieved once
         nvmlMemory_t memory_info{};
         if (nvmlDeviceGetMemoryInfo(device, &memory_info) == NVML_SUCCESS) {
@@ -377,7 +378,7 @@ void gpu_nvidia_hardware_sampler::sampling_loop() {
     }
 
     // retrieve initial temperature related information
-    {
+    if (this->sample_category_enabled(sample_category::temperature)) {
         // fixed information -> only retrieved once
         decltype(temperature_samples_.num_fans_)::value_type num_fans{};
         if (nvmlDeviceGetNumFans(device, &num_fans) == NVML_SUCCESS) {
@@ -426,7 +427,7 @@ void gpu_nvidia_hardware_sampler::sampling_loop() {
             this->add_time_point(std::chrono::steady_clock::now());
 
             // retrieve general samples
-            {
+            if (this->sample_category_enabled(sample_category::general)) {
                 if (general_samples_.performance_level_.has_value()) {
                     nvmlPstates_t pstate{};
                     HWS_NVML_ERROR_CHECK(nvmlDeviceGetPerformanceState(device, &pstate))
@@ -442,7 +443,7 @@ void gpu_nvidia_hardware_sampler::sampling_loop() {
             }
 
             // retrieve clock related samples
-            {
+            if (this->sample_category_enabled(sample_category::clock)) {
                 if (clock_samples_.clock_frequency_.has_value()) {
                     unsigned int value{};
                     HWS_NVML_ERROR_CHECK(nvmlDeviceGetClockInfo(device, NVML_CLOCK_GRAPHICS, &value))
@@ -476,7 +477,7 @@ void gpu_nvidia_hardware_sampler::sampling_loop() {
             }
 
             // retrieve power related information
-            {
+            if (this->sample_category_enabled(sample_category::power)) {
                 if (power_samples_.power_profile_.has_value()) {
                     nvmlPstates_t pstate{};
                     HWS_NVML_ERROR_CHECK(nvmlDeviceGetPowerState(device, &pstate))
@@ -497,7 +498,7 @@ void gpu_nvidia_hardware_sampler::sampling_loop() {
             }
 
             // retrieve memory related information
-            {
+            if (this->sample_category_enabled(sample_category::memory)) {
                 if (memory_samples_.memory_free_.has_value() && memory_samples_.memory_used_.has_value()) {
                     nvmlMemory_t memory_info{};
                     HWS_NVML_ERROR_CHECK(nvmlDeviceGetMemoryInfo(device, &memory_info))
@@ -519,7 +520,7 @@ void gpu_nvidia_hardware_sampler::sampling_loop() {
             }
 
             // retrieve temperature related information
-            {
+            if (this->sample_category_enabled(sample_category::temperature)) {
                 if (temperature_samples_.fan_speed_percentage_.has_value()) {
                     unsigned int value{};
                     HWS_NVML_ERROR_CHECK(nvmlDeviceGetFanSpeed(device, &value))

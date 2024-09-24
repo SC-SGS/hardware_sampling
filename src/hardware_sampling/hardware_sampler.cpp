@@ -10,9 +10,9 @@
 #include "hardware_sampling/event.hpp"    // hws::event
 #include "hardware_sampling/utility.hpp"  // hws::detail::durations_from_reference_time
 
+#include "fmt/chrono.h"  // direct formatting of std::chrono types
 #include "fmt/format.h"  // fmt::format
 #include "fmt/ranges.h"  // fmt::join
-#include "fmt/chrono.h"  // direct formatting of std::chrono types
 
 #include <chrono>     // std::chrono::{system_clock, steady_clock, duration_cast, milliseconds}
 #include <cstddef>    // std::size_t
@@ -25,8 +25,9 @@
 
 namespace hws {
 
-hardware_sampler::hardware_sampler(const std::chrono::milliseconds sampling_interval) :
-    sampling_interval_{ sampling_interval } { }
+hardware_sampler::hardware_sampler(const std::chrono::milliseconds sampling_interval, const sample_category category) :
+    sampling_interval_{ sampling_interval },
+    sample_category_{ category } { }
 
 hardware_sampler::~hardware_sampler() = default;
 
@@ -168,6 +169,14 @@ void hardware_sampler::dump_yaml(const std::string &filename) const {
 
 void hardware_sampler::dump_yaml(const std::filesystem::path &filename) const {
     this->dump_yaml(filename.string().c_str());
+}
+
+void hardware_sampler::add_time_point(const std::chrono::steady_clock::time_point time_point) {
+    time_points_.push_back(time_point);
+}
+
+bool hardware_sampler::sample_category_enabled(const sample_category category) const noexcept {
+    return static_cast<int>(this->sample_category_ & category) != 0;
 }
 
 }  // namespace hws

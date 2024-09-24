@@ -10,6 +10,7 @@
 #include "hardware_sampling/gpu_amd/rocm_smi_samples.hpp"  // hws::{rocm_smi_general_samples, rocm_smi_clock_samples, rocm_smi_power_samples, rocm_smi_memory_samples, rocm_smi_temperature_samples}
 #include "hardware_sampling/gpu_amd/utility.hpp"           // hws::detail::performance_level_to_string, HWS_ROCM_SMI_ERROR_CHECK
 #include "hardware_sampling/hardware_sampler.hpp"          // hws::hardware_sampler
+#include "hardware_sampling/sample_category.hpp"           // hws::sample_category
 #include "hardware_sampling/utility.hpp"                   // hws::detail::time_points_to_epoch
 
 #include "fmt/format.h"           // fmt::format
@@ -33,17 +34,17 @@
 
 namespace hws {
 
-gpu_amd_hardware_sampler::gpu_amd_hardware_sampler() :
-    gpu_amd_hardware_sampler{ 0, HWS_SAMPLING_INTERVAL } { }
+gpu_amd_hardware_sampler::gpu_amd_hardware_sampler(const sample_category category) :
+    gpu_amd_hardware_sampler{ 0, HWS_SAMPLING_INTERVAL, category } { }
 
-gpu_amd_hardware_sampler::gpu_amd_hardware_sampler(const std::size_t device_id) :
-    gpu_amd_hardware_sampler{ device_id, HWS_SAMPLING_INTERVAL } { }
+gpu_amd_hardware_sampler::gpu_amd_hardware_sampler(const std::size_t device_id, const sample_category category) :
+    gpu_amd_hardware_sampler{ device_id, HWS_SAMPLING_INTERVAL, category } { }
 
-gpu_amd_hardware_sampler::gpu_amd_hardware_sampler(const std::chrono::milliseconds sampling_interval) :
-    gpu_amd_hardware_sampler{ 0, sampling_interval } { }
+gpu_amd_hardware_sampler::gpu_amd_hardware_sampler(const std::chrono::milliseconds sampling_interval, const sample_category category) :
+    gpu_amd_hardware_sampler{ 0, sampling_interval, category } { }
 
-gpu_amd_hardware_sampler::gpu_amd_hardware_sampler(const std::size_t device_id, const std::chrono::milliseconds sampling_interval) :
-    hardware_sampler{ sampling_interval },
+gpu_amd_hardware_sampler::gpu_amd_hardware_sampler(const std::size_t device_id, const std::chrono::milliseconds sampling_interval, const sample_category category) :
+    hardware_sampler{ sampling_interval, category },
     device_id_{ static_cast<std::uint32_t>(device_id) } {
     // make sure that rsmi_init is only called once for all instances
     if (instances_++ == 0) {
@@ -86,7 +87,7 @@ void gpu_amd_hardware_sampler::sampling_loop() {
     double initial_total_power_consumption{};  // initial total power consumption in J
 
     // retrieve initial general information
-    {
+    if (this->sample_category_enabled(sample_category::general)) {
         // fixed information -> only retrieved once
         // the byte order is given by AMD directly
         general_samples_.byte_order_ = "Little Endian";
@@ -125,51 +126,51 @@ void gpu_amd_hardware_sampler::sampling_loop() {
     }
 
     // retrieve initial clock related information
-    {
+    if (this->sample_category_enabled(sample_category::clock)) {
         rsmi_frequencies_t frequency_info{};
         if (rsmi_dev_gpu_clk_freq_get(device_id_, RSMI_CLK_TYPE_SYS, &frequency_info) == RSMI_STATUS_SUCCESS) {
-            clock_samples_.clock_frequency_min_ = static_cast<decltype(clock_samples_.clock_frequency_min_)::value_type>(frequency_info.frequency[0]) / 1000.0 / 1000.0;
-            clock_samples_.clock_frequency_max_ = static_cast<decltype(clock_samples_.clock_frequency_max_)::value_type>(frequency_info.frequency[frequency_info.num_supported - 1]) / 1000.0 / 1000.0;
+            clock_samples_.clock_frequency_min_ = static_cast<decltype(clock_samples_.clock_frequency_min_)::value_type>(frequency_info.frequency[0]) / 1000'000.0;
+            clock_samples_.clock_frequency_max_ = static_cast<decltype(clock_samples_.clock_frequency_max_)::value_type>(frequency_info.frequency[frequency_info.num_supported - 1]) / 1000'000.0;
             decltype(clock_samples_.available_clock_frequencies_)::value_type frequencies{};
             for (std::size_t i = 0; i < frequency_info.num_supported; ++i) {
-                frequencies.push_back(static_cast<decltype(frequencies)::value_type>(frequency_info.frequency[i]) / 1000.0 / 1000.0);
+                frequencies.push_back(static_cast<decltype(frequencies)::value_type>(frequency_info.frequency[i]) / 1000'000.0);
             }
             clock_samples_.available_clock_frequencies_ = frequencies;
 
             // queried samples -> retrieved every iteration if available
             clock_samples_.clock_frequency_ = decltype(clock_samples_.clock_frequency_)::value_type{};
             if (frequency_info.current < RSMI_MAX_NUM_FREQUENCIES) {
-                clock_samples_.clock_frequency_->push_back(static_cast<decltype(clock_samples_.clock_frequency_)::value_type::value_type>(frequency_info.frequency[frequency_info.current]) / 1000.0 / 1000.0);
+                clock_samples_.clock_frequency_->push_back(static_cast<decltype(clock_samples_.clock_frequency_)::value_type::value_type>(frequency_info.frequency[frequency_info.current]) / 1000'000.0);
             } else {
                 clock_samples_.clock_frequency_->push_back(0);
             }
         }
 
         if (rsmi_dev_gpu_clk_freq_get(device_id_, RSMI_CLK_TYPE_SOC, &frequency_info) == RSMI_STATUS_SUCCESS) {
-            clock_samples_.socket_clock_frequency_min_ = static_cast<decltype(clock_samples_.socket_clock_frequency_min_)::value_type>(frequency_info.frequency[0]) / 1000.0 / 1000.0;
-            clock_samples_.socket_clock_frequency_max_ = static_cast<decltype(clock_samples_.socket_clock_frequency_max_)::value_type>(frequency_info.frequency[frequency_info.num_supported - 1]) / 1000.0 / 1000.0;
+            clock_samples_.socket_clock_frequency_min_ = static_cast<decltype(clock_samples_.socket_clock_frequency_min_)::value_type>(frequency_info.frequency[0]) / 1000'000.0;
+            clock_samples_.socket_clock_frequency_max_ = static_cast<decltype(clock_samples_.socket_clock_frequency_max_)::value_type>(frequency_info.frequency[frequency_info.num_supported - 1]) / 1000'000.0;
             // queried samples -> retrieved every iteration if available
             clock_samples_.socket_clock_frequency_ = decltype(clock_samples_.socket_clock_frequency_)::value_type{};
             if (frequency_info.current < RSMI_MAX_NUM_FREQUENCIES) {
-                clock_samples_.socket_clock_frequency_->push_back(static_cast<decltype(clock_samples_.socket_clock_frequency_)::value_type::value_type>(frequency_info.frequency[frequency_info.current]) / 1000.0 / 1000.0);
+                clock_samples_.socket_clock_frequency_->push_back(static_cast<decltype(clock_samples_.socket_clock_frequency_)::value_type::value_type>(frequency_info.frequency[frequency_info.current]) / 1000'000.0);
             } else {
                 clock_samples_.socket_clock_frequency_->push_back(0);
             }
         }
 
         if (rsmi_dev_gpu_clk_freq_get(device_id_, RSMI_CLK_TYPE_MEM, &frequency_info) == RSMI_STATUS_SUCCESS) {
-            clock_samples_.memory_clock_frequency_min_ = static_cast<decltype(clock_samples_.memory_clock_frequency_min_)::value_type>(frequency_info.frequency[0]) / 1000.0 / 1000.0;
-            clock_samples_.memory_clock_frequency_max_ = static_cast<decltype(clock_samples_.memory_clock_frequency_max_)::value_type>(frequency_info.frequency[frequency_info.num_supported - 1]) / 1000.0 / 1000.0;
+            clock_samples_.memory_clock_frequency_min_ = static_cast<decltype(clock_samples_.memory_clock_frequency_min_)::value_type>(frequency_info.frequency[0]) / 1000'000.0;
+            clock_samples_.memory_clock_frequency_max_ = static_cast<decltype(clock_samples_.memory_clock_frequency_max_)::value_type>(frequency_info.frequency[frequency_info.num_supported - 1]) / 1000'000.0;
             decltype(clock_samples_.available_memory_clock_frequencies_)::value_type frequencies{};
             for (std::size_t i = 0; i < frequency_info.num_supported; ++i) {
-                frequencies.push_back(static_cast<decltype(frequencies)::value_type>(frequency_info.frequency[i]) / 1000.0 / 1000.0);
+                frequencies.push_back(static_cast<decltype(frequencies)::value_type>(frequency_info.frequency[i]) / 1000'000.0);
             }
             clock_samples_.available_memory_clock_frequencies_ = frequencies;
 
             // queried samples -> retrieved every iteration if available
             clock_samples_.memory_clock_frequency_ = decltype(clock_samples_.memory_clock_frequency_)::value_type{};
             if (frequency_info.current < RSMI_MAX_NUM_FREQUENCIES) {
-                clock_samples_.memory_clock_frequency_->push_back(static_cast<decltype(clock_samples_.memory_clock_frequency_)::value_type::value_type>(frequency_info.frequency[frequency_info.current]) / 1000.0 / 1000.0);
+                clock_samples_.memory_clock_frequency_->push_back(static_cast<decltype(clock_samples_.memory_clock_frequency_)::value_type::value_type>(frequency_info.frequency[frequency_info.current]) / 1000'000.0);
             } else {
                 clock_samples_.memory_clock_frequency_->push_back(0);
             }
@@ -188,15 +189,15 @@ void gpu_amd_hardware_sampler::sampling_loop() {
     }
 
     // retrieve initial power related information
-    {
+    if (this->sample_category_enabled(sample_category::power)) {
         std::uint64_t power_default_cap{};
         if (rsmi_dev_power_cap_default_get(device_id_, &power_default_cap) == RSMI_STATUS_SUCCESS) {
-            power_samples_.power_management_limit_ = static_cast<decltype(power_samples_.power_management_limit_)::value_type>(power_default_cap) / 1000.0 / 1000.0;
+            power_samples_.power_management_limit_ = static_cast<decltype(power_samples_.power_management_limit_)::value_type>(power_default_cap) / 1000'000.0;
         }
 
         std::uint64_t power_cap{};
         if (rsmi_dev_power_cap_get(device_id_, std::uint32_t{ 0 }, &power_cap) == RSMI_STATUS_SUCCESS) {
-            power_samples_.power_enforced_limit_ = static_cast<decltype(power_samples_.power_enforced_limit_)::value_type>(power_cap) / 1000.0 / 1000.0;
+            power_samples_.power_enforced_limit_ = static_cast<decltype(power_samples_.power_enforced_limit_)::value_type>(power_cap) / 1000'000.0;
         }
 
         {
@@ -215,7 +216,7 @@ void gpu_amd_hardware_sampler::sampling_loop() {
                         break;
                 }
                 // report power usage since the first sample
-                power_samples_.power_usage_ = decltype(power_samples_.power_usage_)::value_type{ static_cast<decltype(power_samples_.power_usage_)::value_type::value_type>(power_usage) / 1000.0 / 1000.0 };
+                power_samples_.power_usage_ = decltype(power_samples_.power_usage_)::value_type{ static_cast<decltype(power_samples_.power_usage_)::value_type::value_type>(power_usage) / 1000'000.0 };
             }
         }
 
@@ -281,7 +282,7 @@ void gpu_amd_hardware_sampler::sampling_loop() {
         std::uint64_t power_total_energy_consumption{};
         if (rsmi_dev_energy_count_get(device_id_, &power_total_energy_consumption, &resolution, &timestamp) == RSMI_STATUS_SUCCESS) {
             const auto scaled_value = static_cast<decltype(power_samples_.power_total_energy_consumption_)::value_type::value_type>(power_total_energy_consumption) * static_cast<decltype(power_samples_.power_total_energy_consumption_)::value_type::value_type>(resolution);
-            initial_total_power_consumption = scaled_value / 1000.0 / 1000.0;
+            initial_total_power_consumption = scaled_value / 1000'000.0;
             power_samples_.power_total_energy_consumption_ = decltype(power_samples_.power_total_energy_consumption_)::value_type{ 0.0 };
         } else if (power_samples_.power_usage_.has_value()) {
             // if the total energy consumption cannot be retrieved, but the current power draw, approximate it
@@ -290,7 +291,7 @@ void gpu_amd_hardware_sampler::sampling_loop() {
     }
 
     // retrieve initial memory related information
-    {
+    if (this->sample_category_enabled(sample_category::memory)) {
         decltype(memory_samples_.memory_total_)::value_type memory_total{};
         if (rsmi_dev_memory_total_get(device_id_, RSMI_MEM_TYPE_VRAM, &memory_total) == RSMI_STATUS_SUCCESS) {
             memory_samples_.memory_total_ = memory_total;
@@ -305,14 +306,14 @@ void gpu_amd_hardware_sampler::sampling_loop() {
         if (rsmi_dev_pci_bandwidth_get(device_id_, &bandwidth_info) == RSMI_STATUS_SUCCESS) {
             memory_samples_.num_pcie_lanes_min_ = bandwidth_info.lanes[0];
             memory_samples_.num_pcie_lanes_max_ = bandwidth_info.lanes[bandwidth_info.transfer_rate.num_supported - 1];
-            memory_samples_.pcie_link_transfer_rate_min_ = bandwidth_info.transfer_rate.frequency[0] / 1000000;
-            memory_samples_.pcie_link_transfer_rate_max_ = bandwidth_info.transfer_rate.frequency[bandwidth_info.transfer_rate.num_supported - 1] / 1000000;
+            memory_samples_.pcie_link_transfer_rate_min_ = bandwidth_info.transfer_rate.frequency[0] / 1'000'000;
+            memory_samples_.pcie_link_transfer_rate_max_ = bandwidth_info.transfer_rate.frequency[bandwidth_info.transfer_rate.num_supported - 1] / 1'000'000;
 
             // queried samples -> retrieved every iteration if available
             memory_samples_.pcie_link_transfer_rate_ = decltype(memory_samples_.pcie_link_transfer_rate_)::value_type{};
             memory_samples_.num_pcie_lanes_ = decltype(memory_samples_.num_pcie_lanes_)::value_type{};
             if (bandwidth_info.transfer_rate.current < RSMI_MAX_NUM_FREQUENCIES) {
-                memory_samples_.pcie_link_transfer_rate_->push_back(bandwidth_info.transfer_rate.frequency[bandwidth_info.transfer_rate.current] / 1000000);
+                memory_samples_.pcie_link_transfer_rate_->push_back(bandwidth_info.transfer_rate.frequency[bandwidth_info.transfer_rate.current] / 1'000'000);
                 memory_samples_.num_pcie_lanes_->push_back(bandwidth_info.lanes[bandwidth_info.transfer_rate.current]);
             } else {
                 // the current index is (somehow) wrong
@@ -332,14 +333,13 @@ void gpu_amd_hardware_sampler::sampling_loop() {
     }
 
     // retrieve fixed temperature related information
-    {
+    if (this->sample_category_enabled(sample_category::temperature)) {
         std::uint32_t fan_id{ 0 };
         std::int64_t fan_speed{};
         while (rsmi_dev_fan_speed_get(device_id_, fan_id, &fan_speed) == RSMI_STATUS_SUCCESS) {
             if (fan_id == 0) {
                 // queried samples -> retrieved every iteration if available
-                const auto percentage = static_cast<decltype(temperature_samples_.fan_speed_percentage_)::value_type::value_type>(fan_speed) /
-                                        static_cast<decltype(temperature_samples_.fan_speed_percentage_)::value_type::value_type>(RSMI_MAX_FAN_SPEED);
+                const auto percentage = static_cast<decltype(temperature_samples_.fan_speed_percentage_)::value_type::value_type>(fan_speed) / static_cast<decltype(temperature_samples_.fan_speed_percentage_)::value_type::value_type>(RSMI_MAX_FAN_SPEED);
                 temperature_samples_.fan_speed_percentage_ = decltype(temperature_samples_.fan_speed_percentage_)::value_type{ percentage };
             }
             ++fan_id;
@@ -469,7 +469,7 @@ void gpu_amd_hardware_sampler::sampling_loop() {
             this->add_time_point(std::chrono::steady_clock::now());
 
             // retrieve general samples
-            {
+            if (this->sample_category_enabled(sample_category::general)) {
                 if (general_samples_.performance_level_.has_value()) {
                     rsmi_dev_perf_level_t pstate{};
                     HWS_ROCM_SMI_ERROR_CHECK(rsmi_dev_perf_level_get(device_id_, &pstate))
@@ -490,12 +490,12 @@ void gpu_amd_hardware_sampler::sampling_loop() {
             }
 
             // retrieve clock related samples
-            {
+            if (this->sample_category_enabled(sample_category::clock)) {
                 if (clock_samples_.clock_frequency_.has_value()) {
                     rsmi_frequencies_t frequency_info{};
                     HWS_ROCM_SMI_ERROR_CHECK(rsmi_dev_gpu_clk_freq_get(device_id_, RSMI_CLK_TYPE_SYS, &frequency_info))
                     if (frequency_info.current < RSMI_MAX_NUM_FREQUENCIES) {
-                        clock_samples_.clock_frequency_->push_back(static_cast<decltype(clock_samples_.clock_frequency_)::value_type::value_type>(frequency_info.frequency[frequency_info.current]) / 1000.0 / 1000.0);
+                        clock_samples_.clock_frequency_->push_back(static_cast<decltype(clock_samples_.clock_frequency_)::value_type::value_type>(frequency_info.frequency[frequency_info.current]) / 1000'000.0);
                     } else {
                         // the current index is (somehow) wrong
                         clock_samples_.clock_frequency_->push_back(0);
@@ -506,7 +506,7 @@ void gpu_amd_hardware_sampler::sampling_loop() {
                     rsmi_frequencies_t frequency_info{};
                     HWS_ROCM_SMI_ERROR_CHECK(rsmi_dev_gpu_clk_freq_get(device_id_, RSMI_CLK_TYPE_SOC, &frequency_info))
                     if (frequency_info.current < RSMI_MAX_NUM_FREQUENCIES) {
-                        clock_samples_.socket_clock_frequency_->push_back(static_cast<decltype(clock_samples_.socket_clock_frequency_)::value_type::value_type>(frequency_info.frequency[frequency_info.current]) / 1000.0 / 1000.0);
+                        clock_samples_.socket_clock_frequency_->push_back(static_cast<decltype(clock_samples_.socket_clock_frequency_)::value_type::value_type>(frequency_info.frequency[frequency_info.current]) / 1000'000.0);
                     } else {
                         // the current index is (somehow) wrong
                         clock_samples_.socket_clock_frequency_->push_back(0);
@@ -517,7 +517,7 @@ void gpu_amd_hardware_sampler::sampling_loop() {
                     rsmi_frequencies_t frequency_info{};
                     HWS_ROCM_SMI_ERROR_CHECK(rsmi_dev_gpu_clk_freq_get(device_id_, RSMI_CLK_TYPE_MEM, &frequency_info))
                     if (frequency_info.current < RSMI_MAX_NUM_FREQUENCIES) {
-                        clock_samples_.memory_clock_frequency_->push_back(static_cast<decltype(clock_samples_.memory_clock_frequency_)::value_type::value_type>(frequency_info.frequency[frequency_info.current]) / 1000.0 / 1000.0);
+                        clock_samples_.memory_clock_frequency_->push_back(static_cast<decltype(clock_samples_.memory_clock_frequency_)::value_type::value_type>(frequency_info.frequency[frequency_info.current]) / 1000'000.0);
                     } else {
                         // the current index is (somehow) wrong
                         clock_samples_.memory_clock_frequency_->push_back(0);
@@ -538,12 +538,12 @@ void gpu_amd_hardware_sampler::sampling_loop() {
             }
 
             // retrieve power related samples
-            {
+            if (this->sample_category_enabled(sample_category::power)) {
                 if (power_samples_.power_usage_.has_value()) {
                     [[maybe_unused]] RSMI_POWER_TYPE power_type{};
                     std::uint64_t value{};
                     HWS_ROCM_SMI_ERROR_CHECK(rsmi_dev_power_get(device_id_, &value, &power_type))
-                    power_samples_.power_usage_->push_back(static_cast<decltype(power_samples_.power_usage_)::value_type::value_type>(value) / 1000.0 / 1000.0);
+                    power_samples_.power_usage_->push_back(static_cast<decltype(power_samples_.power_usage_)::value_type::value_type>(value) / 1000'000.0);
                 }
 
                 if (power_samples_.power_total_energy_consumption_.has_value()) {
@@ -552,7 +552,7 @@ void gpu_amd_hardware_sampler::sampling_loop() {
                     std::uint64_t value{};
                     if (rsmi_dev_energy_count_get(device_id_, &value, &resolution, &timestamp) == RSMI_STATUS_SUCCESS) {
                         const auto scaled_value = static_cast<decltype(power_samples_.power_total_energy_consumption_)::value_type::value_type>(value) * static_cast<decltype(power_samples_.power_total_energy_consumption_)::value_type::value_type>(resolution);
-                        power_samples_.power_total_energy_consumption_->push_back((scaled_value / 1000.0 / 1000.0) - initial_total_power_consumption);
+                        power_samples_.power_total_energy_consumption_->push_back((scaled_value / 1000'000.0) - initial_total_power_consumption);
                     } else if (power_samples_.power_usage_.has_value()) {
                         // if the total energy consumption cannot be retrieved, but the current power draw, approximate it
                         const std::size_t num_time_points = this->sampling_time_points().size();
@@ -595,7 +595,7 @@ void gpu_amd_hardware_sampler::sampling_loop() {
             }
 
             // retrieve memory related samples
-            {
+            if (this->sample_category_enabled(sample_category::memory)) {
                 if (memory_samples_.memory_used_.has_value()) {
                     decltype(memory_samples_.memory_used_)::value_type::value_type value{};
                     HWS_ROCM_SMI_ERROR_CHECK(rsmi_dev_memory_usage_get(device_id_, RSMI_MEM_TYPE_VRAM, &value))
@@ -609,7 +609,7 @@ void gpu_amd_hardware_sampler::sampling_loop() {
                     rsmi_pcie_bandwidth_t bandwidth_info{};
                     HWS_ROCM_SMI_ERROR_CHECK(rsmi_dev_pci_bandwidth_get(device_id_, &bandwidth_info))
                     if (bandwidth_info.transfer_rate.current < RSMI_MAX_NUM_FREQUENCIES) {
-                        memory_samples_.pcie_link_transfer_rate_->push_back(bandwidth_info.transfer_rate.frequency[bandwidth_info.transfer_rate.current] / 1000000);
+                        memory_samples_.pcie_link_transfer_rate_->push_back(bandwidth_info.transfer_rate.frequency[bandwidth_info.transfer_rate.current] / 1'000'000);
                         memory_samples_.num_pcie_lanes_->push_back(bandwidth_info.lanes[bandwidth_info.transfer_rate.current]);
                     } else {
                         // the current index is (somehow) wrong
@@ -620,12 +620,11 @@ void gpu_amd_hardware_sampler::sampling_loop() {
             }
 
             // retrieve temperature related samples
-            {
+            if (this->sample_category_enabled(sample_category::temperature)) {
                 if (temperature_samples_.fan_speed_percentage_.has_value()) {
                     std::int64_t value{};
                     HWS_ROCM_SMI_ERROR_CHECK(rsmi_dev_fan_speed_get(device_id_, std::uint32_t{ 0 }, &value))
-                    temperature_samples_.fan_speed_percentage_->push_back(static_cast<decltype(temperature_samples_.fan_speed_percentage_)::value_type::value_type>(value) /
-                                                                          static_cast<decltype(temperature_samples_.fan_speed_percentage_)::value_type::value_type>(RSMI_MAX_FAN_SPEED));
+                    temperature_samples_.fan_speed_percentage_->push_back(static_cast<decltype(temperature_samples_.fan_speed_percentage_)::value_type::value_type>(value) / static_cast<decltype(temperature_samples_.fan_speed_percentage_)::value_type::value_type>(RSMI_MAX_FAN_SPEED));
                 }
 
                 if (temperature_samples_.temperature_.has_value()) {
