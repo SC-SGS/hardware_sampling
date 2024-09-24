@@ -83,7 +83,7 @@ void gpu_amd_hardware_sampler::sampling_loop() {
 
     this->add_time_point(std::chrono::steady_clock::now());
 
-    std::uint64_t initial_power_usage{};
+    double initial_total_power_consumption{};  // initial total power consumption in J
 
     // retrieve initial general information
     {
@@ -201,7 +201,8 @@ void gpu_amd_hardware_sampler::sampling_loop() {
 
         {
             RSMI_POWER_TYPE power_type{};
-            if (rsmi_dev_power_get(device_id_, &initial_power_usage, &power_type) == RSMI_STATUS_SUCCESS) {
+            std::uint64_t power_usage{};
+            if (rsmi_dev_power_get(device_id_, &power_usage, &power_type) == RSMI_STATUS_SUCCESS) {
                 switch (power_type) {
                     case RSMI_POWER_TYPE::RSMI_AVERAGE_POWER:
                         power_samples_.power_measurement_type_ = "average";
@@ -214,7 +215,7 @@ void gpu_amd_hardware_sampler::sampling_loop() {
                         break;
                 }
                 // report power usage since the first sample
-                power_samples_.power_usage_ = decltype(power_samples_.power_usage_)::value_type{ static_cast<decltype(power_samples_.power_usage_)::value_type::value_type>(0) };
+                power_samples_.power_usage_ = decltype(power_samples_.power_usage_)::value_type{ static_cast<decltype(power_samples_.power_usage_)::value_type::value_type>(power_usage) / 1000.0 / 1000.0 };
             }
         }
 
@@ -280,7 +281,8 @@ void gpu_amd_hardware_sampler::sampling_loop() {
         std::uint64_t power_total_energy_consumption{};
         if (rsmi_dev_energy_count_get(device_id_, &power_total_energy_consumption, &resolution, &timestamp) == RSMI_STATUS_SUCCESS) {
             const auto scaled_value = static_cast<decltype(power_samples_.power_total_energy_consumption_)::value_type::value_type>(power_total_energy_consumption) * static_cast<decltype(power_samples_.power_total_energy_consumption_)::value_type::value_type>(resolution);
-            power_samples_.power_total_energy_consumption_ = decltype(power_samples_.power_total_energy_consumption_)::value_type{ scaled_value / 1000.0 / 1000.0 };
+            initial_total_power_consumption = scaled_value / 1000.0 / 1000.0;
+            power_samples_.power_total_energy_consumption_ = decltype(power_samples_.power_total_energy_consumption_)::value_type{ 0.0 };
         }
     }
 
@@ -538,7 +540,7 @@ void gpu_amd_hardware_sampler::sampling_loop() {
                     [[maybe_unused]] RSMI_POWER_TYPE power_type{};
                     std::uint64_t value{};
                     HWS_ROCM_SMI_ERROR_CHECK(rsmi_dev_power_get(device_id_, &value, &power_type))
-                    power_samples_.power_usage_->push_back(static_cast<decltype(power_samples_.power_usage_)::value_type::value_type>(value - initial_power_usage) / 1000.0 / 1000.0);
+                    power_samples_.power_usage_->push_back(static_cast<decltype(power_samples_.power_usage_)::value_type::value_type>(value) / 1000.0 / 1000.0);
                 }
 
                 if (power_samples_.power_total_energy_consumption_.has_value()) {
@@ -547,7 +549,7 @@ void gpu_amd_hardware_sampler::sampling_loop() {
                     std::uint64_t value{};
                     HWS_ROCM_SMI_ERROR_CHECK(rsmi_dev_energy_count_get(device_id_, &value, &resolution, &timestamp))
                     const auto scaled_value = static_cast<decltype(power_samples_.power_total_energy_consumption_)::value_type::value_type>(value) * static_cast<decltype(power_samples_.power_total_energy_consumption_)::value_type::value_type>(resolution);
-                    power_samples_.power_total_energy_consumption_->push_back(scaled_value / 1000.0);
+                    power_samples_.power_total_energy_consumption_->push_back((scaled_value / 1000.0 / 1000.0) - initial_total_power_consumption);
                 }
 
                 if (power_samples_.power_profile_.has_value()) {
