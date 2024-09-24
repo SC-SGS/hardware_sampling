@@ -1,6 +1,7 @@
 # hws - Hardware Sampling for CPUs and GPUs
 
-The Hardware Sampling (hws) library can be used to track hardware performance like clock frequency, memory usage, temperatures, or power draw. 
+The Hardware Sampling (hws) library can be used to track hardware performance like clock frequency, memory usage,
+temperatures, or power draw.
 It currently supports CPUs as well as GPUs from NVIDIA, AMD, and Intel.
 
 ## Getting Started
@@ -10,15 +11,23 @@ It currently supports CPUs as well as GPUs from NVIDIA, AMD, and Intel.
 General dependencies:
 
 - a C++17 capable compiler
-- [{fmt} > 11.0.2](https://github.com/fmtlib/fmt) for string formatting (automatically build during the CMake configuration if it couldn't be found using the respective `find_package` call)
-- [Pybind11 > v2.13.1](https://github.com/pybind/pybind11) if Python bindings are enabled (automatically build during the CMake configuration if it couldn't be found using the respective `find_package` call)
+- [{fmt} > 11.0.2](https://github.com/fmtlib/fmt) for string formatting (automatically build during the CMake
+  configuration if it couldn't be found using the respective `find_package` call)
+- [Pybind11 > v2.13.1](https://github.com/pybind/pybind11) if Python bindings are enabled (automatically build during
+  the CMake configuration if it couldn't be found using the respective `find_package` call)
 
 Dependencies based on the hardware to sample:
 
-- if a CPU should be targeted: at least one of [`turbostat`](https://www.linux.org/docs/man8/turbostat.html) (may require root privileges), [`lscpu`](https://man7.org/linux/man-pages/man1/lscpu.1.html), or [`free`](https://man7.org/linux/man-pages/man1/free.1.html) and the [`subprocess.h`](https://github.com/sheredom/subprocess.h) library (automatically build during the CMake configuration if it couldn't be found using the respective `find_package` call)
+- if a CPU should be targeted: at least one of [`turbostat`](https://www.linux.org/docs/man8/turbostat.html) (may
+  require root privileges), [`lscpu`](https://man7.org/linux/man-pages/man1/lscpu.1.html), or [
+  `free`](https://man7.org/linux/man-pages/man1/free.1.html) and the [
+  `subprocess.h`](https://github.com/sheredom/subprocess.h) library (automatically build during the CMake configuration
+  if it couldn't be found using the respective `find_package` call)
 - if an NVIDIA GPU should be targeted: NVIDIA's Management Library [`NVML`](https://docs.nvidia.com/deploy/nvml-api/)
-- if an AMD GPU should be targeted: AMD's ROCm SMI library [`rocm_smi_lib`](https://rocm.docs.amd.com/projects/rocm_smi_lib/en/latest/doxygen/html/modules.html)
-- if an Intel GPU should be targeted: Intel's [`Level Zero library`](https://spec.oneapi.io/level-zero/latest/core/INTRO.html)
+- if an AMD GPU should be targeted: AMD's ROCm SMI library [
+  `rocm_smi_lib`](https://rocm.docs.amd.com/projects/rocm_smi_lib/en/latest/doxygen/html/modules.html)
+- if an Intel GPU should be targeted: Intel's [
+  `Level Zero library`](https://spec.oneapi.io/level-zero/latest/core/INTRO.html)
 
 ### Building hws
 
@@ -41,7 +50,8 @@ cmake --build . -j
 
 The `[optional_options]` can be one or multiple of:
 
-- `HWS_ENABLE_ERROR_CHECKS=ON|OFF` (default: `OFF`): enable sanity checks during hardware sampling, may be problematic with smaller sample intervals
+- `HWS_ENABLE_ERROR_CHECKS=ON|OFF` (default: `OFF`): enable sanity checks during hardware sampling, may be problematic
+  with smaller sample intervals
 - `HWS_SAMPLING_INTERVAL=100ms` (default: `100ms`): set the sampling interval in milliseconds
 - `HWS_ENABLE_PYTHON_BINDINGS=ON|OFF` (default: `ON`): enable Python bindings
 
@@ -233,8 +243,6 @@ The sampling type `sampled` denotes samples that are gathered during the whole h
 | system_low_power_idle_state_percent  |   sampled   |       %       |
 | package_low_power_idle_state_percent |   sampled   |       %       |
 
-
-
 ## Example Python usage
 
 ```python
@@ -269,7 +277,9 @@ axes = plt.gcf().axes[0]
 x_bounds = axes.get_xlim()
 for event in sampler.get_relative_events()[1:-1]:
     axes.axvline(x=event.relative_time_point, color='r')
-    axes.annotate(text=event.name, xy=(((event.relative_time_point - x_bounds[0]) / (x_bounds[1] - x_bounds[0])), 1.025), xycoords='axes fraction', rotation=270)
+    axes.annotate(text=event.name,
+                  xy=(((event.relative_time_point - x_bounds[0]) / (x_bounds[1] - x_bounds[0])), 1.025),
+                  xycoords='axes fraction', rotation=270)
 
 plt.xlabel("runtime [ms]")
 plt.ylabel("clock frequency [MHz]")
@@ -283,4 +293,5 @@ plt.show()
 
 ## License
 
-The hws library is distributed under the [MIT license](https://github.com/SC-SGS/hardware_sampling/blob/main/LICENSE.md).
+The hws library is distributed under
+the [MIT license](https://github.com/SC-SGS/hardware_sampling/blob/main/LICENSE.md).
