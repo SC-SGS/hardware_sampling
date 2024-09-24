@@ -21,7 +21,18 @@ namespace hws {
 //                                                           general samples                                                           //
 //*************************************************************************************************************************************//
 
+bool nvml_general_samples::has_samples() const {
+    return this->architecture_.has_value() || this->byte_order_.has_value() || this->vendor_id_.has_value() || this->name_.has_value()
+           || this->persistence_mode_.has_value() || this->num_cores_.has_value() || this->compute_utilization_.has_value()
+           || this->memory_utilization_.has_value() || this->performance_level_.has_value();
+}
+
 std::string nvml_general_samples::generate_yaml_string() const {
+    // if no samples are available, return an empty string
+    if (!this->has_samples()) {
+        return "";
+    }
+
     std::string str{ "general:\n" };
 
     // device architecture
@@ -90,9 +101,6 @@ std::string nvml_general_samples::generate_yaml_string() const {
                            fmt::join(this->performance_level_.value(), ", "));
     }
 
-    // remove last newline
-    str.pop_back();
-
     return str;
 }
 
@@ -121,7 +129,20 @@ std::ostream &operator<<(std::ostream &out, const nvml_general_samples &samples)
 //                                                            clock samples                                                            //
 //*************************************************************************************************************************************//
 
+bool nvml_clock_samples::has_samples() const {
+    return this->auto_boosted_clock_enabled_.has_value() || this->clock_frequency_min_.has_value() || this->clock_frequency_max_.has_value()
+           || this->memory_clock_frequency_min_.has_value() || this->memory_clock_frequency_max_.has_value() || this->sm_clock_frequency_max_.has_value()
+           || this->available_clock_frequencies_.has_value() || this->available_memory_clock_frequencies_.has_value() || this->clock_frequency_.has_value()
+           || this->memory_clock_frequency_.has_value() || this->sm_clock_frequency_.has_value() || this->throttle_reason_.has_value()
+           || this->auto_boosted_clock_.has_value();
+}
+
 std::string nvml_clock_samples::generate_yaml_string() const {
+    // if no samples are available, return an empty string
+    if (!this->has_samples()) {
+        return "";
+    }
+
     std::string str{ "clock:\n" };
 
     // adaptive clock status
@@ -219,9 +240,6 @@ std::string nvml_clock_samples::generate_yaml_string() const {
                            fmt::join(this->auto_boosted_clock_.value(), ", "));
     }
 
-    // remove last newline
-    str.pop_back();
-
     return str;
 }
 
@@ -258,7 +276,18 @@ std::ostream &operator<<(std::ostream &out, const nvml_clock_samples &samples) {
 //                                                            power samples                                                            //
 //*************************************************************************************************************************************//
 
+bool nvml_power_samples::has_samples() const {
+    return this->power_management_limit_.has_value() || this->power_enforced_limit_.has_value() || this->power_measurement_type_.has_value()
+           || this->power_management_mode_.has_value() || this->available_power_profiles_.has_value() || this->power_usage_.has_value()
+           || this->power_total_energy_consumption_.has_value() || this->power_profile_.has_value();
+}
+
 std::string nvml_power_samples::generate_yaml_string() const {
+    // if no samples are available, return an empty string
+    if (!this->has_samples()) {
+        return "";
+    }
+
     std::string str{ "power:\n" };
 
     // power management limit
@@ -319,9 +348,6 @@ std::string nvml_power_samples::generate_yaml_string() const {
                            fmt::join(this->power_profile_.value(), ", "));
     }
 
-    // remove last newline
-    str.pop_back();
-
     return str;
 }
 
@@ -348,7 +374,19 @@ std::ostream &operator<<(std::ostream &out, const nvml_power_samples &samples) {
 //                                                            memory samples                                                           //
 //*************************************************************************************************************************************//
 
+bool nvml_memory_samples::has_samples() const {
+    return this->memory_total_.has_value() || this->pcie_link_speed_max_.has_value() || this->pcie_link_generation_max_.has_value()
+           || this->num_pcie_lanes_max_.has_value() || this->memory_bus_width_.has_value() || this->memory_used_.has_value()
+           || this->memory_free_.has_value() || this->num_pcie_lanes_.has_value() || this->pcie_link_generation_.has_value()
+           || this->pcie_link_speed_.has_value();
+}
+
 std::string nvml_memory_samples::generate_yaml_string() const {
+    // if no samples are available, return an empty string
+    if (!this->has_samples()) {
+        return "";
+    }
+
     std::string str{ "memory:\n" };
 
     // total memory size
@@ -423,9 +461,6 @@ std::string nvml_memory_samples::generate_yaml_string() const {
                            fmt::join(this->pcie_link_speed_.value(), ", "));
     }
 
-    // remove last newline
-    str.pop_back();
-
     return str;
 }
 
@@ -456,7 +491,17 @@ std::ostream &operator<<(std::ostream &out, const nvml_memory_samples &samples) 
 //                                                         temperature samples                                                         //
 //*************************************************************************************************************************************//
 
+bool nvml_temperature_samples::has_samples() const {
+    return this->num_fans_.has_value() || this->fan_speed_min_.has_value() || this->fan_speed_max_.has_value() || this->temperature_max_.has_value()
+           || this->memory_temperature_max_.has_value() || this->fan_speed_percentage_.has_value() || this->temperature_.has_value();
+}
+
 std::string nvml_temperature_samples::generate_yaml_string() const {
+    // if no samples are available, return an empty string
+    if (!this->has_samples()) {
+        return "";
+    }
+
     std::string str{ "temperature:\n" };
 
     // number of fans
@@ -509,9 +554,6 @@ std::string nvml_temperature_samples::generate_yaml_string() const {
                            "    values: [{}]\n",
                            fmt::join(this->temperature_.value(), ", "));
     }
-
-    // remove last newline
-    str.pop_back();
 
     return str;
 }

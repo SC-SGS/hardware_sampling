@@ -37,8 +37,14 @@ class cpu_general_samples {
 
   public:
     /**
+     * @brief Checks whether any general hardware sample is present.
+     * @return `true` if any general hardware sample is, otherwise `false`.
+     */
+    [[nodiscard]] bool has_samples() const;
+    /**
      * @brief Assemble the YAML string containing all available general hardware samples.
      * @details Hardware samples that are not supported by the current device are omitted in the YAML output.
+     *          Returns an empty string if `has_samples()` returns `false`.
      * @return the YAML string (`[[nodiscard]]`)
      */
     [[nodiscard]] std::string generate_yaml_string() const;
@@ -85,8 +91,14 @@ class cpu_clock_samples {
 
   public:
     /**
+     * @brief Checks whether any clock related hardware sample is present.
+     * @return `true` if any clock related hardware sample is, otherwise `false`.
+     */
+    [[nodiscard]] bool has_samples() const;
+    /**
      * @brief Assemble the YAML string containing all available general hardware samples.
      * @details Hardware samples that are not supported by the current device are omitted in the YAML output.
+     *          Returns an empty string if `has_samples()` returns `false`.
      * @return the YAML string (`[[nodiscard]]`)
      */
     [[nodiscard]] std::string generate_yaml_string() const;
@@ -122,8 +134,14 @@ class cpu_power_samples {
 
   public:
     /**
+     * @brief Checks whether any power related hardware sample is present.
+     * @return `true` if any power related hardware sample is, otherwise `false`.
+     */
+    [[nodiscard]] bool has_samples() const;
+    /**
      * @brief Assemble the YAML string containing all available general hardware samples.
      * @details Hardware samples that are not supported by the current device are omitted in the YAML output.
+     *          Returns an empty string if `has_samples()` returns `false`.
      * @return the YAML string (`[[nodiscard]]`)
      */
     [[nodiscard]] std::string generate_yaml_string() const;
@@ -160,8 +178,14 @@ class cpu_memory_samples {
 
   public:
     /**
+     * @brief Checks whether any memory related hardware sample is present.
+     * @return `true` if any memory related hardware sample is, otherwise `false`.
+     */
+    [[nodiscard]] bool has_samples() const;
+    /**
      * @brief Assemble the YAML string containing all available general hardware samples.
      * @details Hardware samples that are not supported by the current device are omitted in the YAML output.
+     *          Returns an empty string if `has_samples()` returns `false`.
      * @return the YAML string (`[[nodiscard]]`)
      */
     [[nodiscard]] std::string generate_yaml_string() const;
@@ -201,8 +225,14 @@ class cpu_temperature_samples {
 
   public:
     /**
+     * @brief Checks whether any temperature related hardware sample is present.
+     * @return `true` if any temperature related hardware sample is, otherwise `false`.
+     */
+    [[nodiscard]] bool has_samples() const;
+    /**
      * @brief Assemble the YAML string containing all available general hardware samples.
      * @details Hardware samples that are not supported by the current device are omitted in the YAML output.
+     *          Returns an empty string if `has_samples()` returns `false`.
      * @return the YAML string (`[[nodiscard]]`)
      */
     [[nodiscard]] std::string generate_yaml_string() const;
@@ -234,8 +264,14 @@ class cpu_gfx_samples {
 
   public:
     /**
+     * @brief Checks whether any gfx related hardware sample is present.
+     * @return `true` if any gfx related hardware sample is, otherwise `false`.
+     */
+    [[nodiscard]] bool has_samples() const;
+    /**
      * @brief Assemble the YAML string containing all available general hardware samples.
      * @details Hardware samples that are not supported by the current device are omitted in the YAML output.
+     *          Returns an empty string if `has_samples()` returns `false`.
      * @return the YAML string (`[[nodiscard]]`)
      */
     [[nodiscard]] std::string generate_yaml_string() const;
@@ -272,8 +308,14 @@ class cpu_idle_states_samples {
 
   public:
     /**
+     * @brief Checks whether any idle state related hardware sample is present.
+     * @return `true` if any idle state related hardware sample is, otherwise `false`.
+     */
+    [[nodiscard]] bool has_samples() const;
+    /**
      * @brief Assemble the YAML string containing all available general hardware samples.
      * @details Hardware samples that are not supported by the current device are omitted in the YAML output.
+     *          Returns an empty string if `has_samples()` returns `false`.
      * @return the YAML string (`[[nodiscard]]`)
      */
     [[nodiscard]] std::string generate_yaml_string() const;

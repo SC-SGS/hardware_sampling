@@ -21,6 +21,7 @@ namespace py = pybind11;
 void init_cpu_hardware_sampler(py::module_ &m) {
     // bind the general samples
     py::class_<hws::cpu_general_samples>(m, "CpuGeneralSamples")
+        .def("has_samples", &hws::cpu_general_samples::has_samples, "true if any sample is available, false otherwise")
         .def("get_architecture", &hws::cpu_general_samples::get_architecture, "the CPU architecture (e.g., x86_64)")
         .def("get_byte_order", &hws::cpu_general_samples::get_byte_order, "the byte order (e.g., little/big endian)")
         .def("get_num_cores", &hws::cpu_general_samples::get_num_cores, "the total number of cores of the CPU(s)")
@@ -44,6 +45,7 @@ void init_cpu_hardware_sampler(py::module_ &m) {
 
     // bind the clock samples
     py::class_<hws::cpu_clock_samples>(m, "CpuClockSamples")
+        .def("has_samples", &hws::cpu_clock_samples::has_samples, "true if any sample is available, false otherwise")
         .def("get_auto_boosted_clock_enabled", &hws::cpu_clock_samples::get_auto_boosted_clock_enabled, "true if frequency boosting is enabled")
         .def("get_clock_frequency_min", &hws::cpu_clock_samples::get_clock_frequency_min, "the minimum possible CPU frequency in MHz")
         .def("get_clock_frequency_max", &hws::cpu_clock_samples::get_clock_frequency_max, "the maximum possible CPU frequency in MHz")
@@ -56,6 +58,7 @@ void init_cpu_hardware_sampler(py::module_ &m) {
 
     // bind the power samples
     py::class_<hws::cpu_power_samples>(m, "CpuPowerSamples")
+        .def("has_samples", &hws::cpu_power_samples::has_samples, "true if any sample is available, false otherwise")
         .def("get_power_measurement_type", &hws::cpu_power_samples::get_power_measurement_type, "the type of the power readings: always \"instant/current\"")
         .def("get_power_usage", &hws::cpu_power_samples::get_power_usage, "the currently consumed power of the package of the CPU in W")
         .def("get_power_total_energy_consumed", &hws::cpu_power_samples::get_power_total_energy_consumption, "the total power consumption in J")
@@ -69,6 +72,7 @@ void init_cpu_hardware_sampler(py::module_ &m) {
 
     // bind the memory samples
     py::class_<hws::cpu_memory_samples>(m, "CpuMemorySamples")
+        .def("has_samples", &hws::cpu_memory_samples::has_samples, "true if any sample is available, false otherwise")
         .def("get_cache_size_L1d", &hws::cpu_memory_samples::get_cache_size_L1d, "the size of the L1 data cache")
         .def("get_cache_size_L1i", &hws::cpu_memory_samples::get_cache_size_L1i, "the size of the L1 instruction cache")
         .def("get_cache_size_L2", &hws::cpu_memory_samples::get_cache_size_L2, "the size of the L2 cache")
@@ -85,6 +89,7 @@ void init_cpu_hardware_sampler(py::module_ &m) {
 
     // bind the temperature samples
     py::class_<hws::cpu_temperature_samples>(m, "CpuTemperatureSamples")
+        .def("has_samples", &hws::cpu_temperature_samples::has_samples, "true if any sample is available, false otherwise")
         .def("get_temperature", &hws::cpu_temperature_samples::get_temperature, "the current temperature of the whole package in °C")
         .def("get_core_temperature", &hws::cpu_temperature_samples::get_core_temperature, "the current temperature of the core part of the CPU in °C")
         .def("get_core_throttle_percent", &hws::cpu_temperature_samples::get_core_throttle_percent, "the percent of time the CPU has throttled")
@@ -94,6 +99,7 @@ void init_cpu_hardware_sampler(py::module_ &m) {
 
     // bind the gfx samples
     py::class_<hws::cpu_gfx_samples>(m, "CpuGfxSamples")
+        .def("has_samples", &hws::cpu_gfx_samples::has_samples, "true if any sample is available, false otherwise")
         .def("get_gfx_render_state_percent", &hws::cpu_gfx_samples::get_gfx_render_state_percent, "the percent of time the iGPU was in the render state")
         .def("get_gfx_frequency", &hws::cpu_gfx_samples::get_gfx_frequency, "the current iGPU power consumption in W")
         .def("get_average_gfx_frequency", &hws::cpu_gfx_samples::get_average_gfx_frequency, "the average iGPU frequency in MHz")
@@ -106,6 +112,7 @@ void init_cpu_hardware_sampler(py::module_ &m) {
 
     // bind the idle state samples
     py::class_<hws::cpu_idle_states_samples>(m, "CpuIdleStateSamples")
+        .def("has_samples", &hws::cpu_idle_states_samples::has_samples, "true if any sample is available, false otherwise")
         .def("get_idle_states", &hws::cpu_idle_states_samples::get_idle_states, "the map of additional CPU idle states")
         .def("get_all_cpus_state_c0_percent", &hws::cpu_idle_states_samples::get_all_cpus_state_c0_percent, "the percent of time all CPUs were in idle state c0")
         .def("get_any_cpu_state_c0_percent", &hws::cpu_idle_states_samples::get_any_cpu_state_c0_percent, "the percent of time any CPU was in the idle state c0")

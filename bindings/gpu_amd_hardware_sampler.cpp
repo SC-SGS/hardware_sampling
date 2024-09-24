@@ -22,6 +22,7 @@ namespace py = pybind11;
 void init_gpu_amd_hardware_sampler(py::module_ &m) {
     // bind the general samples
     py::class_<hws::rocm_smi_general_samples>(m, "RocmSmiGeneralSamples")
+        .def("has_samples", &hws::rocm_smi_general_samples::has_samples, "true if any sample is available, false otherwise")
         .def("get_architecture", &hws::rocm_smi_general_samples::get_name, "the architecture name of the device")
         .def("get_byte_order", &hws::rocm_smi_general_samples::get_byte_order, "the byte order (e.g., little/big endian)")
         .def("get_vendor_id", &hws::rocm_smi_general_samples::get_vendor_id, "the vendor ID")
@@ -35,6 +36,7 @@ void init_gpu_amd_hardware_sampler(py::module_ &m) {
 
     // bind the clock samples
     py::class_<hws::rocm_smi_clock_samples>(m, "RocmSmiClockSamples")
+        .def("has_samples", &hws::rocm_smi_clock_samples::has_samples, "true if any sample is available, false otherwise")
         .def("get_clock_frequency_min", &hws::rocm_smi_clock_samples::get_clock_frequency_min, "the minimum possible system clock frequency in MHz")
         .def("get_clock_frequency_max", &hws::rocm_smi_clock_samples::get_clock_frequency_max, "the maximum possible system clock frequency in MHz")
         .def("get_memory_clock_frequency_min", &hws::rocm_smi_clock_samples::get_memory_clock_frequency_min, "the minimum possible memory clock frequency in MHz")
@@ -54,6 +56,7 @@ void init_gpu_amd_hardware_sampler(py::module_ &m) {
 
     // bind the power samples
     py::class_<hws::rocm_smi_power_samples>(m, "RocmSmiPowerSamples")
+        .def("has_samples", &hws::rocm_smi_power_samples::has_samples, "true if any sample is available, false otherwise")
         .def("get_power_management_limit", &hws::rocm_smi_power_samples::get_power_management_limit, "the default power cap (W), may be different from power cap")
         .def("get_power_enforced_limit", &hws::rocm_smi_power_samples::get_power_enforced_limit, "if the GPU draws more power (W) than the power cap, the GPU may throttle")
         .def("get_power_measurement_type", &hws::rocm_smi_power_samples::get_power_measurement_type, "the type of the power readings: either current power draw or average power draw")
@@ -67,6 +70,7 @@ void init_gpu_amd_hardware_sampler(py::module_ &m) {
 
     // bind the memory samples
     py::class_<hws::rocm_smi_memory_samples>(m, "RocmSmiMemorySamples")
+        .def("has_samples", &hws::rocm_smi_memory_samples::has_samples, "true if any sample is available, false otherwise")
         .def("get_memory_total", &hws::rocm_smi_memory_samples::get_memory_total, "the total available memory in Byte")
         .def("get_visible_memory_total", &hws::rocm_smi_memory_samples::get_visible_memory_total, "the total visible available memory in Byte, may be smaller than the total memory")
         .def("get_num_pcie_lanes_min", &hws::rocm_smi_memory_samples::get_num_pcie_lanes_min, "the minimum number of used PCIe lanes")
@@ -83,6 +87,7 @@ void init_gpu_amd_hardware_sampler(py::module_ &m) {
 
     // bind the temperature samples
     py::class_<hws::rocm_smi_temperature_samples>(m, "RocmSmiTemperatureSamples")
+        .def("has_samples", &hws::rocm_smi_temperature_samples::has_samples, "true if any sample is available, false otherwise")
         .def("get_num_fans", &hws::rocm_smi_temperature_samples::get_num_fans, "the number of fans (if any)")
         .def("get_fan_speed_max", &hws::rocm_smi_temperature_samples::get_fan_speed_max, "the maximum fan speed in RPM")
         .def("get_temperature_min", &hws::rocm_smi_temperature_samples::get_temperature_min, "the minimum temperature on the GPU's edge temperature sensor in °C")

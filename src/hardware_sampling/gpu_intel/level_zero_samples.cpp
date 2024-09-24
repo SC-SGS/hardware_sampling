@@ -38,7 +38,17 @@ void append_map_values(std::string &str, const std::string_view entry_name, cons
 //                                                           general samples                                                           //
 //*************************************************************************************************************************************//
 
+bool level_zero_general_samples::has_samples() const {
+    return this->byte_order_.has_value() || this->vendor_id_.has_value() || this->name_.has_value() || this->flags_.has_value() || this->standby_mode_.has_value()
+           || this->num_threads_per_eu_.has_value() || this->eu_simd_width_.has_value();
+}
+
 std::string level_zero_general_samples::generate_yaml_string() const {
+    // if no samples are available, return an empty string
+    if (!this->has_samples()) {
+        return "";
+    }
+
     std::string str{ "general:\n" };
 
     // device byte order
@@ -91,9 +101,6 @@ std::string level_zero_general_samples::generate_yaml_string() const {
                            this->eu_simd_width_.value());
     }
 
-    // remove last newline
-    str.pop_back();
-
     return str;
 }
 
@@ -118,7 +125,19 @@ std::ostream &operator<<(std::ostream &out, const level_zero_general_samples &sa
 //                                                            clock samples                                                            //
 //*************************************************************************************************************************************//
 
+bool level_zero_clock_samples::has_samples() const {
+    return this->clock_frequency_min_.has_value() || this->clock_frequency_max_.has_value() || this->memory_clock_frequency_min_.has_value()
+           || this->memory_clock_frequency_max_.has_value() || this->available_clock_frequencies_.has_value() || this->available_memory_clock_frequencies_.has_value()
+           || this->clock_frequency_.has_value() || this->memory_clock_frequency_.has_value() || this->throttle_reason_.has_value()
+           || this->memory_throttle_reason_.has_value() || this->frequency_limit_tdp_.has_value() || this->memory_frequency_limit_tdp_.has_value();
+}
+
 std::string level_zero_clock_samples::generate_yaml_string() const {
+    // if no samples are available, return an empty string
+    if (!this->has_samples()) {
+        return "";
+    }
+
     std::string str{ "clock:\n" };
 
     // minimum GPU core clock
@@ -207,9 +226,6 @@ std::string level_zero_clock_samples::generate_yaml_string() const {
                            fmt::join(this->memory_frequency_limit_tdp_.value(), ", "));
     }
 
-    // remove last newline
-    str.pop_back();
-
     return str;
 }
 
@@ -244,7 +260,17 @@ std::ostream &operator<<(std::ostream &out, const level_zero_clock_samples &samp
 //                                                            power samples                                                            //
 //*************************************************************************************************************************************//
 
+bool level_zero_power_samples::has_samples() const {
+    return this->power_enforced_limit_.has_value() || this->power_measurement_type_.has_value() || this->power_management_mode_.has_value()
+           || this->power_usage_.has_value() || this->power_total_energy_consumption_.has_value();
+}
+
 std::string level_zero_power_samples::generate_yaml_string() const {
+    // if no samples are available, return an empty string
+    if (!this->has_samples()) {
+        return "";
+    }
+
     std::string str{ "power:\n" };
 
     // power enforced limit
@@ -284,9 +310,6 @@ std::string level_zero_power_samples::generate_yaml_string() const {
                            fmt::join(this->power_total_energy_consumption_.value(), ", "));
     }
 
-    // remove last newline
-    str.pop_back();
-
     return str;
 }
 
@@ -307,7 +330,20 @@ std::ostream &operator<<(std::ostream &out, const level_zero_power_samples &samp
 //                                                            memory samples                                                           //
 //*************************************************************************************************************************************//
 
+bool level_zero_memory_samples::has_samples() const {
+    return this->memory_total_.has_value() || this->visible_memory_total_.has_value() || this->memory_location_.has_value()
+           || this->num_pcie_lanes_max_.has_value() || this->pcie_link_generation_max_.has_value() || this->pcie_link_speed_max_.has_value()
+           || this->memory_bus_width_.has_value() || this->memory_num_channels_.has_value() || this->memory_free_.has_value()
+           || this->memory_used_.has_value() || this->num_pcie_lanes_.has_value() || this->pcie_link_generation_.has_value()
+           || this->pcie_link_speed_.has_value();
+}
+
 std::string level_zero_memory_samples::generate_yaml_string() const {
+    // if no samples are available, return an empty string
+    if (!this->has_samples()) {
+        return "";
+    }
+
     std::string str{ "memory:\n" };
 
     // the total memory
@@ -424,9 +460,6 @@ std::string level_zero_memory_samples::generate_yaml_string() const {
                            fmt::join(this->pcie_link_speed_.value(), ", "));
     }
 
-    // remove last newline
-    str.pop_back();
-
     return str;
 }
 
@@ -461,7 +494,18 @@ std::ostream &operator<<(std::ostream &out, const level_zero_memory_samples &sam
 //                                                         temperature samples                                                         //
 //*************************************************************************************************************************************//
 
+bool level_zero_temperature_samples::has_samples() const {
+    return this->num_fans_.has_value() || this->fan_speed_max_.has_value() || this->temperature_max_.has_value() || this->memory_temperature_max_.has_value()
+           || this->global_temperature_max_.has_value() || this->fan_speed_percentage_.has_value() || this->temperature_.has_value()
+           || this->memory_temperature_.has_value() || this->global_temperature_.has_value() || this->psu_temperature_.has_value();
+}
+
 std::string level_zero_temperature_samples::generate_yaml_string() const {
+    // if no samples are available, return an empty string
+    if (!this->has_samples()) {
+        return "";
+    }
+
     std::string str{ "temperature:\n" };
 
     // the number of fans
@@ -535,9 +579,6 @@ std::string level_zero_temperature_samples::generate_yaml_string() const {
                            "    values: [{}]\n",
                            fmt::join(this->psu_temperature_.value(), ", "));
     }
-
-    // remove last newline
-    str.pop_back();
 
     return str;
 }

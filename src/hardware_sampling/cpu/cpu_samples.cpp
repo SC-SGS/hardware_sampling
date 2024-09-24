@@ -26,7 +26,19 @@ namespace hws {
 //                                                           general samples                                                           //
 //*************************************************************************************************************************************//
 
+bool cpu_general_samples::has_samples() const {
+    return this->architecture_.has_value() || this->byte_order_.has_value() || this->num_cores_.has_value() || this->num_threads_.has_value()
+           || this->threads_per_core_.has_value() || this->cores_per_socket_.has_value() || this->num_sockets_.has_value() || this->numa_nodes_.has_value()
+           || this->vendor_id_.has_value() || this->name_.has_value() || this->flags_.has_value() || this->compute_utilization_.has_value()
+           || this->ipc_.has_value() || this->irq_.has_value() || this->smi_.has_value() || this->poll_.has_value() || this->poll_percent_.has_value();
+}
+
 std::string cpu_general_samples::generate_yaml_string() const {
+    // if no samples are available, return an empty string
+    if (!this->has_samples()) {
+        return "";
+    }
+
     std::string str{ "general:\n" };
 
     // architecture
@@ -156,9 +168,6 @@ std::string cpu_general_samples::generate_yaml_string() const {
                            fmt::join(this->poll_percent_.value(), ", "));
     }
 
-    // remove last newline
-    str.pop_back();
-
     return str;
 }
 
@@ -208,7 +217,17 @@ std::ostream &operator<<(std::ostream &out, const cpu_general_samples &samples) 
 //                                                            clock samples                                                            //
 //*************************************************************************************************************************************//
 
+bool cpu_clock_samples::has_samples() const {
+    return this->auto_boosted_clock_enabled_.has_value() || this->clock_frequency_min_.has_value() || this->clock_frequency_max_.has_value()
+           || this->clock_frequency_.has_value() || this->average_non_idle_clock_frequency_.has_value() || this->time_stamp_counter_.has_value();
+}
+
 std::string cpu_clock_samples::generate_yaml_string() const {
+    // if no samples are available, return an empty string
+    if (!this->has_samples()) {
+        return "";
+    }
+
     std::string str{ "clock:\n" };
 
     // true if frequency boost is enabled
@@ -258,9 +277,6 @@ std::string cpu_clock_samples::generate_yaml_string() const {
                            fmt::join(this->time_stamp_counter_.value(), ", "));
     }
 
-    // remove last newline
-    str.pop_back();
-
     return str;
 }
 
@@ -283,7 +299,18 @@ std::ostream &operator<<(std::ostream &out, const cpu_clock_samples &samples) {
 //                                                            power samples                                                            //
 //*************************************************************************************************************************************//
 
+bool cpu_power_samples::has_samples() const {
+    return this->power_measurement_type_.has_value() || this->power_usage_.has_value() || this->power_total_energy_consumption_.has_value()
+           || this->core_watt_.has_value() || this->ram_watt_.has_value() || this->package_rapl_throttle_percent_.has_value()
+           || this->dram_rapl_throttle_percent_.has_value();
+}
+
 std::string cpu_power_samples::generate_yaml_string() const {
+    // if no samples are available, return an empty string
+    if (!this->has_samples()) {
+        return "";
+    }
+
     std::string str{ "power:\n" };
 
     // power measurement type
@@ -343,9 +370,6 @@ std::string cpu_power_samples::generate_yaml_string() const {
                            fmt::join(this->dram_rapl_throttle_percent_.value(), ", "));
     }
 
-    // remove last newline
-    str.pop_back();
-
     return str;
 }
 
@@ -370,7 +394,18 @@ std::ostream &operator<<(std::ostream &out, const cpu_power_samples &samples) {
 //                                                            memory samples                                                           //
 //*************************************************************************************************************************************//
 
+bool cpu_memory_samples::has_samples() const {
+    return this->cache_size_L1d_.has_value() || this->cache_size_L1i_.has_value() || this->cache_size_L2_.has_value() || this->cache_size_L3_.has_value()
+           || this->memory_total_.has_value() || this->swap_memory_total_.has_value() || this->memory_used_.has_value() || this->swap_memory_free_.has_value()
+           || this->swap_memory_used_.has_value() || this->swap_memory_free_.has_value();
+}
+
 std::string cpu_memory_samples::generate_yaml_string() const {
+    // if no samples are available, return an empty string
+    if (!this->has_samples()) {
+        return "";
+    }
+
     std::string str{ "memory:\n" };
 
     // the size of the L1 data cache
@@ -446,9 +481,6 @@ std::string cpu_memory_samples::generate_yaml_string() const {
                            fmt::join(this->swap_memory_free_.value(), ", "));
     }
 
-    // remove last newline
-    str.pop_back();
-
     return str;
 }
 
@@ -479,7 +511,16 @@ std::ostream &operator<<(std::ostream &out, const cpu_memory_samples &samples) {
 //                                                         temperature samples                                                         //
 //*************************************************************************************************************************************//
 
+bool cpu_temperature_samples::has_samples() const {
+    return this->temperature_.has_value() || this->core_temperature_.has_value() || this->core_throttle_percent_.has_value();
+}
+
 std::string cpu_temperature_samples::generate_yaml_string() const {
+    // if no samples are available, return an empty string
+    if (!this->has_samples()) {
+        return "";
+    }
+
     std::string str{ "temperature:\n" };
 
     // the temperature of the whole package
@@ -507,9 +548,6 @@ std::string cpu_temperature_samples::generate_yaml_string() const {
                            fmt::join(this->core_throttle_percent_.value(), ", "));
     }
 
-    // remove last newline
-    str.pop_back();
-
     return str;
 }
 
@@ -526,7 +564,17 @@ std::ostream &operator<<(std::ostream &out, const cpu_temperature_samples &sampl
 //                                                          gfx (iGPU) samples                                                         //
 //*************************************************************************************************************************************//
 
+bool cpu_gfx_samples::has_samples() const {
+    return this->gfx_render_state_percent_.has_value() || this->gfx_frequency_.has_value() || this->average_gfx_frequency_.has_value()
+           || this->gfx_state_c0_percent_.has_value() || this->cpu_works_for_gpu_percent_.has_value() || this->gfx_watt_.has_value();
+}
+
 std::string cpu_gfx_samples::generate_yaml_string() const {
+    // if no samples are available, return an empty string
+    if (!this->has_samples()) {
+        return "";
+    }
+
     std::string str{ "integrated_gpu:\n" };
 
     // the percentage of time the iGPU was in the render state
@@ -578,9 +626,6 @@ std::string cpu_gfx_samples::generate_yaml_string() const {
                            fmt::join(this->gfx_watt_.value(), ", "));
     }
 
-    // remove last newline
-    str.pop_back();
-
     return str;
 }
 
@@ -603,7 +648,17 @@ std::ostream &operator<<(std::ostream &out, const cpu_gfx_samples &samples) {
 //                                                          idle state samples                                                         //
 //*************************************************************************************************************************************//
 
+bool cpu_idle_states_samples::has_samples() const {
+    return this->all_cpus_state_c0_percent_.has_value() || this->any_cpu_state_c0_percent_.has_value() || this->low_power_idle_state_percent_.has_value()
+           || this->system_low_power_idle_state_percent_.has_value() || this->package_low_power_idle_state_percent_.has_value() || this->idle_states_.has_value();
+}
+
 std::string cpu_idle_states_samples::generate_yaml_string() const {
+    // if no samples are available, return an empty string
+    if (!this->has_samples()) {
+        return "";
+    }
+
     std::string str{ "idle_states:\n" };
 
     // the percentage of time all CPUs were in the c0 state
@@ -686,9 +741,6 @@ std::string cpu_idle_states_samples::generate_yaml_string() const {
             }
         }
     }
-
-    // remove last newline
-    str.pop_back();
 
     return str;
 }

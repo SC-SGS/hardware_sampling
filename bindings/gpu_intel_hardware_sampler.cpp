@@ -22,6 +22,7 @@ namespace py = pybind11;
 void init_gpu_intel_hardware_sampler(py::module_ &m) {
     // bind the general samples
     py::class_<hws::level_zero_general_samples>(m, "LevelZeroGeneralSamples")
+        .def("has_samples", &hws::level_zero_general_samples::has_samples, "true if any sample is available, false otherwise")
         .def("get_byte_order", &hws::level_zero_general_samples::get_byte_order, "the byte order (e.g., little/big endian)")
         .def("get_vendor_id", &hws::level_zero_general_samples::get_vendor_id, "the vendor ID")
         .def("get_name", &hws::level_zero_general_samples::get_name, "the model name of the device")
@@ -35,6 +36,7 @@ void init_gpu_intel_hardware_sampler(py::module_ &m) {
 
     // bind the clock samples
     py::class_<hws::level_zero_clock_samples>(m, "LevelZeroClockSamples")
+        .def("has_samples", &hws::level_zero_clock_samples::has_samples, "true if any sample is available, false otherwise")
         .def("get_clock_frequency_min", &hws::level_zero_clock_samples::get_clock_frequency_min, "the minimum possible GPU clock frequency in MHz")
         .def("get_clock_frequency_max", &hws::level_zero_clock_samples::get_clock_frequency_max, "the maximum possible GPU clock frequency in MHz")
         .def("get_memory_clock_frequency_min", &hws::level_zero_clock_samples::get_memory_clock_frequency_min, "the minimum possible memory clock frequency in MHz")
@@ -53,6 +55,7 @@ void init_gpu_intel_hardware_sampler(py::module_ &m) {
 
     // bind the power samples
     py::class_<hws::level_zero_power_samples>(m, "LevelZeroPowerSamples")
+        .def("has_samples", &hws::level_zero_power_samples::has_samples, "true if any sample is available, false otherwise")
         .def("get_power_enforced_limit", &hws::level_zero_power_samples::get_power_enforced_limit, "the actually enforced power limit (W), may be different from power management limit if external limiters are set")
         .def("get_power_measurement_type", &hws::level_zero_power_samples::get_power_measurement_type, "the type of the power readings")
         .def("get_power_management_mode", &hws::level_zero_power_samples::get_power_management_mode, "true if power management limits are enabled")
@@ -64,6 +67,7 @@ void init_gpu_intel_hardware_sampler(py::module_ &m) {
 
     // bind the memory samples
     py::class_<hws::level_zero_memory_samples>(m, "LevelZeroMemorySamples")
+        .def("has_samples", &hws::level_zero_memory_samples::has_samples, "true if any sample is available, false otherwise")
         .def("get_memory_total", &hws::level_zero_memory_samples::get_memory_total, "the total memory size of the different memory modules in Bytes")
         .def("get_visible_memory_total", &hws::level_zero_memory_samples::get_visible_memory_total, "the total allocatable memory size of the different memory modules in Bytes")
         .def("get_memory_location", &hws::level_zero_memory_samples::get_memory_location, "the location of the different memory modules (system or device)")
@@ -83,6 +87,7 @@ void init_gpu_intel_hardware_sampler(py::module_ &m) {
 
     // bind the temperature samples
     py::class_<hws::level_zero_temperature_samples>(m, "LevelZeroTemperatureSamples")
+        .def("has_samples", &hws::level_zero_temperature_samples::has_samples, "true if any sample is available, false otherwise")
         .def("get_num_fans", &hws::level_zero_temperature_samples::get_num_fans, "the number of fans")
         .def("get_fan_speed_max", &hws::level_zero_temperature_samples::get_fan_speed_max, "the maximum fan speed the user can set in RPM")
         .def("get_temperature_max", &hws::level_zero_temperature_samples::get_temperature_max, "the maximum GPU temperature in °C")

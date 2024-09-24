@@ -21,7 +21,17 @@ namespace hws {
 //                                                           general samples                                                           //
 //*************************************************************************************************************************************//
 
+bool rocm_smi_general_samples::has_samples() const {
+    return this->architecture_.has_value() || this->byte_order_.has_value() || this->vendor_id_.has_value() || this->name_.has_value()
+           || this->compute_utilization_.has_value() || this->memory_utilization_.has_value() || this->performance_level_.has_value();
+}
+
 std::string rocm_smi_general_samples::generate_yaml_string() const {
+    // if no samples are available, return an empty string
+    if (!this->has_samples()) {
+        return "";
+    }
+
     std::string str{ "general:\n" };
 
     // device architecture
@@ -75,9 +85,6 @@ std::string rocm_smi_general_samples::generate_yaml_string() const {
                            fmt::join(detail::quote(this->performance_level_.value()), ", "));
     }
 
-    // remove last newline
-    str.pop_back();
-
     return str;
 }
 
@@ -102,7 +109,20 @@ std::ostream &operator<<(std::ostream &out, const rocm_smi_general_samples &samp
 //                                                            clock samples                                                            //
 //*************************************************************************************************************************************//
 
+bool rocm_smi_clock_samples::has_samples() const {
+    return this->clock_frequency_min_.has_value() || this->clock_frequency_max_.has_value() || this->memory_clock_frequency_min_.has_value()
+           || this->memory_clock_frequency_max_.has_value() || this->socket_clock_frequency_min_.has_value() || this->socket_clock_frequency_max_.has_value()
+           || this->available_clock_frequencies_.has_value() || this->available_memory_clock_frequencies_.has_value() || this->clock_frequency_.has_value()
+           || this->memory_clock_frequency_.has_value() || this->socket_clock_frequency_.has_value() || this->overdrive_level_.has_value()
+           || this->memory_overdrive_level_.has_value();
+}
+
 std::string rocm_smi_clock_samples::generate_yaml_string() const {
+    // if no samples are available, return an empty string
+    if (!this->has_samples()) {
+        return "";
+    }
+
     std::string str{ "clock:\n" };
 
     // system clock min frequencies
@@ -198,9 +218,6 @@ std::string rocm_smi_clock_samples::generate_yaml_string() const {
                            fmt::join(this->memory_overdrive_level_.value(), ", "));
     }
 
-    // remove last newline
-    str.pop_back();
-
     return str;
 }
 
@@ -237,7 +254,18 @@ std::ostream &operator<<(std::ostream &out, const rocm_smi_clock_samples &sample
 //                                                            power samples                                                            //
 //*************************************************************************************************************************************//
 
+bool rocm_smi_power_samples::has_samples() const {
+    return this->power_management_limit_.has_value() || this->power_enforced_limit_.has_value() || this->power_measurement_type_.has_value()
+           || this->available_power_profiles_.has_value() || this->power_usage_.has_value() || this->power_total_energy_consumption_.has_value()
+           || this->power_profile_.has_value();
+}
+
 std::string rocm_smi_power_samples::generate_yaml_string() const {
+    // if no samples are available, return an empty string
+    if (!this->has_samples()) {
+        return "";
+    }
+
     std::string str{ "power:\n" };
 
     // power management limit
@@ -291,9 +319,6 @@ std::string rocm_smi_power_samples::generate_yaml_string() const {
                            fmt::join(detail::quote(this->power_profile_.value()), ", "));
     }
 
-    // remove last newline
-    str.pop_back();
-
     return str;
 }
 
@@ -318,7 +343,18 @@ std::ostream &operator<<(std::ostream &out, const rocm_smi_power_samples &sample
 //                                                            memory samples                                                           //
 //*************************************************************************************************************************************//
 
+bool rocm_smi_memory_samples::has_samples() const {
+    return this->memory_total_.has_value() || this->visible_memory_total_.has_value() || this->num_pcie_lanes_min_.has_value()
+           || this->num_pcie_lanes_max_.has_value() || this->pcie_link_transfer_rate_min_.has_value() || this->pcie_link_transfer_rate_max_.has_value()
+           || this->memory_used_.has_value() || this->memory_free_.has_value() || this->num_pcie_lanes_.has_value() || this->pcie_link_transfer_rate_.has_value();
+}
+
 std::string rocm_smi_memory_samples::generate_yaml_string() const {
+    // if no samples are available, return an empty string
+    if (!this->has_samples()) {
+        return "";
+    }
+
     std::string str{ "memory:\n" };
 
     // total memory
@@ -394,9 +430,6 @@ std::string rocm_smi_memory_samples::generate_yaml_string() const {
                            fmt::join(this->pcie_link_transfer_rate_.value(), ", "));
     }
 
-    // remove last newline
-    str.pop_back();
-
     return str;
 }
 
@@ -427,7 +460,23 @@ std::ostream &operator<<(std::ostream &out, const rocm_smi_memory_samples &sampl
 //                                                         temperature samples                                                         //
 //*************************************************************************************************************************************//
 
+bool rocm_smi_temperature_samples::has_samples() const {
+    return this->num_fans_.has_value() || this->fan_speed_max_.has_value() || this->temperature_min_.has_value() || this->temperature_max_.has_value()
+           || this->memory_temperature_min_.has_value() || this->memory_temperature_max_.has_value() || this->hotspot_temperature_min_.has_value()
+           || this->hotspot_temperature_max_.has_value() || this->hbm_0_temperature_min_.has_value() || this->hbm_0_temperature_max_.has_value()
+           || this->hbm_1_temperature_min_.has_value() || this->hbm_1_temperature_max_.has_value() || this->hbm_2_temperature_min_.has_value()
+           || this->hbm_2_temperature_max_.has_value() || this->hbm_3_temperature_min_.has_value() || this->hbm_3_temperature_max_.has_value()
+           || this->fan_speed_percentage_.has_value() || this->temperature_.has_value() || this->memory_temperature_.has_value()
+           || this->hotspot_temperature_.has_value() || this->hbm_0_temperature_.has_value() || this->hbm_1_temperature_.has_value()
+           || this->hbm_2_temperature_.has_value() || this->hbm_3_temperature_.has_value();
+}
+
 std::string rocm_smi_temperature_samples::generate_yaml_string() const {
+    // if no samples are available, return an empty string
+    if (!this->has_samples()) {
+        return "";
+    }
+
     std::string str{ "temperature:\n" };
 
     // number of fans (emulated)
@@ -599,9 +648,6 @@ std::string rocm_smi_temperature_samples::generate_yaml_string() const {
                            "    values: [{}]\n",
                            fmt::join(this->hbm_3_temperature_.value(), ", "));
     }
-
-    // remove last newline
-    str.pop_back();
 
     return str;
 }

@@ -152,11 +152,11 @@ void hardware_sampler::dump_yaml(const char *filename) const {
     // output the sampling information
     file << fmt::format("sampling_interval:\n"
                         "  unit: \"ms\"\n"
-                        "  values: {}\n"
+                        "  values: {}\n\n"
                         "time_points:\n"
                         "  unit: \"s\"\n"
-                        "  values: [{}]\n"
-                        "{}\n\n",
+                        "  values: [{}]\n\n"
+                        "{}\n",
                         this->sampling_interval().count(),
                         fmt::join(detail::durations_from_reference_time(this->sampling_time_points(), this->get_event(0).time_point), ", "),
                         this->generate_yaml_string());

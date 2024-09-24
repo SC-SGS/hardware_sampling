@@ -22,6 +22,7 @@ namespace py = pybind11;
 void init_gpu_nvidia_hardware_sampler(py::module_ &m) {
     // bind the general samples
     py::class_<hws::nvml_general_samples>(m, "NvmlGeneralSamples")
+        .def("has_samples", &hws::nvml_general_samples::has_samples, "true if any sample is available, false otherwise")
         .def("get_architecture", &hws::nvml_general_samples::get_architecture, "the architecture name of the device")
         .def("get_byte_order", &hws::nvml_general_samples::get_byte_order, "the byte order (e.g., little/big endian)")
         .def("get_num_cores", &hws::nvml_general_samples::get_num_cores, "the number of CUDA cores")
@@ -37,6 +38,7 @@ void init_gpu_nvidia_hardware_sampler(py::module_ &m) {
 
     // bind the clock samples
     py::class_<hws::nvml_clock_samples>(m, "NvmlClockSamples")
+        .def("has_samples", &hws::nvml_clock_samples::has_samples, "true if any sample is available, false otherwise")
         .def("get_auto_boosted_clock_enabled", &hws::nvml_clock_samples::get_auto_boosted_clock_enabled, "true if clock boosting is currently enabled")
         .def("get_clock_frequency_min", &hws::nvml_clock_samples::get_clock_frequency_min, "the minimum possible graphics clock frequency in MHz")
         .def("get_clock_frequency_max", &hws::nvml_clock_samples::get_clock_frequency_max, "the maximum possible graphics clock frequency in MHz")
@@ -56,6 +58,7 @@ void init_gpu_nvidia_hardware_sampler(py::module_ &m) {
 
     // bind the power samples
     py::class_<hws::nvml_power_samples>(m, "NvmlPowerSamples")
+        .def("has_samples", &hws::nvml_power_samples::has_samples, "true if any sample is available, false otherwise")
         .def("get_power_management_limit", &hws::nvml_power_samples::get_power_management_limit, "if the GPU draws more power (mW) than the power management limit, the GPU may throttle")
         .def("get_power_enforced_limit", &hws::nvml_power_samples::get_power_enforced_limit, "the actually enforced power limit, may be different from power management limit if external limiters are set")
         .def("get_power_measurement_type", &hws::nvml_power_samples::get_power_measurement_type, "the type of the power readings: either current power draw or average power draw")
@@ -70,6 +73,7 @@ void init_gpu_nvidia_hardware_sampler(py::module_ &m) {
 
     // bind the memory samples
     py::class_<hws::nvml_memory_samples>(m, "NvmlMemorySamples")
+        .def("has_samples", &hws::nvml_memory_samples::has_samples, "true if any sample is available, false otherwise")
         .def("get_memory_total", &hws::nvml_memory_samples::get_memory_total, "the total available memory in Byte")
         .def("get_num_pcie_lanes_max", &hws::nvml_memory_samples::get_num_pcie_lanes_max, "the maximum number of PCIe lanes")
         .def("get_pcie_link_generation_max", &hws::nvml_memory_samples::get_pcie_link_generation_max, "the current PCIe link generation (e.g., PCIe 4.0, PCIe 5.0, etc)")
@@ -86,6 +90,7 @@ void init_gpu_nvidia_hardware_sampler(py::module_ &m) {
 
     // bind the temperature samples
     py::class_<hws::nvml_temperature_samples>(m, "NvmlTemperatureSamples")
+        .def("has_samples", &hws::nvml_temperature_samples::has_samples, "true if any sample is available, false otherwise")
         .def("get_num_fans", &hws::nvml_temperature_samples::get_num_fans, "the number of fans (if any)")
         .def("get_fan_speed_min", &hws::nvml_temperature_samples::get_fan_speed_min, "the minimum fan speed the user can set in %")
         .def("get_fan_speed_max", &hws::nvml_temperature_samples::get_fan_speed_max, "the maximum fan speed the user can set in %")
