@@ -175,6 +175,12 @@ class system_hardware_sampler {
      */
     void dump_yaml(const std::filesystem::path &filename) const;
 
+    /**
+     * @brief Return the hardware samples as YAML string.
+     * @return the YAML content as string (`[[nodiscard]]`)
+     */
+    [[nodiscard]] std::string as_yaml_string() const;
+
   private:
     /// The different hardware sampler for the current system.
     std::vector<std::unique_ptr<hardware_sampler>> samplers_;

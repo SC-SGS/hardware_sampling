@@ -62,6 +62,7 @@ void init_hardware_sampler(py::module_ &m) {
         .def("relative_time_points", [](const hws::hardware_sampler &self) { return hws::detail::durations_from_reference_time(self.sampling_time_points(), self.get_event(0).time_point); }, "get the relative durations of the respective hardware samples in seconds (as \"normal\" number)")
         .def("sampling_interval", &hws::hardware_sampler::sampling_interval, "get the sampling interval of this hardware sampler (in ms)")
         .def("dump_yaml", py::overload_cast<const std::string &>(&hws::hardware_sampler::dump_yaml, py::const_), "dump all hardware samples to the given YAML file")
+        .def("as_yaml_string", &hws::hardware_sampler::as_yaml_string, "return all hardware samples as YAML string")
         .def("__repr__", [](const hws::hardware_sampler &self) {
 #if defined(HWS_FOR_CPUS_ENABLED)
             if (dynamic_cast<const hws::cpu_hardware_sampler *>(&self)) {

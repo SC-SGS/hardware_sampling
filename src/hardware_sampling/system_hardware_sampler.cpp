@@ -37,6 +37,7 @@
 #include <cstddef>    // std::size_t
 #include <cstdint>    // std::uint32_t
 #include <memory>     // std::unique_ptr, std::make_unique
+#include <numeric>    // std::accumulate
 #include <stdexcept>  // std::out_of_range
 #include <vector>     // std::vector
 
@@ -195,6 +196,10 @@ void system_hardware_sampler::dump_yaml(const std::string &filename) const {
 
 void system_hardware_sampler::dump_yaml(const std::filesystem::path &filename) const {
     std::for_each(samplers_.cbegin(), samplers_.cend(), [&filename](const auto &ptr) { ptr->dump_yaml(filename); });
+}
+
+std::string system_hardware_sampler::as_yaml_string() const {
+    return std::accumulate(samplers_.cbegin(), samplers_.cend(), std::string{}, [](const std::string str, const auto &ptr) { return str + ptr->as_yaml_string(); });
 }
 
 }  // namespace hws

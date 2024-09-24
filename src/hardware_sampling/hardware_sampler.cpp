@@ -127,40 +127,7 @@ void hardware_sampler::dump_yaml(const char *filename) const {
     std::ofstream file{ filename, std::ios_base::app };
 
     // begin a new YAML document (only with "---" multiple YAML documents in a single file are allowed)
-    file << "---\n\n";
-
-    // set the device identification
-    file << fmt::format("device_identification: \"{}\"\n\n", this->device_identification());
-
-    // output the start date time of this hardware sampling
-    file << fmt::format("start_time: \"{:%Y-%m-%d %X}\"\n\n", start_date_time_);
-
-    // output the event information
-    std::vector<decltype(event::time_point)> event_time_points{};
-    std::vector<decltype(event::name)> event_names{};
-    for (const auto &[time_point, name] : events_) {
-        event_time_points.push_back(time_point);
-        event_names.push_back(fmt::format("\"{}\"", name));
-    }
-    file << fmt::format("events:\n"
-                        "  time_points:\n"
-                        "    unit: \"s\"\n"
-                        "    values: [{}]\n"
-                        "  names: [{}]\n\n",
-                        fmt::join(detail::durations_from_reference_time(event_time_points, this->get_event(0).time_point), ", "),
-                        fmt::join(event_names, ", "));
-
-    // output the sampling information
-    file << fmt::format("sampling_interval:\n"
-                        "  unit: \"ms\"\n"
-                        "  values: {}\n\n"
-                        "time_points:\n"
-                        "  unit: \"s\"\n"
-                        "  values: [{}]\n\n"
-                        "{}\n",
-                        this->sampling_interval().count(),
-                        fmt::join(detail::durations_from_reference_time(this->sampling_time_points(), this->get_event(0).time_point), ", "),
-                        this->generate_yaml_string());
+    file << "---\n\n" << this->as_yaml_string();
 }
 
 void hardware_sampler::dump_yaml(const std::string &filename) const {
@@ -169,6 +136,47 @@ void hardware_sampler::dump_yaml(const std::string &filename) const {
 
 void hardware_sampler::dump_yaml(const std::filesystem::path &filename) const {
     this->dump_yaml(filename.string().c_str());
+}
+
+std::string hardware_sampler::as_yaml_string() const {
+    if (!this->has_sampling_stopped()) {
+        throw std::runtime_error{ "Can return samples as string only after the sampling has been stopped!" };
+    }
+
+    // generate the event information
+    std::vector<decltype(event::time_point)> event_time_points{};
+    std::vector<decltype(event::name)> event_names{};
+    for (const auto &[time_point, name] : events_) {
+        event_time_points.push_back(time_point);
+        event_names.push_back(fmt::format("\"{}\"", name));
+    }
+
+    return fmt::format("device_identification: \"{}\"\n"
+                       "\n"
+                       "start_time: \"{:%Y-%m-%d %X}\"\n"
+                       "\n"
+                       "events:\n"
+                       "  time_points:\n"
+                       "    unit: \"s\"\n"
+                       "    values: [{}]\n"
+                       "  names: [{}]\n"
+                       "\n"
+                       "sampling_interval:\n"
+                       "  unit: \"ms\"\n"
+                       "  values: {}\n"
+                       "\n"
+                       "time_points:\n"
+                       "  unit: \"s\"\n"
+                       "  values: [{}]\n"
+                       "\n"
+                       "{}\n",
+                       this->device_identification(),
+                       start_date_time_,
+                       fmt::join(detail::durations_from_reference_time(event_time_points, this->get_event(0).time_point), ", "),
+                       fmt::join(event_names, ", "),
+                       this->sampling_interval().count(),
+                       fmt::join(detail::durations_from_reference_time(this->sampling_time_points(), this->get_event(0).time_point), ", "),
+                       this->generate_yaml_string());
 }
 
 void hardware_sampler::add_time_point(const std::chrono::steady_clock::time_point time_point) {

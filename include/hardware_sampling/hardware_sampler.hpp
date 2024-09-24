@@ -160,6 +160,12 @@ class hardware_sampler {
      */
     void dump_yaml(const std::filesystem::path &filename) const;
 
+    /**
+     * @brief Return the hardware samples as YAML string.
+     * @return the YAML content as string (`[[nodiscard]]`)
+     */
+    [[nodiscard]] std::string as_yaml_string() const;
+
   protected:
     /**
      * @brief Getter the hardware samples. Called in another std::thread.

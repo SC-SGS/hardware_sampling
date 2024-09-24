@@ -66,5 +66,6 @@ void init_system_hardware_sampler(py::module_ &m) {
             return out; }, "get the hardware samplers available for the whole system")
         .def("sampler", [](hws::system_hardware_sampler &self, const std::size_t idx) { return self.sampler(idx).get(); }, "get the i-th hardware sampler available for the whole system")
         .def("dump_yaml", py::overload_cast<const std::string &>(&hws::system_hardware_sampler::dump_yaml, py::const_), "dump all hardware samples for all hardware samplers to the given YAML file")
+        .def("as_yaml_string", &hws::system_hardware_sampler::as_yaml_string, "return all hardware samples for all hardware samplers as YAML string")
         .def("__repr__", [](const hws::system_hardware_sampler &self) { return fmt::format("<hws.SystemHardwareSampler with {} samples>", self.num_samplers()); });
 }
