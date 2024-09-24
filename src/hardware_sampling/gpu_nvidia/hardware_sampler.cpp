@@ -542,7 +542,7 @@ void gpu_nvidia_hardware_sampler::sampling_loop() {
 std::string gpu_nvidia_hardware_sampler::device_identification() const {
     nvmlPciInfo_st pcie_info{};
     HWS_NVML_ERROR_CHECK(nvmlDeviceGetPciInfo_v3(device_.get_impl().device, &pcie_info))
-    return fmt::format("gpu_nvidia_device_{}_{}", pcie_info.bus, pcie_info.device);
+    return fmt::format("gpu_nvidia_device_{}_{}", pcie_info.device, pcie_info.bus);
 }
 
 std::string gpu_nvidia_hardware_sampler::generate_yaml_string() const {
