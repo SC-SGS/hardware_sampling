@@ -428,19 +428,25 @@ std::string cpu_hardware_sampler::generate_yaml_string() const {
         throw std::runtime_error{ "Can't create the final YAML entry if the hardware sampler is still running!" };
     }
 
-    return fmt::format("{}\n"
-                       "{}\n"
-                       "{}\n"
-                       "{}\n"
-                       "{}\n"
-                       "{}\n"
+    return fmt::format("{}{}"
+                       "{}{}"
+                       "{}{}"
+                       "{}{}"
+                       "{}{}"
+                       "{}{}"
                        "{}",
                        general_samples_.generate_yaml_string(),
+                       general_samples_.has_samples() ? "\n" : "",
                        clock_samples_.generate_yaml_string(),
+                       clock_samples_.has_samples() ? "\n" : "",
                        power_samples_.generate_yaml_string(),
+                       power_samples_.has_samples() ? "\n" : "",
                        memory_samples_.generate_yaml_string(),
+                       memory_samples_.has_samples() ? "\n" : "",
                        temperature_samples_.generate_yaml_string(),
+                       temperature_samples_.has_samples() ? "\n" : "",
                        gfx_samples_.generate_yaml_string(),
+                       gfx_samples_.has_samples() ? "\n" : "",
                        idle_state_samples_.generate_yaml_string());
 }
 
