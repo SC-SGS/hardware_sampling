@@ -266,9 +266,10 @@ void gpu_nvidia_hardware_sampler::sampling_loop() {
             clock_samples_.memory_clock_frequency_ = decltype(clock_samples_.memory_clock_frequency_)::value_type{ static_cast<decltype(clock_samples_.memory_clock_frequency_)::value_type::value_type>(clock_mem) };
         }
 
-        unsigned long long clock_throttle_reason{};
+        decltype(clock_samples_.throttle_reason_)::value_type::value_type clock_throttle_reason{};
         if (nvmlDeviceGetCurrentClocksEventReasons(device, &clock_throttle_reason) == NVML_SUCCESS) {
-            clock_samples_.throttle_reason_ = decltype(clock_samples_.throttle_reason_)::value_type{ detail::throttle_event_reason_to_string(clock_throttle_reason) };
+            clock_samples_.throttle_reason_ = decltype(clock_samples_.throttle_reason_)::value_type{ clock_throttle_reason };
+            clock_samples_.throttle_reason_string_ = decltype(clock_samples_.throttle_reason_string_)::value_type{ detail::throttle_event_reason_to_string(clock_throttle_reason) };
         }
 
         nvmlEnableState_t mode{};
@@ -462,10 +463,11 @@ void gpu_nvidia_hardware_sampler::sampling_loop() {
                     clock_samples_.memory_clock_frequency_->push_back(static_cast<decltype(clock_samples_.memory_clock_frequency_)::value_type::value_type>(value));
                 }
 
-                if (clock_samples_.throttle_reason_.has_value()) {
-                    unsigned long long value{};
+                if (clock_samples_.throttle_reason_string_.has_value()) {
+                    decltype(clock_samples_.throttle_reason_)::value_type::value_type value{};
                     HWS_NVML_ERROR_CHECK(nvmlDeviceGetCurrentClocksEventReasons(device, &value))
-                    clock_samples_.throttle_reason_->push_back(detail::throttle_event_reason_to_string(value));
+                    clock_samples_.throttle_reason_->push_back(value);
+                    clock_samples_.throttle_reason_string_->push_back(detail::throttle_event_reason_to_string(value));
                 }
 
                 if (clock_samples_.auto_boosted_clock_.has_value()) {

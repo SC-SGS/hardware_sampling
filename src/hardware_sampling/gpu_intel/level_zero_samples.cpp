@@ -129,7 +129,8 @@ bool level_zero_clock_samples::has_samples() const {
     return this->clock_frequency_min_.has_value() || this->clock_frequency_max_.has_value() || this->memory_clock_frequency_min_.has_value()
            || this->memory_clock_frequency_max_.has_value() || this->available_clock_frequencies_.has_value() || this->available_memory_clock_frequencies_.has_value()
            || this->clock_frequency_.has_value() || this->memory_clock_frequency_.has_value() || this->throttle_reason_.has_value()
-           || this->memory_throttle_reason_.has_value() || this->frequency_limit_tdp_.has_value() || this->memory_frequency_limit_tdp_.has_value();
+           || this->throttle_reason_string_.has_value() || this->memory_throttle_reason_.has_value() || this->memory_throttle_reason_string_.has_value()
+           || this->frequency_limit_tdp_.has_value() || this->memory_frequency_limit_tdp_.has_value();
 }
 
 std::string level_zero_clock_samples::generate_yaml_string() const {
@@ -197,19 +198,33 @@ std::string level_zero_clock_samples::generate_yaml_string() const {
                            "    values: [{}]\n",
                            fmt::join(this->memory_clock_frequency_.value(), ", "));
     }
-    // the current GPU core throttle reason
+    // the current GPU core throttle reason as bitmask
     if (this->throttle_reason_.has_value()) {
         str += fmt::format("  throttle_reason:\n"
-                           "    unit: \"string\"\n"
+                           "    unit: \"bitmask\"\n"
                            "    values: [{}]\n",
                            fmt::join(this->throttle_reason_.value(), ", "));
     }
-    // the current memory throttle reason
-    if (this->memory_throttle_reason_.has_value()) {
-        str += fmt::format("  memory_throttle_reason:\n"
+    // the current GPU core throttle reason as string
+    if (this->throttle_reason_string_.has_value()) {
+        str += fmt::format("  throttle_reason_string:\n"
                            "    unit: \"string\"\n"
                            "    values: [{}]\n",
+                           fmt::join(this->throttle_reason_string_.value(), ", "));
+    }
+    // the current memory throttle reason as bitmask
+    if (this->memory_throttle_reason_.has_value()) {
+        str += fmt::format("  memory_throttle_reason:\n"
+                           "    unit: \"bitmask\"\n"
+                           "    values: [{}]\n",
                            fmt::join(this->memory_throttle_reason_.value(), ", "));
+    }
+    // the current memory throttle reason as string
+    if (this->memory_throttle_reason_string_.has_value()) {
+        str += fmt::format("  memory_throttle_reason_string:\n"
+                           "    unit: \"string\"\n"
+                           "    values: [{}]\n",
+                           fmt::join(this->memory_throttle_reason_string_.value(), ", "));
     }
     // the maximum GPU core frequency based on the current TDP limit
     if (this->frequency_limit_tdp_.has_value()) {
@@ -238,8 +253,10 @@ std::ostream &operator<<(std::ostream &out, const level_zero_clock_samples &samp
                               "available_memory_clock_frequencies [MHz]: [{}]\n"
                               "clock_frequency [MHz]: [{}]\n"
                               "memory_clock_frequency [MHz]: [{}]\n"
-                              "throttle_reason [string]: [{}]\n"
-                              "memory_throttle_reason [string]: [{}]\n"
+                              "throttle_reason [bitmask]: [{}]\n"
+                              "throttle_reason_string [string]: [{}]\n"
+                              "memory_throttle_reason [bitmask]: [{}]\n"
+                              "memory_throttle_reason_string [string]: [{}]\n"
                               "frequency_limit_tdp [MHz]: [{}]\n"
                               "memory_frequency_limit_tdp [MHz]: [{}]",
                               detail::value_or_default(samples.get_clock_frequency_min()),
@@ -251,7 +268,9 @@ std::ostream &operator<<(std::ostream &out, const level_zero_clock_samples &samp
                               fmt::join(detail::value_or_default(samples.get_clock_frequency()), ", "),
                               fmt::join(detail::value_or_default(samples.get_memory_clock_frequency()), ", "),
                               fmt::join(detail::value_or_default(samples.get_throttle_reason()), ", "),
+                              fmt::join(detail::value_or_default(samples.get_throttle_reason_string()), ", "),
                               fmt::join(detail::value_or_default(samples.get_memory_throttle_reason()), ", "),
+                              fmt::join(detail::value_or_default(samples.get_memory_throttle_reason_string()), ", "),
                               fmt::join(detail::value_or_default(samples.get_frequency_limit_tdp()), ", "),
                               fmt::join(detail::value_or_default(samples.get_memory_frequency_limit_tdp()), ", "));
 }

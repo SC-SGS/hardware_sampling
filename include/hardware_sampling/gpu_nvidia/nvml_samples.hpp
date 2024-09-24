@@ -106,11 +106,12 @@ class nvml_clock_samples {
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(map_type, available_clock_frequencies)                    // the available clock frequencies in MHz, based on a memory clock frequency (slowest to fastest)
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::vector<double>, available_memory_clock_frequencies)  // the available memory clock frequencies in MHz (slowest to fastest)
 
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, clock_frequency)         // the current graphics clock frequency in MHz
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, memory_clock_frequency)  // the current memory clock frequency in MHz
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, sm_clock_frequency)      // the current SM clock frequency in Mhz
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(std::string, throttle_reason)    // the reason the GPU clock throttled
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(bool, auto_boosted_clock)        // true if the clocks are currently auto boosted
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, clock_frequency)              // the current graphics clock frequency in MHz
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, memory_clock_frequency)       // the current memory clock frequency in MHz
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, sm_clock_frequency)           // the current SM clock frequency in Mhz
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(unsigned long long, throttle_reason)  // the reason the GPU clock throttled (as bitmask)
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(std::string, throttle_reason_string)  // the reason the GPU clock throttled (as string)
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(bool, auto_boosted_clock)             // true if the clocks are currently auto boosted
 };
 
 /**

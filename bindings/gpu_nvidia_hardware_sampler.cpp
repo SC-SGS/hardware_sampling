@@ -51,7 +51,8 @@ void init_gpu_nvidia_hardware_sampler(py::module_ &m) {
         .def("get_available_memory_clock_frequencies", &hws::nvml_clock_samples::get_available_memory_clock_frequencies, "the available memory clock frequencies in MHz (slowest to fastest)")
         .def("get_memory_clock_frequency", &hws::nvml_clock_samples::get_memory_clock_frequency, "the current memory clock frequency in MHz")
         .def("get_sm_clock_frequency", &hws::nvml_clock_samples::get_sm_clock_frequency, "the current SM clock frequency in Mhz")
-        .def("get_throttle_reason", &hws::nvml_clock_samples::get_throttle_reason, "the reason the GPU clock throttled")
+        .def("get_throttle_reason", &hws::nvml_clock_samples::get_throttle_reason, "the reason the GPU clock throttled (as bitmask)")
+        .def("get_throttle_reason_string", &hws::nvml_clock_samples::get_throttle_reason_string, "the reason the GPU clock throttled (as string)")
         .def("get_auto_boosted_clock", &hws::nvml_clock_samples::get_auto_boosted_clock, "true if the clocks are currently auto boosted")
         .def("__repr__", [](const hws::nvml_clock_samples &self) {
             return fmt::format("<HardwareSampling.NvmlClockSamples with\n{}\n>", self);

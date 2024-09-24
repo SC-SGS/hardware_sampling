@@ -109,31 +109,33 @@ current clock frequencies, temperatures, or memory consumption.
 
 ### clock-related samples
 
-| sample                             | sample type | CPUs |   NVIDIA GPUs    |  AMD GPUs   |    Intel GPUs    |
-|:-----------------------------------|:-----------:|:----:|:----------------:|:-----------:|:----------------:|
-| auto_boosted_clock_enabled         |    fixed    | bool |       bool       |      -      |        -         |
-| clock_frequency_min                |    fixed    | MHz  |       MHz        |     MHz     |       MHz        |
-| clock_frequency_max                |    fixed    | MHz  |       MHz        |     MHz     |       MHz        |
-| memory_clock_frequency_min         |    fixed    |  -   |       MHz        |     MHz     |       MHz        |
-| memory_clock_frequency_max         |    fixed    |  -   |       MHz        |     MHz     |       MHz        |
-| socket_clock_frequency_min         |    fixed    |  -   |        -         |     MHz     |        -         |
-| socket_clock_frequency_min         |    fixed    |  -   |        -         |     MHz     |        -         |
-| sm_clock_frequency_max             |    fixed    |  -   |       MHz        |      -      |        -         |
-| available_clock_frequencies        |    fixed    |  -   |    map of MHz    | list of MHz |   list of MHz    |
-| available_memory_clock_frequencies |    fixed    |  -   |   list of MHz    | list of MHz |   list of MHz    |
-| clock_frequency                    |   sampled   | MHz  |       MHz        |     MHz     |       MHz        |
-| average_non_idle_clock_frequency   |   sampled   | MHz  |        -         |      -      |        -         |
-| time_stamp_counter                 |   sampled   | MHz  |        -         |      -      |        -         |
-| memory_clock_frequency             |   sampled   |  -   |       MHz        |     MHz     |       MHz        |
-| socket_clock_frequency             |   sampled   |  -   |        -         |     MHz     |        -         |
-| sm_clock_frequency                 |   sampled   |  -   |       MHz        |      -      |        -         |
-| overdrive_level                    |   sampled   |  -   |        -         |      %      |        -         |
-| memory_overdrive_level             |   sampled   |  -   |        -         |      %      |        -         |
-| throttle_reason                    |   sampled   |  -   | string (bitmask) |      -      | string (bitmask) |
-| memory_throttle_reason             |   sampled   |  -   |        -         |      -      | string (bitmask) |
-| auto_boosted_clock                 |   sampled   |  -   |       bool       |      -      |        -         |
-| frequency_limit_tdp                |   sampled   |  -   |        -         |      -      |       MHz        |
-| memory_frequency_limit_tdp         |   sampled   |  -   |        -         |      -      |       MHz        |
+| sample                             | sample type | CPUs | NVIDIA GPUs |  AMD GPUs   | Intel GPUs  |
+|:-----------------------------------|:-----------:|:----:|:-----------:|:-----------:|:-----------:|
+| auto_boosted_clock_enabled         |    fixed    | bool |    bool     |      -      |      -      |
+| clock_frequency_min                |    fixed    | MHz  |     MHz     |     MHz     |     MHz     |
+| clock_frequency_max                |    fixed    | MHz  |     MHz     |     MHz     |     MHz     |
+| memory_clock_frequency_min         |    fixed    |  -   |     MHz     |     MHz     |     MHz     |
+| memory_clock_frequency_max         |    fixed    |  -   |     MHz     |     MHz     |     MHz     |
+| socket_clock_frequency_min         |    fixed    |  -   |      -      |     MHz     |      -      |
+| socket_clock_frequency_min         |    fixed    |  -   |      -      |     MHz     |      -      |
+| sm_clock_frequency_max             |    fixed    |  -   |     MHz     |      -      |      -      |
+| available_clock_frequencies        |    fixed    |  -   | map of MHz  | list of MHz | list of MHz |
+| available_memory_clock_frequencies |    fixed    |  -   | list of MHz | list of MHz | list of MHz |
+| clock_frequency                    |   sampled   | MHz  |     MHz     |     MHz     |     MHz     |
+| average_non_idle_clock_frequency   |   sampled   | MHz  |      -      |      -      |      -      |
+| time_stamp_counter                 |   sampled   | MHz  |      -      |      -      |      -      |
+| memory_clock_frequency             |   sampled   |  -   |     MHz     |     MHz     |     MHz     |
+| socket_clock_frequency             |   sampled   |  -   |      -      |     MHz     |      -      |
+| sm_clock_frequency                 |   sampled   |  -   |     MHz     |      -      |      -      |
+| overdrive_level                    |   sampled   |  -   |      -      |      %      |      -      |
+| memory_overdrive_level             |   sampled   |  -   |      -      |      %      |      -      |
+| throttle_reason                    |   sampled   |  -   |   bitmask   |      -      |   bitmask   |
+| throttle_reason_string             |   sampled   |  -   |     str     |      -      |     str     |
+| memory_throttle_reason             |   sampled   |  -   |      -      |      -      |   bitmask   |
+| memory_throttle_reason_string      |   sampled   |  -   |      -      |      -      |     str     |
+| auto_boosted_clock                 |   sampled   |  -   |    bool     |      -      |      -      |
+| frequency_limit_tdp                |   sampled   |  -   |      -      |      -      |     MHz     |
+| memory_frequency_limit_tdp         |   sampled   |  -   |      -      |      -      |     MHz     |
 
 ### power-related samples
 

@@ -46,8 +46,10 @@ void init_gpu_intel_hardware_sampler(py::module_ &m) {
         .def("get_available_memory_clock_frequencies", &hws::level_zero_clock_samples::get_available_memory_clock_frequencies, "the available memory clock frequencies in MHz (slowest to fastest)")
         .def("get_clock_frequency", &hws::level_zero_clock_samples::get_clock_frequency, "the current GPU frequency in MHz")
         .def("get_memory_clock_frequency", &hws::level_zero_clock_samples::get_memory_clock_frequency, "the current memory frequency in MHz")
-        .def("get_throttle_reason", &hws::level_zero_clock_samples::get_throttle_reason, "the current GPU frequency throttle reason")
-        .def("get_memory_throttle_reason", &hws::level_zero_clock_samples::get_memory_throttle_reason, "the current memory frequency throttle reason")
+        .def("get_throttle_reason", &hws::level_zero_clock_samples::get_throttle_reason, "the current GPU frequency throttle reason (as bitmask)")
+        .def("get_throttle_reason_string", &hws::level_zero_clock_samples::get_throttle_reason_string, "the current GPU frequency throttle reason (as string)")
+        .def("get_memory_throttle_reason", &hws::level_zero_clock_samples::get_memory_throttle_reason, "the current memory frequency throttle reason (as bitmask)")
+        .def("get_memory_throttle_reason_string", &hws::level_zero_clock_samples::get_memory_throttle_reason_string, "the current memory frequency throttle reason (as string)")
         .def("get_frequency_limit_tdp", &hws::level_zero_clock_samples::get_frequency_limit_tdp, "the current maximum allowed GPU frequency based on the TDP limit in MHz")
         .def("get_memory_frequency_limit_tdp", &hws::level_zero_clock_samples::get_memory_frequency_limit_tdp, "the current maximum allowed memory frequency based on the TDP limit in MHz")
         .def("__repr__", [](const hws::level_zero_clock_samples &self) {

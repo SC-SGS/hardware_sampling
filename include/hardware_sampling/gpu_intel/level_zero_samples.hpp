@@ -16,7 +16,7 @@
 
 #include "fmt/ostream.h"  // fmt::formatter, fmt::ostream_formatter
 
-#include <cstdint>        // std::uint64_t, std::int32_t
+#include <cstdint>        // std::uint64_t, std::int64_t, std::int32_t
 #include <iosfwd>         // std::ostream forward declaration
 #include <optional>       // std::optional
 #include <string>         // std::string
@@ -50,10 +50,10 @@ class level_zero_general_samples {
      */
     [[nodiscard]] std::string generate_yaml_string() const;
 
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, byte_order)          // the byte order (e.g., little/big endian)
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, vendor_id)           // the vendor ID
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, name)                // the model name of the device
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::vector<std::string>, flags)  // potential GPU flags (e.g. integrated device)
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, byte_order)            // the byte order (e.g., little/big endian)
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, vendor_id)             // the vendor ID
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, name)                  // the model name of the device
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::vector<std::string>, flags)    // potential GPU flags (e.g. integrated device)
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, standby_mode)          // the enabled standby mode (power saving or never)
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::uint32_t, num_threads_per_eu)  // the number of threads per EU unit
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::uint32_t, eu_simd_width)       // the physical EU unit SIMD width
@@ -100,12 +100,14 @@ class level_zero_clock_samples {
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::vector<double>, available_clock_frequencies)         // the available GPU clock frequencies in MHz (slowest to fastest)
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::vector<double>, available_memory_clock_frequencies)  // the available memory clock frequencies in MHz (slowest to fastest)
 
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, clock_frequency)              // the current GPU frequency in MHz
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, memory_clock_frequency)       // the current memory frequency in MHz
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(std::string, throttle_reason)         // the current GPU frequency throttle reason
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(std::string, memory_throttle_reason)  // the current memory frequency throttle reason
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, frequency_limit_tdp)          // the current maximum allowed GPU frequency based on the TDP limit in MHz
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, memory_frequency_limit_tdp)   // the current maximum allowed memory frequency based on the TDP limit in MHz
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, clock_frequency)                     // the current GPU frequency in MHz
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, memory_clock_frequency)              // the current memory frequency in MHz
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(std::int64_t, throttle_reason)               // the current GPU frequency throttle reason as bitmask
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(std::string, throttle_reason_string)         // the current GPU frequency throttle reason as string
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(std::int64_t, memory_throttle_reason)        // the current memory frequency throttle reason as bitmask
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(std::string, memory_throttle_reason_string)  // the current memory frequency throttle reason as string
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, frequency_limit_tdp)                 // the current maximum allowed GPU frequency based on the TDP limit in MHz
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, memory_frequency_limit_tdp)          // the current maximum allowed memory frequency based on the TDP limit in MHz
 };
 
 /**

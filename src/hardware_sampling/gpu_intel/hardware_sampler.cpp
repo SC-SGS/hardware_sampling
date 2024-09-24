@@ -20,7 +20,7 @@
 
 #include <chrono>     // std::chrono::{steady_clock, duration_cast, milliseconds}
 #include <cstddef>    // std::size_t
-#include <cstdint>    // std::int32_t
+#include <cstdint>    // std::int32_t, std::int64_t
 #include <exception>  // std::exception, std::terminate
 #include <ios>        // std::ios_base
 #include <iostream>   // std::cerr, std::endl
@@ -196,8 +196,14 @@ void gpu_intel_hardware_sampler::sampling_loop() {
                                             clock_samples_.clock_frequency_ = decltype(clock_samples_.clock_frequency_)::value_type{ frequency_state.actual };
                                         }
                                         if (frequency_state.throttleReasons >= 0.0) {
-                                            using vector_type = decltype(clock_samples_.throttle_reason_)::value_type;
-                                            clock_samples_.throttle_reason_ = vector_type{ static_cast<vector_type::value_type>(detail::throttle_reason_to_string(frequency_state.throttleReasons)) };
+                                            {
+                                                using vector_type = decltype(clock_samples_.throttle_reason_)::value_type;
+                                                clock_samples_.throttle_reason_ = vector_type{ static_cast<vector_type::value_type>(static_cast<std::int64_t>(frequency_state.throttleReasons)) };
+                                            }
+                                            {
+                                                using vector_type = decltype(clock_samples_.throttle_reason_string_)::value_type;
+                                                clock_samples_.throttle_reason_string_ = vector_type{ static_cast<vector_type::value_type>(detail::throttle_reason_to_string(frequency_state.throttleReasons)) };
+                                            }
                                         }
                                     }
                                     break;
@@ -210,8 +216,14 @@ void gpu_intel_hardware_sampler::sampling_loop() {
                                             clock_samples_.memory_clock_frequency_ = decltype(clock_samples_.memory_clock_frequency_)::value_type{ frequency_state.actual };
                                         }
                                         if (frequency_state.throttleReasons >= 0.0) {
-                                            using vector_type = decltype(clock_samples_.memory_throttle_reason_)::value_type;
-                                            clock_samples_.memory_throttle_reason_ = vector_type{ static_cast<vector_type::value_type>(detail::throttle_reason_to_string(frequency_state.throttleReasons)) };
+                                            {
+                                                using vector_type = decltype(clock_samples_.memory_throttle_reason_)::value_type;
+                                                clock_samples_.memory_throttle_reason_ = vector_type{ static_cast<vector_type::value_type>(static_cast<std::int64_t>(frequency_state.throttleReasons)) };
+                                            }
+                                            {
+                                                using vector_type = decltype(clock_samples_.memory_throttle_reason_string_)::value_type;
+                                                clock_samples_.memory_throttle_reason_string_ = vector_type{ static_cast<vector_type::value_type>(detail::throttle_reason_to_string(frequency_state.throttleReasons)) };
+                                            }
                                         }
                                     }
                                     break;
@@ -525,7 +537,10 @@ void gpu_intel_hardware_sampler::sampling_loop() {
                                         clock_samples_.clock_frequency_->push_back(frequency_state.actual);
                                     }
                                     if (clock_samples_.throttle_reason_.has_value()) {
-                                        clock_samples_.throttle_reason_->push_back(detail::throttle_reason_to_string(frequency_state.throttleReasons));
+                                        clock_samples_.throttle_reason_->push_back(static_cast<std::int64_t>(frequency_state.throttleReasons));
+                                    }
+                                    if (clock_samples_.throttle_reason_string_.has_value()) {
+                                        clock_samples_.throttle_reason_string_->push_back(detail::throttle_reason_to_string(frequency_state.throttleReasons));
                                     }
                                 }
                                 break;
@@ -538,7 +553,10 @@ void gpu_intel_hardware_sampler::sampling_loop() {
                                         clock_samples_.memory_clock_frequency_->push_back(frequency_state.actual);
                                     }
                                     if (clock_samples_.memory_throttle_reason_.has_value()) {
-                                        clock_samples_.memory_throttle_reason_->push_back(detail::throttle_reason_to_string(frequency_state.throttleReasons));
+                                        clock_samples_.memory_throttle_reason_->push_back(static_cast<std::int64_t>(frequency_state.throttleReasons));
+                                    }
+                                    if (clock_samples_.memory_throttle_reason_string_.has_value()) {
+                                        clock_samples_.memory_throttle_reason_string_->push_back(detail::throttle_reason_to_string(frequency_state.throttleReasons));
                                     }
                                 }
                                 break;

@@ -134,7 +134,7 @@ bool nvml_clock_samples::has_samples() const {
            || this->memory_clock_frequency_min_.has_value() || this->memory_clock_frequency_max_.has_value() || this->sm_clock_frequency_max_.has_value()
            || this->available_clock_frequencies_.has_value() || this->available_memory_clock_frequencies_.has_value() || this->clock_frequency_.has_value()
            || this->memory_clock_frequency_.has_value() || this->sm_clock_frequency_.has_value() || this->throttle_reason_.has_value()
-           || this->auto_boosted_clock_.has_value();
+           || this->throttle_reason_string_.has_value() || this->auto_boosted_clock_.has_value();
 }
 
 std::string nvml_clock_samples::generate_yaml_string() const {
@@ -225,12 +225,19 @@ std::string nvml_clock_samples::generate_yaml_string() const {
                            "    values: [{}]\n",
                            fmt::join(this->sm_clock_frequency_.value(), ", "));
     }
-    // clock throttle reason
+    // clock throttle reason as bitmask
     if (this->throttle_reason_.has_value()) {
         str += fmt::format("  throttle_reason:\n"
-                           "    unit: \"string\"\n"
+                           "    unit: \"bitmask\"\n"
                            "    values: [{}]\n",
                            fmt::join(detail::quote(this->throttle_reason_.value()), ", "));
+    }
+    // clock throttle reason as string
+    if (this->throttle_reason_string_.has_value()) {
+        str += fmt::format("  throttle_reason_string:\n"
+                           "    unit: \"string\"\n"
+                           "    values: [{}]\n",
+                           fmt::join(detail::quote(this->throttle_reason_string_.value()), ", "));
     }
     // clock is auto-boosted
     if (this->auto_boosted_clock_.has_value()) {
@@ -255,7 +262,8 @@ std::ostream &operator<<(std::ostream &out, const nvml_clock_samples &samples) {
                               "clock_frequency [MHz]: [{}]\n"
                               "memory_clock_frequency [MHz]: [{}]\n"
                               "sm_clock_frequency [MHz]: [{}]\n"
-                              "throttle_reason [string]: [{}]\n"
+                              "throttle_reason [bitmask]: [{}]\n"
+                              "throttle_reason_string [string]: [{}]\n"
                               "auto_boosted_clock [bool]: [{}]",
                               detail::value_or_default(samples.get_auto_boosted_clock_enabled()),
                               detail::value_or_default(samples.get_clock_frequency_min()),
@@ -269,6 +277,7 @@ std::ostream &operator<<(std::ostream &out, const nvml_clock_samples &samples) {
                               fmt::join(detail::value_or_default(samples.get_memory_clock_frequency()), ", "),
                               fmt::join(detail::value_or_default(samples.get_sm_clock_frequency()), ", "),
                               fmt::join(detail::value_or_default(samples.get_throttle_reason()), ", "),
+                              fmt::join(detail::value_or_default(samples.get_throttle_reason_string()), ", "),
                               fmt::join(detail::value_or_default(samples.get_auto_boosted_clock()), ", "));
 }
 
