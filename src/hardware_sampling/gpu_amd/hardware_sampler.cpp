@@ -677,10 +677,10 @@ std::string gpu_amd_hardware_sampler::generate_yaml_string() const {
         throw std::runtime_error{ "Can't create the final YAML entry if the hardware sampler is still running!" };
     }
 
-    return fmt::format("{}\n"
-                       "{}\n"
-                       "{}\n"
-                       "{}\n"
+    return fmt::format("{}\n\n"
+                       "{}\n\n"
+                       "{}\n\n"
+                       "{}\n\n"
                        "{}",
                        general_samples_.generate_yaml_string(),
                        clock_samples_.generate_yaml_string(),
