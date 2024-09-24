@@ -16,10 +16,12 @@
 #include "hardware_sampling/gpu_intel/level_zero_samples.hpp"        // hws::{level_zero_general_samples, level_zero_clock_samples, level_zero_power_samples, level_zero_memory_samples, level_zero_temperature_samples}
 #include "hardware_sampling/hardware_sampler.hpp"                    // hws::hardware_sampler
 
+#include "fmt/format.h"  // fmt::formatter, fmt::ostream_formatter
+
 #include <atomic>   // std::atomic
-#include <chrono>   // std::chrono::{steady_clock, milliseconds}, std::chrono_literals namespace
+#include <chrono>   // std::chrono::milliseconds, std::chrono_literals namespace
 #include <cstddef>  // std::size_t
-#include <format>   // std::formatter
+#include <iosfwd>   // std::ostream forward declaration
 #include <string>   // std::string
 
 namespace hws {
@@ -157,6 +159,6 @@ std::ostream &operator<<(std::ostream &out, const gpu_intel_hardware_sampler &sa
 }  // namespace hws
 
 template <>
-struct std::formatter<hws::gpu_intel_hardware_sampler> : hws::detail::ostream_formatter { };
+struct fmt::formatter<hws::gpu_intel_hardware_sampler> : fmt::ostream_formatter { };
 
 #endif  // HARDWARE_SAMPLING_GPU_INTEL_HARDWARE_SAMPLER_HPP_

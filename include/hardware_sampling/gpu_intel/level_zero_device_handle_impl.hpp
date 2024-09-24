@@ -15,11 +15,11 @@
 #include "hardware_sampling/gpu_intel/level_zero_device_handle.hpp"  // hws::detail::level_zero_device_handle
 #include "hardware_sampling/gpu_intel/utility.hpp"                   // HWS_LEVEL_ZERO_ERROR_CHECK
 
+#include "fmt/format.h"         // fmt::format
 #include "level_zero/ze_api.h"  // Level Zero runtime functions
 
 #include <cstddef>    // std::size_t
 #include <cstdint>    // std::uint32_t
-#include <format>     // std::format
 #include <memory>     // std::make_shared
 #include <stdexcept>  // std::runtime_error
 #include <vector>     // std::vector
@@ -38,28 +38,28 @@ struct level_zero_device_handle::level_zero_device_handle_impl {
     explicit level_zero_device_handle_impl(const std::size_t device_id) {
         // discover the number of drivers
         std::uint32_t driver_count{ 0 };
-        HWS_LEVEL_ZERO_ERROR_CHECK(zeDriverGet(&driver_count, nullptr));
+        HWS_LEVEL_ZERO_ERROR_CHECK(zeDriverGet(&driver_count, nullptr))
 
         // check if only the single GPU driver has been found
         if (driver_count > 1) {
-            throw std::runtime_error{ std::format("Found too many GPU drivers ({})!", driver_count) };
+            throw std::runtime_error{ fmt::format("Found too many GPU drivers ({})!", driver_count) };
         }
 
         // get the GPU driver
-        HWS_LEVEL_ZERO_ERROR_CHECK(zeDriverGet(&driver_count, &driver));
+        HWS_LEVEL_ZERO_ERROR_CHECK(zeDriverGet(&driver_count, &driver))
 
         // get all GPUs for the current driver
         std::uint32_t device_count{ 0 };
-        HWS_LEVEL_ZERO_ERROR_CHECK(zeDeviceGet(driver, &device_count, nullptr));
+        HWS_LEVEL_ZERO_ERROR_CHECK(zeDeviceGet(driver, &device_count, nullptr))
 
         // check if enough GPUs have been found
         if (driver_count <= device_id) {
-            throw std::runtime_error{ std::format("Found only {} GPUs, but GPU with the ID was requested!", device_count, device_id) };
+            throw std::runtime_error{ fmt::format("Found only {} GPUs, but GPU with the ID was requested!", device_count, device_id) };
         }
 
         // get the GPUs
         std::vector<ze_device_handle_t> all_devices(device_count);
-        HWS_LEVEL_ZERO_ERROR_CHECK(zeDeviceGet(driver, &device_count, all_devices.data()));
+        HWS_LEVEL_ZERO_ERROR_CHECK(zeDeviceGet(driver, &device_count, all_devices.data()))
 
         // save the requested device
         device = all_devices[device_id];

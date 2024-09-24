@@ -7,13 +7,65 @@
 
 #include "hardware_sampling/gpu_intel/utility.hpp"
 
+#include "fmt/format.h"          // fmt::format
+#include "fmt/ranges.h"          // fmt::join
 #include "level_zero/ze_api.h"   // Level Zero runtime functions
 #include "level_zero/zes_api.h"  // Level Zero runtime functions
 
 #include <string>       // std::string
 #include <string_view>  // std::string_view
+#include <vector>       // std::vector
 
 namespace hws::detail {
+
+std::vector<std::string> property_flags_to_vector(const ze_device_property_flags_t flags) {
+    std::vector<std::string> string_flags{};
+
+    if ((flags & ze_device_property_flag_t::ZE_DEVICE_PROPERTY_FLAG_INTEGRATED) != 0) {
+        string_flags.emplace_back("integrated_gpu");
+    }
+    if ((flags & ze_device_property_flag_t::ZE_DEVICE_PROPERTY_FLAG_SUBDEVICE) != 0) {
+        string_flags.emplace_back("sub-device");
+    }
+    if ((flags & ze_device_property_flag_t::ZE_DEVICE_PROPERTY_FLAG_ECC) != 0) {
+        string_flags.emplace_back("ecc");
+    }
+    if ((flags & ze_device_property_flag_t::ZE_DEVICE_PROPERTY_FLAG_ONDEMANDPAGING) != 0) {
+        string_flags.emplace_back("on-demand_page-faulting");
+    }
+
+    return string_flags;
+}
+
+std::string throttle_reason_to_string(const zes_freq_throttle_reason_flags_t reasons) {
+    if (reasons == 0) {
+        return "None";
+    } else {
+        std::vector<std::string> string_reasons{};
+        if ((reasons & zes_freq_throttle_reason_flag_t::ZES_FREQ_THROTTLE_REASON_FLAG_AVE_PWR_CAP) != 0) {
+            string_reasons.emplace_back("average_power");
+        }
+        if ((reasons & zes_freq_throttle_reason_flag_t::ZES_FREQ_THROTTLE_REASON_FLAG_BURST_PWR_CAP) != 0) {
+            string_reasons.emplace_back("burst_power");
+        }
+        if ((reasons & zes_freq_throttle_reason_flag_t::ZES_FREQ_THROTTLE_REASON_FLAG_CURRENT_LIMIT) != 0) {
+            string_reasons.emplace_back("current_limit");
+        }
+        if ((reasons & zes_freq_throttle_reason_flag_t::ZES_FREQ_THROTTLE_REASON_FLAG_THERMAL_LIMIT) != 0) {
+            string_reasons.emplace_back("thermal_limit");
+        }
+        if ((reasons & zes_freq_throttle_reason_flag_t::ZES_FREQ_THROTTLE_REASON_FLAG_PSU_ALERT) != 0) {
+            string_reasons.emplace_back("psu_assertion");
+        }
+        if ((reasons & zes_freq_throttle_reason_flag_t::ZES_FREQ_THROTTLE_REASON_FLAG_SW_RANGE) != 0) {
+            string_reasons.emplace_back("software_frequency_range");
+        }
+        if ((reasons & zes_freq_throttle_reason_flag_t::ZES_FREQ_THROTTLE_REASON_FLAG_HW_RANGE) != 0) {
+            string_reasons.emplace_back("hardware_frequency_range");
+        }
+        return fmt::format("{}", fmt::join(string_reasons, "|"));
+    }
+}
 
 std::string_view to_result_string(const ze_result_t errc) {
     switch (errc) {
@@ -170,19 +222,6 @@ std::string memory_location_to_name(const zes_mem_loc_t mem_loc) {
             return "system";
         case ZES_MEM_LOC_DEVICE:
             return "device";
-        default:
-            return "";
-    }
-}
-
-std::string temperature_sensor_type_to_name(const zes_temp_sensors_t sensor_type) {
-    switch (sensor_type) {
-        case ZES_TEMP_SENSORS_GLOBAL:
-            return "global";
-        case ZES_TEMP_SENSORS_GPU:
-            return "gpu";
-        case ZES_TEMP_SENSORS_MEMORY:
-            return "memory";
         default:
             return "";
     }

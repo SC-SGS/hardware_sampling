@@ -12,13 +12,14 @@
 #define HARDWARE_SAMPLING_GPU_INTEL_UTILITY_HPP_
 #pragma once
 
+#include "fmt/format.h"          // fmt::format
 #include "level_zero/ze_api.h"   // Level Zero runtime functions
 #include "level_zero/zes_api.h"  // Level Zero runtime functions
 
-#include <format>       // std::format
 #include <stdexcept>    // std::runtime_error
 #include <string>       // std::string
 #include <string_view>  // std::string_view
+#include <vector>       // std::vector
 
 namespace hws::detail {
 
@@ -39,12 +40,26 @@ namespace hws::detail {
         {                                                                                                                                          \
             const ze_result_t errc = level_zero_func;                                                                                              \
             if (errc != ZE_RESULT_SUCCESS) {                                                                                                       \
-                throw std::runtime_error{ std::format("Error in Level Zero function call \"{}\": {}", #level_zero_func, to_result_string(errc)) }; \
+                throw std::runtime_error{ fmt::format("Error in Level Zero function call \"{}\": {}", #level_zero_func, to_result_string(errc)) }; \
             }                                                                                                                                      \
         }
 #else
     #define HWS_LEVEL_ZERO_ERROR_CHECK(level_zero_func) level_zero_func;
 #endif
+
+/**
+ * @brief Convert the @p flags to a vector of strings.
+ * @param[in] flags the flags to convert to strings
+ * @return a vector containing all flags as strings (`[[nodiscard]]`)
+ */
+[[nodiscard]] std::vector<std::string> property_flags_to_vector(ze_device_property_flags_t flags);
+
+/**
+ * @brief Convert the throttle reason bitmask to a string representation. If the provided bitmask represents multiple reasons, they are split using "|".
+ * @param[in] reasons the bitmask to convert to a string
+ * @return all throttle reasons (`[[nodiscard]]`)
+ */
+[[nodiscard]] std::string throttle_reason_to_string(zes_freq_throttle_reason_flags_t reasons);
 
 /**
  * @brief Convert a Level Zero memory type to a string representation.
@@ -59,13 +74,6 @@ namespace hws::detail {
  * @return the string representation (`[[nodiscard]]`)
  */
 [[nodiscard]] std::string memory_location_to_name(zes_mem_loc_t mem_loc);
-
-/**
- * @brief Convert a Level Zero temperature sensor type to a string representation.
- * @param[in] sensor_type the Level Zero temperature sensor type
- * @return the string representation (`[[nodiscard]]`)
- */
-[[nodiscard]] std::string temperature_sensor_type_to_name(zes_temp_sensors_t sensor_type);
 
 }  // namespace hws::detail
 

@@ -12,10 +12,11 @@
 #define HARDWARE_SAMPLING_GPU_INTEL_LEVEL_ZERO_SAMPLES_HPP_
 #pragma once
 
-#include "hardware_sampling/utility.hpp"  // HWS_SAMPLE_STRUCT_FIXED_MEMBER, HWS_SAMPLE_STRUCT_SAMPLING_MEMBER, hws::detail::ostream_formatter
+#include "hardware_sampling/utility.hpp"  // HWS_SAMPLE_STRUCT_FIXED_MEMBER, HWS_SAMPLE_STRUCT_SAMPLING_MEMBER
+
+#include "fmt/ostream.h"  // fmt::formatter, fmt::ostream_formatter
 
 #include <cstdint>        // std::uint64_t, std::int32_t
-#include <format>         // std::format
 #include <iosfwd>         // std::ostream forward declaration
 #include <optional>       // std::optional
 #include <string>         // std::string
@@ -43,9 +44,11 @@ class level_zero_general_samples {
      */
     [[nodiscard]] std::string generate_yaml_string() const;
 
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, byte_order)            // the byte order (e.g., little/big endian)
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, vendor_id)             // the vendor ID
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, name)                  // the model name of the device
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, byte_order)          // the byte order (e.g., little/big endian)
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, vendor_id)           // the vendor ID
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, name)                // the model name of the device
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::vector<std::string>, flags)  // potential GPU flags (e.g. integrated device)
+
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, standby_mode)          // the enabled standby mode (power saving or never)
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::uint32_t, num_threads_per_eu)  // the number of threads per EU unit
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::uint32_t, eu_simd_width)       // the physical EU unit SIMD width
@@ -79,19 +82,19 @@ class level_zero_clock_samples {
      */
     [[nodiscard]] std::string generate_yaml_string() const;
 
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(double, clock_gpu_min)                      // the minimum possible GPU clock frequency in MHz
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(double, clock_gpu_max)                      // the maximum possible GPU clock frequency in MHz
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::vector<double>, available_clocks_gpu)  // the available GPU clock frequencies in MHz (slowest to fastest)
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(double, clock_mem_min)                      // the minimum possible memory clock frequency in MHz
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(double, clock_mem_max)                      // the maximum possible memory clock frequency in MHz
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::vector<double>, available_clocks_mem)  // the available memory clock frequencies in MHz (slowest to fastest)
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(double, clock_frequency_min)                              // the minimum possible GPU clock frequency in MHz
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(double, clock_frequency_max)                              // the maximum possible GPU clock frequency in MHz
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(double, memory_clock_frequency_min)                       // the minimum possible memory clock frequency in MHz
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(double, memory_clock_frequency_max)                       // the maximum possible memory clock frequency in MHz
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::vector<double>, available_clock_frequencies)         // the available GPU clock frequencies in MHz (slowest to fastest)
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::vector<double>, available_memory_clock_frequencies)  // the available memory clock frequencies in MHz (slowest to fastest)
 
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, tdp_frequency_limit_gpu)  // the current maximum allowed GPU frequency based on the TDP limit in MHz
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, clock_gpu)                // the current GPU frequency in MHz
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(int, throttle_reason_gpu)         // the current GPU frequency throttle reason
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, tdp_frequency_limit_mem)  // the current maximum allowed memory frequency based on the TDP limit in MHz
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, clock_mem)                // the current memory frequency in MHz
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(int, throttle_reason_mem)         // the current memory frequency throttle reason
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, clock_frequency)              // the current GPU frequency in MHz
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, memory_clock_frequency)       // the current memory frequency in MHz
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(std::string, throttle_reason)         // the current GPU frequency throttle reason
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(std::string, memory_throttle_reason)  // the current memory frequency throttle reason
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, frequency_limit_tdp)          // the current maximum allowed GPU frequency based on the TDP limit in MHz
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, memory_frequency_limit_tdp)   // the current maximum allowed memory frequency based on the TDP limit in MHz
 };
 
 /**
@@ -126,6 +129,7 @@ class level_zero_power_samples {
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::string, power_measurement_type)  // the type of the power readings
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(bool, power_management_mode)          // true if power management limits are enabled
 
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, power_usage)                     // the current power draw of the GPU in W (calculated from power_total_energy_consumption)
     HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, power_total_energy_consumption)  // the total power consumption since the last driver reload in J
 };
 
@@ -164,19 +168,20 @@ class level_zero_memory_samples {
      */
     [[nodiscard]] std::string generate_yaml_string() const;
 
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(map_type<std::uint64_t>, memory_total)              // the total memory size of the different memory modules in Bytes
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(map_type<std::uint64_t>, allocatable_memory_total)  // the total allocatable memory size of the different memory modules in Bytes
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::int64_t, pcie_link_max_speed)                  // the maximum PCIe bandwidth in bytes/sec
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::int32_t, pcie_max_width)                       // the PCIe lane width
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::int32_t, max_pcie_link_generation)             // the PCIe generation
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(map_type<std::int32_t>, bus_width)                  // the bus width of the different memory modules
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(map_type<std::int32_t>, num_channels)               // the number of memory channels of the different memory modules
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(map_type<std::string>, location)                    // the location of the different memory modules (system or device)
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(map_type<std::uint64_t>, memory_total)          // the total memory size of the different memory modules in Bytes
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(map_type<std::uint64_t>, visible_memory_total)  // the total allocatable memory size of the different memory modules in Bytes
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(map_type<std::string>, memory_location)         // the location of the different memory modules (system or device)
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::int32_t, num_pcie_lanes_max)               // the maximum PCIe lane width
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::int32_t, pcie_link_generation_max)         // the maximum PCIe generation
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::int64_t, pcie_link_speed_max)              // the maximum PCIe bandwidth in MBPS
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(map_type<std::int32_t>, memory_bus_width)       // the bus width of the different memory modules
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(map_type<std::int32_t>, memory_num_channels)    // the number of memory channels of the different memory modules
 
     HWS_SAMPLE_STRUCT_FIXED_MEMBER(map_type<std::vector<std::uint64_t>>, memory_free)  // the currently free memory of the different memory modules in Bytes
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(std::int64_t, pcie_link_speed)                   // the current PCIe bandwidth in bytes/sec
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(std::int32_t, pcie_link_width)                   // the current PCIe lane width
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(map_type<std::vector<std::uint64_t>>, memory_used)  // the currently used memory of the different memory modules in Bytes
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(std::int32_t, num_pcie_lanes)                    // the current PCIe lane width
     HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(std::int32_t, pcie_link_generation)              // the current PCIe generation
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(std::int64_t, pcie_link_speed)                   // the current PCIe bandwidth in bytes/sec
 };
 
 /**
@@ -199,13 +204,6 @@ class level_zero_temperature_samples {
     // befriend hardware sampler class
     friend class gpu_intel_hardware_sampler;
 
-    /**
-     * @brief The map type used if the number of potential Level Zero domains is unknown at compile time.
-     * @tparam T the mapped type
-     */
-    template <typename T>
-    using map_type = std::unordered_map<std::string, T>;
-
   public:
     /**
      * @brief Assemble the YAML string containing all available general hardware samples.
@@ -214,10 +212,17 @@ class level_zero_temperature_samples {
      */
     [[nodiscard]] std::string generate_yaml_string() const;
 
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(map_type<double>, temperature_max)  // the maximum temperature for the sensor in °C
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::uint32_t, num_fans)         // the number of fans
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(std::int32_t, fan_speed_max)     // the maximum fan speed the user can set in RPM
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(double, temperature_max)         // the maximum GPU temperature in °C
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(double, memory_temperature_max)  // the maximum memory temperature in °C
+    HWS_SAMPLE_STRUCT_FIXED_MEMBER(double, global_temperature_max)  // the maximum global temperature in °C
 
-    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(std::int32_t, temperature_psu)            // the temperature of the PSU in °C
-    HWS_SAMPLE_STRUCT_FIXED_MEMBER(map_type<std::vector<double>>, temperature)  // the current temperature for the sensor in °C
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, fan_speed_percentage)  // the current intended fan speed in %
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, temperature)           // the temperature of the GPU in °C
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, memory_temperature)    // the temperature of the memory in °C
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, global_temperature)    // the global temperature in °C
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, psu_temperature)       // the temperature of the PSU in °C
 };
 
 /**
@@ -232,18 +237,18 @@ std::ostream &operator<<(std::ostream &out, const level_zero_temperature_samples
 }  // namespace hws
 
 template <>
-struct std::formatter<hws::level_zero_general_samples> : hws::detail::ostream_formatter { };
+struct fmt::formatter<hws::level_zero_general_samples> : fmt::ostream_formatter { };
 
 template <>
-struct std::formatter<hws::level_zero_clock_samples> : hws::detail::ostream_formatter { };
+struct fmt::formatter<hws::level_zero_clock_samples> : fmt::ostream_formatter { };
 
 template <>
-struct std::formatter<hws::level_zero_power_samples> : hws::detail::ostream_formatter { };
+struct fmt::formatter<hws::level_zero_power_samples> : fmt::ostream_formatter { };
 
 template <>
-struct std::formatter<hws::level_zero_memory_samples> : hws::detail::ostream_formatter { };
+struct fmt::formatter<hws::level_zero_memory_samples> : fmt::ostream_formatter { };
 
 template <>
-struct std::formatter<hws::level_zero_temperature_samples> : hws::detail::ostream_formatter { };
+struct fmt::formatter<hws::level_zero_temperature_samples> : fmt::ostream_formatter { };
 
 #endif  // HARDWARE_SAMPLING_GPU_INTEL_LEVEL_ZERO_SAMPLES_HPP_
