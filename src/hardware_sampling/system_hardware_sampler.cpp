@@ -15,7 +15,9 @@
 #endif
 #if defined(HWS_FOR_NVIDIA_GPUS_ENABLED)
     #include "hardware_sampling/gpu_nvidia/hardware_sampler.hpp"  // hws::gpu_nvidia_hardware_sampler
-    #include "hardware_sampling/gpu_nvidia/utility.hpp"           // HWS_CUDA_ERROR_CHECK, hws::detail::
+    #include "hardware_sampling/gpu_nvidia/utility.hpp"           // HWS_CUDA_ERROR_CHECK
+
+    #include "cuda_runtime.h"  // cudaGetDeviceCount
 #endif
 #if defined(HWS_FOR_AMD_GPUS_ENABLED)
     #include "hardware_sampling/gpu_amd/hardware_sampler.hpp"  // hws::gpu_amd_hardware_sampler
@@ -32,6 +34,8 @@
 
 #include <algorithm>  // std::for_each, std::all_of
 #include <chrono>     // std::chrono::milliseconds
+#include <cstddef>    // std::size_t
+#include <cstdint>    // std::uint32_t
 #include <memory>     // std::unique_ptr, std::make_unique
 #include <stdexcept>  // std::out_of_range
 #include <vector>     // std::vector
@@ -68,7 +72,25 @@ system_hardware_sampler::system_hardware_sampler(const std::chrono::milliseconds
 #endif
 #if defined(HWS_FOR_INTEL_GPUS_ENABLED)
     {
-        // TODO: implement
+        // discover the number of drivers
+        std::uint32_t driver_count{ 0 };
+        HWS_LEVEL_ZERO_ERROR_CHECK(zeDriverGet(&driver_count, nullptr))
+
+        // check if only the single GPU driver has been found
+        if (driver_count > 1) {
+            throw std::runtime_error{ fmt::format("Found too many GPU drivers ({})!", driver_count) };
+        }
+
+        // get the GPU driver
+        ze_driver_handle_t driver{};
+        HWS_LEVEL_ZERO_ERROR_CHECK(zeDriverGet(&driver_count, &driver))
+
+        // get all GPUs for the current driver
+        std::uint32_t device_count{ 0 };
+        HWS_LEVEL_ZERO_ERROR_CHECK(zeDeviceGet(driver, &device_count, nullptr))
+        for (std::uint32_t device = 0; device < device_count; ++device) {
+            samplers_.push_back(std::make_unique<gpu_intel_hardware_sampler>(static_cast<std::size_t>(device), sampling_interval, category));
+        }
     }
 #endif
 }
