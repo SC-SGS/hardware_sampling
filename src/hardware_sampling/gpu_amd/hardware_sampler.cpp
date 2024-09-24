@@ -110,7 +110,7 @@ void gpu_amd_hardware_sampler::sampling_loop() {
         // queried samples -> retrieved every iteration if available
         rsmi_dev_perf_level_t pstate{};
         if (rsmi_dev_perf_level_get(device_id_, &pstate) == RSMI_STATUS_SUCCESS) {
-            general_samples_.performance_level_ = decltype(general_samples_.performance_level_)::value_type{ performance_level_to_string(pstate) };
+            general_samples_.performance_level_ = decltype(general_samples_.performance_level_)::value_type{ detail::performance_level_to_string(pstate) };
         }
 
         decltype(general_samples_.compute_utilization_)::value_type::value_type utilization_gpu{};
@@ -468,7 +468,7 @@ void gpu_amd_hardware_sampler::sampling_loop() {
                 if (general_samples_.performance_level_.has_value()) {
                     rsmi_dev_perf_level_t pstate{};
                     HWS_ROCM_SMI_ERROR_CHECK(rsmi_dev_perf_level_get(device_id_, &pstate))
-                    general_samples_.performance_level_->push_back(performance_level_to_string(pstate));
+                    general_samples_.performance_level_->push_back(detail::performance_level_to_string(pstate));
                 }
 
                 if (general_samples_.compute_utilization_.has_value()) {
