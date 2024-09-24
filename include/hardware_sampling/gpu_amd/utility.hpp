@@ -50,7 +50,10 @@ namespace hws::detail {
 
 #else
     #define HWS_ROCM_SMI_ERROR_CHECK(rocm_smi_func) rocm_smi_func;
-    #define HWS_HIP_ERROR_CHECK(hip_func) hip_func;
+    #define HWS_HIP_ERROR_CHECK(hip_func)                \
+        {                                                \
+            [[maybe_unused]] hipError_t errc = hip_func; \
+        }
 #endif
 
 /**
@@ -60,6 +63,6 @@ namespace hws::detail {
  */
 [[nodiscard]] std::string performance_level_to_string(rsmi_dev_perf_level_t perf_level);
 
-}  // namespace hws
+}  // namespace hws::detail
 
 #endif  // HARDWARE_SAMPLING_GPU_AMD_UTILITY_HPP_

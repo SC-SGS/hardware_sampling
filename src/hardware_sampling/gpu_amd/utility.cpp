@@ -11,7 +11,7 @@
 
 #include <string>  // std::string
 
-namespace hws {
+namespace hws::detail {
 
 std::string performance_level_to_string(const rsmi_dev_perf_level_t perf_level) {
     switch (perf_level) {
@@ -34,6 +34,7 @@ std::string performance_level_to_string(const rsmi_dev_perf_level_t perf_level) 
         case RSMI_DEV_PERF_LEVEL_DETERMINISM:
             return "determinism";
         case RSMI_DEV_PERF_LEVEL_UNKNOWN:
+        default:
             return "unknown";
     }
 }

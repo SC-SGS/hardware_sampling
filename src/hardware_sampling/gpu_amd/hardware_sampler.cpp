@@ -8,7 +8,7 @@
 #include "hardware_sampling/gpu_amd/hardware_sampler.hpp"
 
 #include "hardware_sampling/gpu_amd/rocm_smi_samples.hpp"  // hws::{rocm_smi_general_samples, rocm_smi_clock_samples, rocm_smi_power_samples, rocm_smi_memory_samples, rocm_smi_temperature_samples}
-#include "hardware_sampling/gpu_amd/utility.hpp"           // HWS_ROCM_SMI_ERROR_CHECK
+#include "hardware_sampling/gpu_amd/utility.hpp"           // hws::detail::performance_level_to_string, HWS_ROCM_SMI_ERROR_CHECK
 #include "hardware_sampling/hardware_sampler.hpp"          // hws::hardware_sampler
 #include "hardware_sampling/utility.hpp"                   // hws::detail::time_points_to_epoch
 
