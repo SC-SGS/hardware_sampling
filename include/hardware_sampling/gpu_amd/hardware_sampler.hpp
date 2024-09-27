@@ -117,6 +117,11 @@ class gpu_amd_hardware_sampler : public hardware_sampler {
     [[nodiscard]] const rocm_smi_temperature_samples &temperature_samples() const noexcept { return temperature_samples_; }
 
     /**
+     * @copydoc hws::hardware_sampler::device_identification
+     */
+    [[nodiscard]] std::string device_identification() const final;
+
+    /**
      * @copydoc hws::hardware_sampler::samples_only_as_yaml_string() const
      */
     [[nodiscard]] std::string samples_only_as_yaml_string() const final;
@@ -126,11 +131,6 @@ class gpu_amd_hardware_sampler : public hardware_sampler {
      * @copydoc hws::hardware_sampler::sampling_loop
      */
     void sampling_loop() final;
-
-    /**
-     * @copydoc hws::hardware_sampler::device_identification
-     */
-    [[nodiscard]] std::string device_identification() const final;
 
     /// The ID of the device to sample.
     std::uint32_t device_id_{};

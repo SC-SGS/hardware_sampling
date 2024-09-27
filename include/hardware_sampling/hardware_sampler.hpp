@@ -161,6 +161,12 @@ class hardware_sampler {
     void dump_yaml(const std::filesystem::path &filename) const;
 
     /**
+     * @brief Return the unique device identification. Can be used as unique key in the YAML string.
+     * @return the unique device identification (`[[nodiscard]]`)
+     */
+    [[nodiscard]] virtual std::string device_identification() const = 0;
+
+    /**
      * @brief Return the hardware samples as well as events and time points as YAML string.
      * @return the YAML content as string (`[[nodiscard]]`)
      */
@@ -177,12 +183,6 @@ class hardware_sampler {
      * @brief Getter the hardware samples. Called in another std::thread.
      */
     virtual void sampling_loop() = 0;
-
-    /**
-     * @brief Return the unique device identification. Can be used as unique key in the YAML string.
-     * @return the unique device identification (`[[nodiscard]]`)
-     */
-    [[nodiscard]] virtual std::string device_identification() const = 0;
 
     /**
      * @brief Add a new time point to this hardware sampler. Called during the sampling loop.
