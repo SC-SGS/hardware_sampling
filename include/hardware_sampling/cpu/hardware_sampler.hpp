@@ -107,6 +107,11 @@ class cpu_hardware_sampler : public hardware_sampler {
      */
     [[nodiscard]] const cpu_idle_states_samples &idle_state_samples() const noexcept { return idle_state_samples_; }
 
+    /**
+     * @copydoc hws::hardware_sampler::samples_only_as_yaml_string() const
+     */
+    [[nodiscard]] std::string samples_only_as_yaml_string() const final;
+
   private:
     /**
      * @copydoc hws::hardware_sampler::sampling_loop
@@ -117,11 +122,6 @@ class cpu_hardware_sampler : public hardware_sampler {
      * @copydoc hws::hardware_sampler::device_identification
      */
     [[nodiscard]] std::string device_identification() const final;
-
-    /**
-     * @copydoc hws::hardware_sampler::generate_yaml_string
-     */
-    [[nodiscard]] std::string generate_yaml_string() const final;
 
     /// The general CPU samples.
     cpu_general_samples general_samples_{};

@@ -202,4 +202,8 @@ std::string system_hardware_sampler::as_yaml_string() const {
     return std::accumulate(samplers_.cbegin(), samplers_.cend(), std::string{}, [](const std::string str, const auto &ptr) { return str + ptr->as_yaml_string(); });
 }
 
+std::string system_hardware_sampler::samples_only_as_yaml_string() const {
+    return std::accumulate(samplers_.cbegin(), samplers_.cend(), std::string{}, [](const std::string str, const auto &ptr) { return str + ptr->samples_only_as_yaml_string(); });
+}
+
 }  // namespace hws

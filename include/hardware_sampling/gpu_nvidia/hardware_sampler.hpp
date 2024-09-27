@@ -117,6 +117,11 @@ class gpu_nvidia_hardware_sampler : public hardware_sampler {
      */
     [[nodiscard]] const nvml_temperature_samples &temperature_samples() const noexcept { return temperature_samples_; }
 
+    /**
+     * @copydoc hws::hardware_sampler::samples_only_as_yaml_string() const
+     */
+    [[nodiscard]] std::string samples_only_as_yaml_string() const final;
+
   private:
     /**
      * @copydoc hws::hardware_sampler::sampling_loop
@@ -127,11 +132,6 @@ class gpu_nvidia_hardware_sampler : public hardware_sampler {
      * @copydoc hws::hardware_sampler::device_identification
      */
     [[nodiscard]] std::string device_identification() const final;
-
-    /**
-     * @copydoc hws::hardware_sampler::generate_yaml_string
-     */
-    [[nodiscard]] std::string generate_yaml_string() const final;
 
     /// The device handle for the device to sample.
     detail::nvml_device_handle device_{};

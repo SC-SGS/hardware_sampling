@@ -176,7 +176,7 @@ std::string hardware_sampler::as_yaml_string() const {
                        fmt::join(event_names, ", "),
                        this->sampling_interval().count(),
                        fmt::join(detail::durations_from_reference_time(this->sampling_time_points(), this->get_event(0).time_point), ", "),
-                       this->generate_yaml_string());
+                       this->samples_only_as_yaml_string());
 }
 
 void hardware_sampler::add_time_point(const std::chrono::steady_clock::time_point time_point) {

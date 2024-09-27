@@ -119,6 +119,7 @@ void init_gpu_nvidia_hardware_sampler(py::module_ &m) {
         .def("power_samples", &hws::gpu_nvidia_hardware_sampler::power_samples, "get all power related samples")
         .def("memory_samples", &hws::gpu_nvidia_hardware_sampler::memory_samples, "get all memory related samples")
         .def("temperature_samples", &hws::gpu_nvidia_hardware_sampler::temperature_samples, "get all temperature related samples")
+        .def("samples_only_as_yaml_string", &hws::gpu_nvidia_hardware_sampler::samples_only_as_yaml_string, "return all hardware samples as YAML string")
         .def("__repr__", [](const hws::gpu_nvidia_hardware_sampler &self) {
             return fmt::format("<HardwareSampling.GpuNvidiaHardwareSampler with\n{}\n>", self);
         });

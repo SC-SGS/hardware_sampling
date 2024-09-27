@@ -161,10 +161,16 @@ class hardware_sampler {
     void dump_yaml(const std::filesystem::path &filename) const;
 
     /**
-     * @brief Return the hardware samples as YAML string.
+     * @brief Return the hardware samples as well as events and time points as YAML string.
      * @return the YAML content as string (`[[nodiscard]]`)
      */
     [[nodiscard]] std::string as_yaml_string() const;
+    /**
+     * @brief Return only the hardware samples as YAML string.
+     * @throws std::runtime_error if sampling is still running
+     * @return the YAML content as string (`[[nodiscard]]`)
+     */
+    [[nodiscard]] virtual std::string samples_only_as_yaml_string() const = 0;
 
   protected:
     /**
@@ -177,14 +183,6 @@ class hardware_sampler {
      * @return the unique device identification (`[[nodiscard]]`)
      */
     [[nodiscard]] virtual std::string device_identification() const = 0;
-
-    /**
-     * @brief Assemble the YAML string containing all hardware samples.
-     * @param[in] start_time_point the reference time point the hardware samples occurred relative to
-     * @throws std::runtime_error if sampling is still running
-     * @return the YAML string (`[[nodiscard]]`)
-     */
-    [[nodiscard]] virtual std::string generate_yaml_string() const = 0;
 
     /**
      * @brief Add a new time point to this hardware sampler. Called during the sampling loop.

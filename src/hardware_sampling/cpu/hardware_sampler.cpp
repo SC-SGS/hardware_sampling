@@ -467,7 +467,7 @@ std::string cpu_hardware_sampler::device_identification() const {
     return "cpu_device";
 }
 
-std::string cpu_hardware_sampler::generate_yaml_string() const {
+std::string cpu_hardware_sampler::samples_only_as_yaml_string() const {
     // check whether it's safe to generate the YAML entry
     if (this->is_sampling()) {
         throw std::runtime_error{ "Can't create the final YAML entry if the hardware sampler is still running!" };

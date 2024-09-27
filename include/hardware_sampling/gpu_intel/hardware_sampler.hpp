@@ -116,6 +116,11 @@ class gpu_intel_hardware_sampler : public hardware_sampler {
      */
     [[nodiscard]] const level_zero_temperature_samples &temperature_samples() const noexcept { return temperature_samples_; }
 
+    /**
+     * @copydoc hws::hardware_sampler::samples_only_as_yaml_string() const
+     */
+    [[nodiscard]] std::string samples_only_as_yaml_string() const final;
+
   private:
     /**
      * @copydoc hws::hardware_sampler::sampling_loop
@@ -126,11 +131,6 @@ class gpu_intel_hardware_sampler : public hardware_sampler {
      * @copydoc hws::hardware_sampler::device_identification
      */
     std::string device_identification() const final;
-
-    /**
-     * @copydoc hws::hardware_sampler::generate_yaml_string
-     */
-    std::string generate_yaml_string() const final;
 
     /// The device handle for the device to sample.
     detail::level_zero_device_handle device_;

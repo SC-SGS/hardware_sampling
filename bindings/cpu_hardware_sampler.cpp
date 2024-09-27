@@ -137,6 +137,7 @@ void init_cpu_hardware_sampler(py::module_ &m) {
         .def("temperature_samples", &hws::cpu_hardware_sampler::temperature_samples, "get all temperature related samples")
         .def("gfx_samples", &hws::cpu_hardware_sampler::gfx_samples, "get all gfx (iGPU) related samples")
         .def("idle_state_samples", &hws::cpu_hardware_sampler::idle_state_samples, "get all idle state related samples")
+        .def("samples_only_as_yaml_string", &hws::cpu_hardware_sampler::samples_only_as_yaml_string, "return all hardware samples as YAML string")
         .def("__repr__", [](const hws::cpu_hardware_sampler &self) {
             return fmt::format("<HardwareSampling.CpuHardwareSampler with\n{}\n>", self);
         });

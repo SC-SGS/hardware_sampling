@@ -180,6 +180,12 @@ class system_hardware_sampler {
      * @return the YAML content as string (`[[nodiscard]]`)
      */
     [[nodiscard]] std::string as_yaml_string() const;
+    /**
+     * @brief Return only the hardware samples as YAML string.
+     * @throws std::runtime_error if sampling is still running
+     * @return the YAML content as string (`[[nodiscard]]`)
+     */
+    [[nodiscard]] std::string samples_only_as_yaml_string() const;
 
   private:
     /// The different hardware sampler for the current system.
