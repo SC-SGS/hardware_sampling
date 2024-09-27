@@ -22,6 +22,8 @@ set(HWS_SOURCES
 # create hardware sampling library
 set(HWS_LIBRARY_NAME hardware_sampling)
 add_library(${HWS_LIBRARY_NAME} SHARED ${HWS_SOURCES})
+add_library(hws ALIAS ${HWS_LIBRARY_NAME})
+add_library(hws::hws ALIAS ${HWS_LIBRARY_NAME})
 
 # set install target
 set(HWS_TARGETS_TO_INSTALL ${HWS_LIBRARY_NAME})
