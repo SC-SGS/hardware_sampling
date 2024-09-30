@@ -34,6 +34,7 @@ class hardware_sampler {
      * @brief Construct a new hardware sampler with the provided @p sampling_interval.
      * @param[in] sampling_interval the used sampling interval
      * @param[in] category the sample categories that are enabled for hardware sampling
+     * @throws std::invalid_argument if the @p sampling_interval is zero
      */
     hardware_sampler(std::chrono::milliseconds sampling_interval, sample_category category);
 

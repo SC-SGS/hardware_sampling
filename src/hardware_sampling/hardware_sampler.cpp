@@ -28,7 +28,11 @@ namespace hws {
 
 hardware_sampler::hardware_sampler(const std::chrono::milliseconds sampling_interval, const sample_category category) :
     sampling_interval_{ sampling_interval },
-    sample_category_{ category } { }
+    sample_category_{ category } {
+    if (sampling_interval == std::chrono::milliseconds{ 0 }) {
+        throw std::invalid_argument{ "The sampling interval must be larger than 0ms!" };
+    }
+}
 
 hardware_sampler::~hardware_sampler() = default;
 
