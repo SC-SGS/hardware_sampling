@@ -5,22 +5,22 @@
  *          See the LICENSE.md file in the project root for full license information.
  */
 
-#include "hardware_sampling/hardware_sampler.hpp"  // hws::hardware_sampler
+#include "hws/hardware_sampler.hpp"  // hws::hardware_sampler
 
-#include "hardware_sampling/event.hpp"    // hws::event
-#include "hardware_sampling/utility.hpp"  // hws::detail::durations_from_reference_time
+#include "hws/event.hpp"    // hws::event
+#include "hws/utility.hpp"  // hws::detail::durations_from_reference_time
 
 #if defined(HWS_FOR_CPUS_ENABLED)
-    #include "hardware_sampling/cpu/hardware_sampler.hpp"  // hws::cpu_hardware_sampler
+    #include "hws/cpu/hardware_sampler.hpp"  // hws::cpu_hardware_sampler
 #endif
 #if defined(HWS_FOR_NVIDIA_GPUS_ENABLED)
-    #include "hardware_sampling/gpu_nvidia/hardware_sampler.hpp"  // hws::gpu_nvidia_hardware_sampler
+    #include "hws/gpu_nvidia/hardware_sampler.hpp"  // hws::gpu_nvidia_hardware_sampler
 #endif
 #if defined(HWS_FOR_AMD_GPUS_ENABLED)
-    #include "hardware_sampling/gpu_amd/hardware_sampler.hpp"  // hws::gpu_amd_hardware_sampler
+    #include "hws/gpu_amd/hardware_sampler.hpp"  // hws::gpu_amd_hardware_sampler
 #endif
 #if defined(HWS_FOR_INTEL_GPUS_ENABLED)
-    #include "hardware_sampling/gpu_intel/hardware_sampler.hpp"  // hws::gpu_intel_hardware_sampler
+    #include "hws/gpu_intel/hardware_sampler.hpp"  // hws::gpu_intel_hardware_sampler
 #endif
 
 #include "fmt/format.h"         // fmt::format

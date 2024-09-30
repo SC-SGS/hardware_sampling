@@ -8,8 +8,8 @@
  * @brief Defines a struct encapsulating a single event with a relative time point.
  */
 
-#ifndef HARDWARE_SAMPLING_BINDINGS_RELATIVE_EVENT_HPP_
-#define HARDWARE_SAMPLING_BINDINGS_RELATIVE_EVENT_HPP_
+#ifndef HWS_BINDINGS_RELATIVE_EVENT_HPP_
+#define HWS_BINDINGS_RELATIVE_EVENT_HPP_
 
 #include <string>   // std::string
 #include <utility>  // std::move
@@ -37,4 +37,4 @@ struct relative_event {
 
 }  // namespace hws::detail
 
-#endif  // HARDWARE_SAMPLING_BINDINGS_RELATIVE_EVENT_HPP_
+#endif  // HWS_BINDINGS_RELATIVE_EVENT_HPP_

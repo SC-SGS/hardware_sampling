@@ -5,10 +5,10 @@
  *          See the LICENSE.md file in the project root for full license information.
  */
 
-#include "hardware_sampling/gpu_intel/hardware_sampler.hpp"    // hws::gpu_intel_hardware_sampler
-#include "hardware_sampling/gpu_intel/level_zero_samples.hpp"  // hws::{level_zero_general_samples, level_zero_clock_samples, level_zero_power_samples, level_zero_memory_samples, level_zero_temperature_samples}
-#include "hardware_sampling/hardware_sampler.hpp"              // hws::hardware_sampler
-#include "hardware_sampling/sample_category.hpp"               // hws::sample_category
+#include "hws/gpu_intel/hardware_sampler.hpp"    // hws::gpu_intel_hardware_sampler
+#include "hws/gpu_intel/level_zero_samples.hpp"  // hws::{level_zero_general_samples, level_zero_clock_samples, level_zero_power_samples, level_zero_memory_samples, level_zero_temperature_samples}
+#include "hws/hardware_sampler.hpp"              // hws::hardware_sampler
+#include "hws/sample_category.hpp"               // hws::sample_category
 
 #include "fmt/format.h"         // fmt::format
 #include "pybind11/chrono.h"    // automatic bindings for std::chrono::milliseconds

@@ -58,4 +58,4 @@ CTestTestfile.cmake
 .vs/
 
 # auto-generated version header
-include/hardware_sampling/version.hpp
+include/hws/version.hpp

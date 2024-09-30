@@ -5,7 +5,7 @@
  *          See the LICENSE.md file in the project root for full license information.
  */
 
-#include "hardware_sampling/core.hpp"
+#include "hws/core.hpp"
 
 #include <cstddef>  // std::size_t
 #include <numeric>  // std::iota

@@ -5,10 +5,10 @@
  *          See the LICENSE.md file in the project root for full license information.
  */
 
-#include "hardware_sampling/cpu/cpu_samples.hpp"       // hws::{cpu_general_samples, clock_samples, power_samples, memory_samples, temperature_samples, gfx_samples, idle_state_samples}
-#include "hardware_sampling/cpu/hardware_sampler.hpp"  // hws::cpu_hardware_sampler
-#include "hardware_sampling/hardware_sampler.hpp"      // hws::hardware_sampler
-#include "hardware_sampling/sample_category.hpp"       // hws::sample_category
+#include "hws/cpu/cpu_samples.hpp"       // hws::{cpu_general_samples, clock_samples, power_samples, memory_samples, temperature_samples, gfx_samples, idle_state_samples}
+#include "hws/cpu/hardware_sampler.hpp"  // hws::cpu_hardware_sampler
+#include "hws/hardware_sampler.hpp"      // hws::hardware_sampler
+#include "hws/sample_category.hpp"       // hws::sample_category
 
 #include "fmt/format.h"         // fmt::format
 #include "pybind11/chrono.h"    // automatic bindings for std::chrono::milliseconds

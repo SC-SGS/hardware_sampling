@@ -5,7 +5,7 @@
  *          See the LICENSE.md file in the project root for full license information.
  */
 
-#include "hardware_sampling/event.hpp"  // hws::event
+#include "hws/event.hpp"  // hws::event
 
 #include "fmt/format.h"         // fmt::format
 #include "pybind11/chrono.h"    // bind std::chrono types

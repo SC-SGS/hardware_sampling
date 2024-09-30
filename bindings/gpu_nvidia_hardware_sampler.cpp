@@ -5,10 +5,10 @@
  *          See the LICENSE.md file in the project root for full license information.
  */
 
-#include "hardware_sampling/gpu_nvidia/hardware_sampler.hpp"  // hws::gpu_nvidia_hardware_sampler
-#include "hardware_sampling/gpu_nvidia/nvml_samples.hpp"      // hws::{nvml_general_samples, nvml_clock_samples, nvml_power_samples, nvml_memory_samples, nvml_temperature_samples}
-#include "hardware_sampling/hardware_sampler.hpp"             // hws::hardware_sampler
-#include "hardware_sampling/sample_category.hpp"              // hws::sample_category
+#include "hws/gpu_nvidia/hardware_sampler.hpp"  // hws::gpu_nvidia_hardware_sampler
+#include "hws/gpu_nvidia/nvml_samples.hpp"      // hws::{nvml_general_samples, nvml_clock_samples, nvml_power_samples, nvml_memory_samples, nvml_temperature_samples}
+#include "hws/hardware_sampler.hpp"             // hws::hardware_sampler
+#include "hws/sample_category.hpp"              // hws::sample_category
 
 #include "fmt/format.h"         // fmt::format
 #include "pybind11/chrono.h"    // automatic bindings for std::chrono::milliseconds

@@ -5,7 +5,7 @@
 *          See the LICENSE.md file in the project root for full license information.
 */
 
-#include "hardware_sampling/version.hpp"  // hws::version
+#include "hws/version.hpp"  // hws::version
 
 #include "pybind11/pybind11.h"   // py::module_
 

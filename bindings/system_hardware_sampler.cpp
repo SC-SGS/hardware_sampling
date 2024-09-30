@@ -5,11 +5,11 @@
  *          See the LICENSE.md file in the project root for full license information.
  */
 
-#include "hardware_sampling/system_hardware_sampler.hpp"  // hws::system_hardware_sampler
+#include "hws/system_hardware_sampler.hpp"  // hws::system_hardware_sampler
 
-#include "hardware_sampling/event.hpp"            // hws::event
-#include "hardware_sampling/sample_category.hpp"  // hws::sample_category
-#include "hardware_sampling/utility.hpp"          // hws::detail::durations_from_reference_time
+#include "hws/event.hpp"            // hws::event
+#include "hws/sample_category.hpp"  // hws::sample_category
+#include "hws/utility.hpp"          // hws::detail::durations_from_reference_time
 
 #include "fmt/format.h"         // fmt::format
 #include "pybind11/chrono.h"    // bind std::chrono types

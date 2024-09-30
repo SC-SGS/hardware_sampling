@@ -13,16 +13,15 @@ project("hws - Hardware Sampling for GPUs and CPUs"
 
 # explicitly set library source files
 set(HWS_SOURCES
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/event.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/hardware_sampler.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/system_hardware_sampler.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/utility.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/hws/event.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/hws/hardware_sampler.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/hws/system_hardware_sampler.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/hws/utility.cpp
 )
 
 # create hardware sampling library
-set(HWS_LIBRARY_NAME hardware_sampling)
+set(HWS_LIBRARY_NAME hws)
 add_library(${HWS_LIBRARY_NAME} SHARED ${HWS_SOURCES})
-add_library(hws ALIAS ${HWS_LIBRARY_NAME})
 add_library(hws::hws ALIAS ${HWS_LIBRARY_NAME})
 
 # set install target
@@ -95,8 +94,8 @@ target_link_libraries(${HWS_LIBRARY_NAME} PUBLIC fmt::fmt)
 ########################################################################################################################
 message(STATUS "Configuring version information.")
 configure_file(
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/hardware_sampling/version.hpp.in
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/hardware_sampling/version.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/hws/version.hpp.in
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/hws/version.hpp
         @ONLY
 )
 
@@ -189,9 +188,9 @@ if (HWS_LSCPU_FOUND OR HWS_FREE_FOUND OR HWS_TURBOSTAT_EXECUTION_TYPE)
     # add source file to source file list
     target_sources(${HWS_LIBRARY_NAME} PRIVATE
             $<BUILD_INTERFACE:
-            ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/cpu/hardware_sampler.cpp;
-            ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/cpu/cpu_samples.cpp;
-            ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/cpu/utility.cpp;
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/hws/cpu/hardware_sampler.cpp;
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/hws/cpu/cpu_samples.cpp;
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/hws/cpu/utility.cpp;
             >)
 
     # add compile definitions
@@ -214,9 +213,9 @@ if (CUDAToolkit_FOUND)
     # add source file to source file list
     target_sources(${HWS_LIBRARY_NAME} PRIVATE
             $<BUILD_INTERFACE:
-            ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/gpu_nvidia/hardware_sampler.cpp;
-            ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/gpu_nvidia/nvml_samples.cpp;
-            ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/gpu_nvidia/utility.cpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/hws/gpu_nvidia/hardware_sampler.cpp;
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/hws/gpu_nvidia/nvml_samples.cpp;
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/hws/gpu_nvidia/utility.cpp
             >)
 
     # add compile definition
@@ -241,9 +240,9 @@ if (rocm_smi_FOUND)
     # add source file to source file list
     target_sources(${HWS_LIBRARY_NAME} PRIVATE
             $<BUILD_INTERFACE:
-            ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/gpu_amd/hardware_sampler.cpp;
-            ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/gpu_amd/rocm_smi_samples.cpp;
-            ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/gpu_amd/utility.cpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/hws/gpu_amd/hardware_sampler.cpp;
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/hws/gpu_amd/rocm_smi_samples.cpp;
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/hws/gpu_amd/utility.cpp
             >)
 
     # add compile definition
@@ -266,9 +265,9 @@ if (level_zero_FOUND)
     # add source file to source file list
     target_sources(${HWS_LIBRARY_NAME} PRIVATE
             $<BUILD_INTERFACE:
-            ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/gpu_intel/hardware_sampler.cpp;
-            ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/gpu_intel/level_zero_samples.cpp;
-            ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/gpu_intel/utility.cpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/hws/gpu_intel/hardware_sampler.cpp;
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/hws/gpu_intel/level_zero_samples.cpp;
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/hws/gpu_intel/utility.cpp
             >)
 
     # add compile definition
@@ -302,7 +301,7 @@ endif ()
 include(GNUInstallDirs)
 ## install all necessary library targets
 install(TARGETS ${HWS_TARGETS_TO_INSTALL}
-        EXPORT hardware_sampling_Targets
+        EXPORT hws_Targets
         ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"  # all files that are neither executables, shared lib or headers
         LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"  # all shared lib files
         RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"  # all executables
@@ -316,28 +315,28 @@ install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/"
 ## manage version comparison
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file(
-        "hardware_samplingConfigVersion.cmake"
+        "hwsConfigVersion.cmake"
         VERSION ${PROJECT_VERSION}
         COMPATIBILITY SameMajorVersion
 )
 
 ## generate configuration file
 configure_package_config_file(
-        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/hardware_samplingConfig.cmake.in"
-        "${PROJECT_BINARY_DIR}/hardware_samplingConfig.cmake"
-        INSTALL_DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/hardware_sampling/cmake
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/hwsConfig.cmake.in"
+        "${PROJECT_BINARY_DIR}/hwsConfig.cmake"
+        INSTALL_DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/hws/cmake
 )
 
 ## create and copy install-targets file
-install(EXPORT hardware_sampling_Targets
-        FILE hardware_samplingTargets.cmake
+install(EXPORT hws_Targets
+        FILE hwsTargets.cmake
         NAMESPACE hws::
-        DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/hardware_sampling/cmake
+        DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/hws/cmake
 )
 
 ## create file containing the build configuration and version information
 install(FILES
-        "${PROJECT_BINARY_DIR}/hardware_samplingConfig.cmake"
-        "${PROJECT_BINARY_DIR}/hardware_samplingConfigVersion.cmake"
-        DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/hardware_sampling/cmake
+        "${PROJECT_BINARY_DIR}/hwsConfig.cmake"
+        "${PROJECT_BINARY_DIR}/hwsConfigVersion.cmake"
+        DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/hws/cmake
 )

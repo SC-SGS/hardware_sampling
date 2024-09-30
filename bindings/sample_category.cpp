@@ -5,7 +5,7 @@
  *          See the LICENSE.md file in the project root for full license information.
  */
 
-#include "hardware_sampling/sample_category.hpp"  // hws::sample_category
+#include "hws/sample_category.hpp"  // hws::sample_category
 
 #include "pybind11/operators.h"  // operator overloading
 #include "pybind11/pybind11.h"   // py::module_, py::overload_cast

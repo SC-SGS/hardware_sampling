@@ -66,7 +66,7 @@ cmake --install . --prefix "/home/myuser/installdir"
 Afterward, the necessary exports should be performed:
 
 ```bash
-export CMAKE_PREFIX_PATH=${CMAKE_INSTALL_PREFIX}/share/hardware_sampling/cmake:${CMAKE_PREFIX_PATH}
+export CMAKE_PREFIX_PATH=${CMAKE_INSTALL_PREFIX}/share/hws/cmake:${CMAKE_PREFIX_PATH}
 export LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:${LD_LIBRARY_PATH}
 export CPLUS_INCLUDE_PATH=${CMAKE_INSTALL_PREFIX}/include:${CPLUS_INCLUDE_PATH}
 export PYTHONPATH=${CMAKE_INSTALL_PREFIX}/lib:${PYTHONPATH}
@@ -242,15 +242,15 @@ current clock frequencies, temperatures, or memory consumption.
 ## Example Python usage
 
 ```python
-import HardwareSampling
+import HardwareSampling as hws
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import datetime
 
-sampler = HardwareSampling.CpuHardwareSampler()
+sampler = hws.CpuHardwareSampler()
 # could also be, e.g.,
-# sampler = HardwareSampling.GpuNvidiaHardwareSampler()
+# sampler = hws.GpuNvidiaHardwareSampler()
 sampler.start()
 
 sampler.add_event("init")
