@@ -28,7 +28,7 @@ add_library(hws::hws ALIAS ${HWS_LIBRARY_NAME})
 # set install target
 set(HWS_TARGETS_TO_INSTALL ${HWS_LIBRARY_NAME})
 
-# use C++20
+# use C++17
 target_compile_features(${HWS_LIBRARY_NAME} PUBLIC cxx_std_17)
 
 # add target include directory
