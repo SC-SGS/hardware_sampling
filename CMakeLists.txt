@@ -6,10 +6,10 @@
 
 cmake_minimum_required(VERSION 3.22)
 
-project("HWS - Hardware Sampling for GPUs and CPUs"
+project("hws - Hardware Sampling for GPUs and CPUs"
         VERSION 1.0.0
         LANGUAGES CXX
-        DESCRIPTION "Hardware sampling (e.g., clock frequencies, memory consumption, temperatures, or energy draw) for CPUs, and GPUS.")
+        DESCRIPTION "Hardware sampling (e.g., clock frequencies, memory consumption, temperatures, or energy draw) for CPUs and GPUS.")
 
 # explicitly set library source files
 set(HWS_SOURCES
@@ -89,6 +89,16 @@ else ()
     add_dependencies(${HWS_LIBRARY_NAME} fmt)
 endif ()
 target_link_libraries(${HWS_LIBRARY_NAME} PUBLIC fmt::fmt)
+
+########################################################################################################################
+##                                              configure version header                                              ##
+########################################################################################################################
+message(STATUS "Configuring version information.")
+configure_file(
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/hardware_sampling/version.hpp.in
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/hardware_sampling/version.hpp
+        @ONLY
+)
 
 ####################################################################################################################
 ##                                                CPU measurements                                                ##

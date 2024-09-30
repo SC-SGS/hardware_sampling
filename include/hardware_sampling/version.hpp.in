@@ -1,0 +1,51 @@
+/**
+ * @file
+ * @author Marcel Breyer
+ * @copyright 2024-today All Rights Reserved
+ * @license This file is released under the MIT license.
+ *          See the LICENSE.md file in the project root for full license information.
+ *
+ * @brief Version information for the hardware sampling.
+ */
+
+#ifndef HARDWARE_SAMPLING_VERSION_HPP_
+#define HARDWARE_SAMPLING_VERSION_HPP_
+#pragma once
+
+#include <string_view>  // std::string_view
+
+namespace hws::version {
+
+/**
+ * @brief The name of the library.
+ * @details The value gets automatically set during the [`CMake`](https://cmake.org/) configuration step.
+ */
+constexpr std::string_view name = "@PROJECT_NAME@";
+
+/**
+ * @brief The current version of the library in the form: "major.minor.patch".
+ * @details The value gets automatically set during the [`CMake`](https://cmake.org/) configuration step.
+ */
+constexpr std::string_view version = "@PROJECT_VERSION@";
+
+/**
+ * @brief The current major version of the library.
+ * @details The value gets automatically set during the [`CMake`](https://cmake.org/) configuration step.
+ */
+constexpr int major = @PROJECT_VERSION_MAJOR@;
+
+/**
+ * @brief The current minor version of the library.
+ * @details The value gets automatically set during the [`CMake`](https://cmake.org/) configuration step.
+ */
+constexpr int minor = @PROJECT_VERSION_MINOR@;
+
+/**
+ * @brief The current patch version of the library.
+ * @details The value gets automatically set during the [`CMake`](https://cmake.org/) configuration step.
+ */
+constexpr int patch = @PROJECT_VERSION_PATCH@;
+
+}  // namespace hws::version
+
+#endif  // HARDWARE_SAMPLING_VERSION_HPP_

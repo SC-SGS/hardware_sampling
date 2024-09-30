@@ -16,6 +16,7 @@
 #include "hardware_sampling/hardware_sampler.hpp"
 #include "hardware_sampling/sample_category.hpp"
 #include "hardware_sampling/system_hardware_sampler.hpp"
+#include "hardware_sampling/version.hpp"
 
 #if defined(HWS_FOR_CPUS_ENABLED)
     #include "hardware_sampling/cpu/cpu_samples.hpp"

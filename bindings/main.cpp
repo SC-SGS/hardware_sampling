@@ -24,6 +24,7 @@ void init_cpu_hardware_sampler(py::module_ &);
 void init_gpu_nvidia_hardware_sampler(py::module_ &);
 void init_gpu_amd_hardware_sampler(py::module_ &);
 void init_gpu_intel_hardware_sampler(py::module_ &);
+void init_version(py::module_ &);
 
 PYBIND11_MODULE(HardwareSampling, m) {
     m.doc() = "Hardware Sampling for CPUs and GPUs";
@@ -57,4 +58,6 @@ PYBIND11_MODULE(HardwareSampling, m) {
     init_gpu_intel_hardware_sampler(m);
 #endif
     m.def("has_gpu_intel_hardware_sampler", []() { return HWS_IS_DEFINED(HWS_FOR_INTEL_GPUS_ENABLED); });
+
+    init_version(m);
 }

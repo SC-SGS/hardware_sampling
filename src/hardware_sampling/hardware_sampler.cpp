@@ -9,6 +9,7 @@
 
 #include "hardware_sampling/event.hpp"    // hws::event
 #include "hardware_sampling/utility.hpp"  // hws::detail::durations_from_reference_time
+#include "hardware_sampling/version.hpp"  // hws::version::version
 
 #include "fmt/chrono.h"  // direct formatting of std::chrono types
 #include "fmt/format.h"  // fmt::format
@@ -127,7 +128,8 @@ void hardware_sampler::dump_yaml(const char *filename) const {
     std::ofstream file{ filename, std::ios_base::app };
 
     // begin a new YAML document (only with "---" multiple YAML documents in a single file are allowed)
-    file << "---\n\n" << this->as_yaml_string();
+    file << "---\n\n"
+         << this->as_yaml_string();
 }
 
 void hardware_sampler::dump_yaml(const std::string &filename) const {
@@ -153,6 +155,8 @@ std::string hardware_sampler::as_yaml_string() const {
 
     return fmt::format("device_identification: \"{}\"\n"
                        "\n"
+                       "version: \"{}\"\n"
+                       "\n"
                        "start_time: \"{:%Y-%m-%d %X}\"\n"
                        "\n"
                        "events:\n"
@@ -171,6 +175,7 @@ std::string hardware_sampler::as_yaml_string() const {
                        "\n"
                        "{}\n",
                        this->device_identification(),
+                       version::version,
                        start_date_time_,
                        fmt::join(detail::durations_from_reference_time(event_time_points, this->get_event(0).time_point), ", "),
                        fmt::join(event_names, ", "),

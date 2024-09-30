@@ -55,3 +55,6 @@ CTestTestfile.cmake
 .idea/
 .vscode/
 .vs/
+
+# auto-generated version header
+include/hardware_sampling/version.hpp
