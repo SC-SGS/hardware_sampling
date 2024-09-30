@@ -12,7 +12,7 @@
 #include <vector>   // std::vector
 
 int main() {
-    hws::cpu_hardware_sampler sampler{};
+    hws::system_hardware_sampler sampler{};
     // could also be, e.g.,
     // hws::gpu_nvidia_hardware_sampler sampler{};
     sampler.start_sampling();

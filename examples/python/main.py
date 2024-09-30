@@ -8,12 +8,12 @@
 #          See the LICENSE.md file in the project root for full license information.                                   #
 ########################################################################################################################
 
-import HardwareSampling
+import HardwareSampling as hws
 import numpy as np
 
-sampler = HardwareSampling.CpuHardwareSampler()
+sampler = hws.SystemHardwareSampler()
 # could also be, e.g.,
-# sampler = HardwareSampling.GpuNvidiaHardwareSampler()
+# sampler = hws.GpuNvidiaHardwareSampler()
 sampler.start()
 
 sampler.add_event("init")
