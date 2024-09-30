@@ -50,7 +50,11 @@ std::ostream &operator<<(std::ostream &out, const event &e);
 
 }  // namespace hws
 
+/// @cond Doxygen_suppress
+
 template <>
 struct fmt::formatter<hws::event> : fmt::ostream_formatter { };
+
+/// @endcond
 
 #endif  // HARDWARE_SAMPLING_EVENT_HPP_

@@ -58,15 +58,30 @@ namespace hws::detail {
 /**                                          type_traits                                            **/
 /*****************************************************************************************************/
 
+/**
+ * @brief Remove the topmost cv-qualifiers from type @p T.
+ */
 template <typename T>
 using remove_cvref_t = std::remove_cv_t<std::remove_reference_t<T>>;
 
+/**
+ * @brief The case if the type @p T isn't a std::vector.
+ * @tparam T the type to check
+ */
 template <typename T>
 struct is_vector : std::false_type { };
 
+/**
+ * @brief The case if the type @p T is a std::vector.
+ * @tparam T the type to check
+ */
 template <typename T>
 struct is_vector<std::vector<T>> : std::true_type { };
 
+/**
+ * @brief Evaluates to `true` if @p T is a std::vector, otherwise `false`.
+ * @tparam T the type to check
+ */
 template <typename T>
 constexpr bool is_vector_v = is_vector<T>::value;
 

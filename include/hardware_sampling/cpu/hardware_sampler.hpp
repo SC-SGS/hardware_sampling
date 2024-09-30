@@ -150,7 +150,11 @@ std::ostream &operator<<(std::ostream &out, const cpu_hardware_sampler &sampler)
 
 }  // namespace hws
 
+/// @cond Doxygen_suppress
+
 template <>
 struct fmt::formatter<hws::cpu_hardware_sampler> : fmt::ostream_formatter { };
+
+/// @endcond
 
 #endif  // HARDWARE_SAMPLING_CPU_HARDWARE_SAMPLER_HPP_

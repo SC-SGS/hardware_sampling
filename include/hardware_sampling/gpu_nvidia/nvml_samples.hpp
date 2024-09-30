@@ -81,6 +81,7 @@ class nvml_clock_samples {
     // befriend hardware sampler class
     friend class gpu_nvidia_hardware_sampler;
 
+    /// The map type used to map the available clock frequencies to a specific memory frequency.
     using map_type = std::map<double, std::vector<double>>;
 
   public:
@@ -260,6 +261,8 @@ std::ostream &operator<<(std::ostream &out, const nvml_temperature_samples &samp
 
 }  // namespace hws
 
+/// @cond Doxygen_suppress
+
 template <>
 struct fmt::formatter<hws::nvml_general_samples> : fmt::ostream_formatter { };
 
@@ -274,5 +277,7 @@ struct fmt::formatter<hws::nvml_memory_samples> : fmt::ostream_formatter { };
 
 template <>
 struct fmt::formatter<hws::nvml_temperature_samples> : fmt::ostream_formatter { };
+
+/// @endcond
 
 #endif  // HARDWARE_SAMPLING_GPU_NVIDIA_NVML_SAMPLES_HPP_

@@ -163,7 +163,11 @@ std::ostream &operator<<(std::ostream &out, const gpu_intel_hardware_sampler &sa
 
 }  // namespace hws
 
+/// @cond Doxygen_suppress
+
 template <>
 struct fmt::formatter<hws::gpu_intel_hardware_sampler> : fmt::ostream_formatter { };
+
+/// @endcond
 
 #endif  // HARDWARE_SAMPLING_GPU_INTEL_HARDWARE_SAMPLER_HPP_

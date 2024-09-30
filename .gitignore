@@ -36,6 +36,7 @@ Prerequisites
 # CMake ================================
 bin/
 build*/
+docs/html
 install*/
 cmake-build*/
 CMakeLists.txt.user

@@ -267,6 +267,8 @@ std::ostream &operator<<(std::ostream &out, const level_zero_temperature_samples
 
 }  // namespace hws
 
+/// @cond Doxygen_suppress
+
 template <>
 struct fmt::formatter<hws::level_zero_general_samples> : fmt::ostream_formatter { };
 
@@ -281,5 +283,7 @@ struct fmt::formatter<hws::level_zero_memory_samples> : fmt::ostream_formatter {
 
 template <>
 struct fmt::formatter<hws::level_zero_temperature_samples> : fmt::ostream_formatter { };
+
+/// @endcond
 
 #endif  // HARDWARE_SAMPLING_GPU_INTEL_LEVEL_ZERO_SAMPLES_HPP_

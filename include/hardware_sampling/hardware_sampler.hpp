@@ -123,15 +123,16 @@ class hardware_sampler {
     [[nodiscard]] std::size_t num_events() const noexcept { return events_.size(); }
 
     /**
-     * @brief Return the number of recorded events.
+     * @brief Return a vector of all recorded events.
      * @return the events (`[[nodiscard]]`)
      */
     [[nodiscard]] const std::vector<event> &get_events() const noexcept { return events_; }
 
     /**
-     * @brief Return the number of recorded events.
+     * @brief Return the event at index @p idx.
+     * @param[in] idx the event to return
      * @throws std::out_of_range the the @p idx is out of bounce
-     * @return the number of events (`[[nodiscard]]`)
+     * @return the event at index @p idx (`[[nodiscard]]`)
      */
     [[nodiscard]] event get_event(std::size_t idx) const;
 
@@ -153,11 +154,11 @@ class hardware_sampler {
      */
     void dump_yaml(const char *filename) const;
     /**
-     * @copydoc hws::hardware_sampler::dump_yaml(const char *)
+     * @copydoc hws::hardware_sampler::dump_yaml(const char *) const
      */
     void dump_yaml(const std::string &filename) const;
     /**
-     * @copydoc hws::hardware_sampler::dump_yaml(const char *)
+     * @copydoc hws::hardware_sampler::dump_yaml(const char *) const
      */
     void dump_yaml(const std::filesystem::path &filename) const;
 

@@ -157,7 +157,7 @@ class system_hardware_sampler {
      */
     [[nodiscard]] const std::unique_ptr<hardware_sampler> &sampler(std::size_t idx) const;
     /**
-     * @copydoc hws::system_hardware_sampler::samplers(std::size_t idx) const
+     * @copydoc hws::system_hardware_sampler::sampler(std::size_t idx) const
      */
     [[nodiscard]] std::unique_ptr<hardware_sampler> &sampler(std::size_t idx);
 
@@ -167,11 +167,11 @@ class system_hardware_sampler {
      */
     void dump_yaml(const char *filename) const;
     /**
-     * @copydoc hws::system_hardware_sampler::dump_yaml(const char *)
+     * @copydoc hws::system_hardware_sampler::dump_yaml(const char *) const
      */
     void dump_yaml(const std::string &filename) const;
     /**
-     * @copydoc hws::system_hardware_sampler::dump_yaml(const char *)
+     * @copydoc hws::system_hardware_sampler::dump_yaml(const char *) const
      */
     void dump_yaml(const std::filesystem::path &filename) const;
 

@@ -25,6 +25,11 @@ namespace hws::detail {
  * @brief Defines the `HWS_ROCM_SMI_ERROR_CHECK` macro if `HWS_ERROR_CHECKS_ENABLED` is defined, does nothing otherwise.
  * @details Throws an exception if a ROCm SMI call returns with an error. Additionally outputs a more concrete error string if possible.
  */
+/**
+ * @def HWS_HIP_ERROR_CHECK
+ * @brief Defines the `HWS_HIP_ERROR_CHECK` macro if `HWS_ERROR_CHECKS_ENABLED` is defined, does nothing otherwise.
+ * @details Throws an exception if a HIP call returns with an error. Additionally outputs a more concrete error string.
+ */
 #if defined(HWS_ERROR_CHECKS_ENABLED)
     #define HWS_ROCM_SMI_ERROR_CHECK(rocm_smi_func)                                                                                                \
         {                                                                                                                                          \
@@ -58,7 +63,7 @@ namespace hws::detail {
 
 /**
  * @brief Convert the performance level value (`rsmi_dev_perf_level_t`) to a string.
- * @param[in] clocks_event_reasons the bitmask to convert to a string
+ * @param[in] perf_level the bitmask to convert to a string
  * @return all event throttle reasons (`[[nodiscard]]`)
  */
 [[nodiscard]] std::string performance_level_to_string(rsmi_dev_perf_level_t perf_level);

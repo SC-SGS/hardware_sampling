@@ -272,6 +272,8 @@ std::ostream &operator<<(std::ostream &out, const rocm_smi_temperature_samples &
 
 }  // namespace hws
 
+/// @cond Doxygen_suppress
+
 template <>
 struct fmt::formatter<hws::rocm_smi_general_samples> : fmt::ostream_formatter { };
 
@@ -286,5 +288,7 @@ struct fmt::formatter<hws::rocm_smi_memory_samples> : fmt::ostream_formatter { }
 
 template <>
 struct fmt::formatter<hws::rocm_smi_temperature_samples> : fmt::ostream_formatter { };
+
+/// @endcond
 
 #endif  // HARDWARE_SAMPLING_GPU_AMD_ROCM_SMI_SAMPLES_HPP_

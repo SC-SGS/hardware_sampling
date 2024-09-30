@@ -339,6 +339,8 @@ std::ostream &operator<<(std::ostream &out, const cpu_idle_states_samples &sampl
 
 }  // namespace hws
 
+/// @cond Doxygen_suppress
+
 template <>
 struct fmt::formatter<hws::cpu_general_samples> : fmt::ostream_formatter { };
 
@@ -359,5 +361,7 @@ struct fmt::formatter<hws::cpu_gfx_samples> : fmt::ostream_formatter { };
 
 template <>
 struct fmt::formatter<hws::cpu_idle_states_samples> : fmt::ostream_formatter { };
+
+/// @endcond
 
 #endif  // HARDWARE_SAMPLING_CPU_CPU_SAMPLES_HPP_

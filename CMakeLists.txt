@@ -282,9 +282,17 @@ endif ()
 ##                                             enable Python bindings                                             ##
 ####################################################################################################################
 option(HWS_ENABLE_PYTHON_BINDINGS "Build language bindings for Python." ON)
-
 if (HWS_ENABLE_PYTHON_BINDINGS)
     add_subdirectory(bindings)
+endif ()
+
+
+########################################################################################################################
+##                                                  add documentation                                                 ##
+########################################################################################################################
+option(HWS_ENABLE_DOCUMENTATION "Add documentation using Doxygen." OFF)
+if (HWS_ENABLE_DOCUMENTATION)
+    add_subdirectory(docs)
 endif ()
 
 

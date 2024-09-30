@@ -26,6 +26,11 @@ namespace hws::detail {
  * @brief Defines the `HWS_NVML_ERROR_CHECK` macro if `HWS_ERROR_CHECKS_ENABLED` is defined, does nothing otherwise.
  * @details Throws an exception if an NVML call returns with an error. Additionally outputs a more concrete error string.
  */
+/**
+ * @def HWS_CUDA_ERROR_CHECK
+ * @brief Defines the `HWS_CUDA_ERROR_CHECK` macro if `HWS_ERROR_CHECKS_ENABLED` is defined, does nothing otherwise.
+ * @details Throws an exception if a CUDA call returns with an error. Additionally outputs a more concrete error string.
+ */
 #if defined(HWS_ERROR_CHECKS_ENABLED)
     #define HWS_NVML_ERROR_CHECK(nvml_func)                                                                                                                        \
         {                                                                                                                                                          \
