@@ -76,7 +76,7 @@ else ()
     set(FMT_FUZZ OFF CACHE INTERNAL "" FORCE)
     set(FMT_CUDA_TEST OFF CACHE INTERNAL "" FORCE)
     set(FMT_MODULE OFF CACHE INTERNAL "" FORCE)
-    set(FMT_SYSTEM_HEADERS ON CACHE INTERNAL "" FORCE)
+    set(FMT_SYSTEM_HEADERS OFF CACHE INTERNAL "" FORCE)
     # fetch string formatting library fmt
     FetchContent_Declare(fmt
             GIT_REPOSITORY https://github.com/fmtlib/fmt.git
@@ -328,7 +328,7 @@ configure_package_config_file(
 )
 
 ## create and copy install-targets file
-install(EXPORT hws_Targets
+install(EXPORT hws_Targets fmt
         FILE hwsTargets.cmake
         NAMESPACE hws::
         DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/hws/cmake
