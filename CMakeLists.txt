@@ -306,6 +306,7 @@ install(TARGETS ${HWS_TARGETS_TO_INSTALL}
         LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"  # all shared lib files
         RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"  # all executables
 )
+install(TARGETS fmt)
 
 ## mark header to install via 'make install'
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/"
@@ -328,7 +329,7 @@ configure_package_config_file(
 )
 
 ## create and copy install-targets file
-install(EXPORT hws_Targets fmt
+install(EXPORT hws_Targets
         FILE hwsTargets.cmake
         NAMESPACE hws::
         DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/hws/cmake
