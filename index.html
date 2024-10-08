@@ -118,7 +118,7 @@ Installing</h2>
 <div class="line">export LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:${CMAKE_INSTALL_PREFIX}/lib64:${LD_LIBRARY_PATH}</div>
 <div class="line">export CPLUS_INCLUDE_PATH=${CMAKE_INSTALL_PREFIX}/include:${CPLUS_INCLUDE_PATH}</div>
 <div class="line">export PYTHONPATH=${CMAKE_INSTALL_PREFIX}/lib:${CMAKE_INSTALL_PREFIX}/lib64:${PYTHONPATH}</div>
-</div><!-- fragment --><p>Note: when using Intel GPUs and segmentation faults are encountered in calls to <code>zes</code> functions, it may be necessary to set <code>export ZES_ENABLE_SYSMAN=1</code>.</p>
+</div><!-- fragment --><p><b>Note:</b> when using Intel GPUs, the <code>CMAKE_MODULE_PATH</code> should be updated to point to our <code>cmake</code> directory containing the <code>Findlevel_zero.cmake</code> file and <code>export ZES_ENABLE_SYSMAN=1</code> should be set.</p>
 <h1><a class="anchor" id="autotoc_md6"></a>
 Available samples</h1>
 <p>The sampling type <code>fixed</code> denotes samples that are gathered once per hardware samples like maximum clock frequencies or temperatures or the total available memory. The sampling type <code>sampled</code> denotes samples that are gathered during the whole hardware sampling process like the current clock frequencies, temperatures, or memory consumption.</p>
@@ -430,8 +430,8 @@ Example Python usage</h1>
 <div class="line">sampler.start()</div>
 <div class="line"> </div>
 <div class="line">sampler.add_event(&quot;init&quot;)</div>
-<div class="line">A = np.random.rand(2**14, 2**14)</div>
-<div class="line">B = np.random.rand(2**14, 2**14)</div>
+<div class="line">A = np.random.rand(2 ** 14, 2 ** 14)</div>
+<div class="line">B = np.random.rand(2 ** 14, 2 ** 14)</div>
 <div class="line"> </div>
 <div class="line">sampler.add_event(&quot;matmul&quot;)</div>
 <div class="line">C = A @ B</div>
@@ -465,7 +465,7 @@ License</h1>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Oct 8 2024 11:45:01 for hws - Hardware Sampling for GPUs and CPUs by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1
+Generated on Tue Oct 8 2024 11:48:33 for hws - Hardware Sampling for GPUs and CPUs by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1
 </small></address>
 </body>
 </html>
