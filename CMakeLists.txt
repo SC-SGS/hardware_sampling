@@ -7,7 +7,7 @@
 cmake_minimum_required(VERSION 3.22)
 
 project("hws - Hardware Sampling for GPUs and CPUs"
-        VERSION 1.0.0
+        VERSION 1.0.1
         LANGUAGES CXX
         DESCRIPTION "Hardware sampling (e.g., clock frequencies, memory consumption, temperatures, or energy draw) for CPUs and GPUS.")
 
