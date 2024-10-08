@@ -1,0 +1,4 @@
+<map id="include/hws/system_hardware_sampler.hpp" name="include/hws/system_hardware_sampler.hpp">
+<area shape="rect" id="node1" title="Defines a hardware sampler for the whole system, i.e., automatically creates CPU and GPU hardware sam..." alt="" coords="5,5,183,47"/>
+<area shape="rect" id="node2" href="$core_8hpp.html" title="Core header containing all other necessary other headers." alt="" coords="15,95,173,121"/>
+</map>

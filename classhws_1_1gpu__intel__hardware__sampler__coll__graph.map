@@ -1,0 +1,10 @@
+<map id="hws::gpu_intel_hardware_sampler" name="hws::gpu_intel_hardware_sampler">
+<area shape="rect" id="node1" title="A hardware sampler for Intel GPUs." alt="" coords="419,187,603,229"/>
+<area shape="rect" id="node2" href="$classhws_1_1hardware__sampler.html" title="The base class for all specialized hardware samplers." alt="" coords="22,5,199,32"/>
+<area shape="rect" id="node3" href="$classhws_1_1level__zero__clock__samples.html" title="Wrapper class for all clock related Level Zero hardware samples." alt="" coords="29,57,193,98"/>
+<area shape="rect" id="node4" href="$classhws_1_1level__zero__power__samples.html" title="Wrapper class for all power related Level Zero hardware samples." alt="" coords="25,122,196,163"/>
+<area shape="rect" id="node5" href="$classhws_1_1level__zero__memory__samples.html" title="Wrapper class for all memory related Level Zero hardware samples." alt="" coords="18,187,203,229"/>
+<area shape="rect" id="node6" href="$classhws_1_1level__zero__temperature__samples.html" title="Wrapper class for all temperature related Level Zero hardware samples." alt="" coords="5,253,216,294"/>
+<area shape="rect" id="node7" href="$classhws_1_1level__zero__general__samples.html" title="Wrapper class for all general Level Zero hardware samples." alt="" coords="21,318,200,359"/>
+<area shape="rect" id="node8" href="$classhws_1_1detail_1_1level__zero__device__handle.html" title="PImpl class to hide the ze_driver_handle_t and ze_device_handle_t handles from the public interface (..." alt="" coords="31,383,190,425"/>
+</map>

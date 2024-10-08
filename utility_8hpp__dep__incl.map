@@ -1,0 +1,11 @@
+<map id="include/hws/utility.hpp" name="include/hws/utility.hpp">
+<area shape="rect" id="node1" title="Utility functions for the hardware sampling." alt="" coords="323,5,489,32"/>
+<area shape="rect" id="node2" href="$cpu__samples_8hpp.html" title="Defines the samples used with turbostat, lscpu, and free." alt="" coords="28,80,181,121"/>
+<area shape="rect" id="node4" href="$rocm__smi__samples_8hpp.html" title="Defines the samples used with ROCm SMI." alt="" coords="213,80,393,121"/>
+<area shape="rect" id="node6" href="$level__zero__samples_8hpp.html" title="Defines the samples used with Level Zero." alt="" coords="417,80,600,121"/>
+<area shape="rect" id="node8" href="$nvml__samples_8hpp.html" title="Defines the samples used with NVML." alt="" coords="624,80,799,121"/>
+<area shape="rect" id="node3" href="$cpu_2hardware__sampler_8hpp.html" title="Defines a hardware sampler for CPUs using the turbostat, lscpu, and free utilities (requires root)." alt="" coords="5,169,196,211"/>
+<area shape="rect" id="node5" href="$gpu__amd_2hardware__sampler_8hpp.html" title="Defines a hardware sampler for AMD GPUs using AMD&#39;s ROCm SMI library." alt="" coords="220,169,395,211"/>
+<area shape="rect" id="node7" href="$gpu__intel_2hardware__sampler_8hpp.html" title="Defines a hardware sampler for Intel GPUs using Intel&#39;s Level Zero." alt="" coords="421,169,596,211"/>
+<area shape="rect" id="node9" href="$gpu__nvidia_2hardware__sampler_8hpp.html" title="Defines a hardware sampler for NVIDIA GPUs using NVIDIA&#39;s Management Library (NVML)." alt="" coords="624,169,799,211"/>
+</map>

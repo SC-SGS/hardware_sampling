@@ -1,0 +1,9 @@
+<map id="hws::gpu_amd_hardware_sampler" name="hws::gpu_amd_hardware_sampler">
+<area shape="rect" id="node1" title="A hardware sampler for AMD GPUs." alt="" coords="416,155,600,197"/>
+<area shape="rect" id="node2" href="$classhws_1_1hardware__sampler.html" title="The base class for all specialized hardware samplers." alt="" coords="21,5,198,32"/>
+<area shape="rect" id="node3" href="$classhws_1_1rocm__smi__temperature__samples.html" title="Wrapper class for all temperature related ROCm SMI hardware samples." alt="" coords="5,57,213,98"/>
+<area shape="rect" id="node4" href="$classhws_1_1rocm__smi__general__samples.html" title="Wrapper class for all general ROCm SMI hardware samples." alt="" coords="21,122,197,163"/>
+<area shape="rect" id="node5" href="$classhws_1_1rocm__smi__power__samples.html" title="Wrapper class for all power related ROCm SMI hardware samples." alt="" coords="26,187,193,229"/>
+<area shape="rect" id="node6" href="$classhws_1_1rocm__smi__memory__samples.html" title="Wrapper class for all memory related ROCm SMI hardware samples." alt="" coords="18,253,201,294"/>
+<area shape="rect" id="node7" href="$classhws_1_1rocm__smi__clock__samples.html" title="Wrapper class for all clock related ROCm SMI hardware samples." alt="" coords="29,318,190,359"/>
+</map>

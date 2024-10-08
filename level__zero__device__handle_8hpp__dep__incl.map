@@ -1,0 +1,5 @@
+<map id="include/hws/gpu_intel/level_zero_device_handle.hpp" name="include/hws/gpu_intel/level_zero_device_handle.hpp">
+<area shape="rect" id="node1" title="Defines a pImpl class for a Level Zero device handle." alt="" coords="85,5,308,47"/>
+<area shape="rect" id="node2" href="$gpu__intel_2hardware__sampler_8hpp.html" title="Defines a hardware sampler for Intel GPUs using Intel&#39;s Level Zero." alt="" coords="5,102,180,143"/>
+<area shape="rect" id="node3" href="$level__zero__device__handle__impl_8hpp.html" title="Implements a pImpl class for a Level Zero device handle." alt="" coords="205,95,399,151"/>
+</map>

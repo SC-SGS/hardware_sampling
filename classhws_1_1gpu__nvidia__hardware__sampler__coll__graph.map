@@ -1,0 +1,10 @@
+<map id="hws::gpu_nvidia_hardware_sampler" name="hws::gpu_nvidia_hardware_sampler">
+<area shape="rect" id="node1" title="A hardware sampler for NVIDIA GPUs." alt="" coords="421,150,616,191"/>
+<area shape="rect" id="node2" href="$classhws_1_1hardware__sampler.html" title="The base class for all specialized hardware samplers." alt="" coords="23,5,201,32"/>
+<area shape="rect" id="node3" href="$classhws_1_1nvml__memory__samples.html" title="Wrapper class for all memory related NVML hardware samples." alt="" coords="5,56,219,83"/>
+<area shape="rect" id="node4" href="$classhws_1_1nvml__general__samples.html" title="Wrapper class for all general NVML hardware samples." alt="" coords="9,107,215,133"/>
+<area shape="rect" id="node5" href="$classhws_1_1nvml__power__samples.html" title="Wrapper class for all power related NVML hardware samples." alt="" coords="13,157,211,184"/>
+<area shape="rect" id="node6" href="$classhws_1_1nvml__temperature__samples.html" title="Wrapper class for all temperature related NVML hardware samples." alt="" coords="23,209,201,250"/>
+<area shape="rect" id="node7" href="$classhws_1_1detail_1_1nvml__device__handle.html" title="PImpl class to hide the nvmlDevice_t handle from the public interface (and, therefore,..." alt="" coords="20,274,204,315"/>
+<area shape="rect" id="node8" href="$classhws_1_1nvml__clock__samples.html" title="Wrapper class for all clock related NVML hardware samples." alt="" coords="16,340,208,367"/>
+</map>

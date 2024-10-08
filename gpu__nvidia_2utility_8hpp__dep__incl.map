@@ -1,0 +1,4 @@
+<map id="include/hws/gpu_nvidia/utility.hpp" name="include/hws/gpu_nvidia/utility.hpp">
+<area shape="rect" id="node1" title="Implements utility functionality for the NVIDIA GPU sampler." alt="" coords="30,5,205,47"/>
+<area shape="rect" id="node2" href="$nvml__device__handle__impl_8hpp.html" title="Implements a pImpl class for an NVML device handle." alt="" coords="5,95,229,136"/>
+</map>

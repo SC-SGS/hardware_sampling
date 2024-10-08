@@ -1,0 +1,7 @@
+<map id="hws::hardware_sampler" name="hws::hardware_sampler">
+<area shape="rect" id="node1" title="The base class for all specialized hardware samplers." alt="" coords="5,97,183,124"/>
+<area shape="rect" id="node2" href="$classhws_1_1cpu__hardware__sampler.html" title="A hardware sampler for the CPU." alt="" coords="231,5,437,32"/>
+<area shape="rect" id="node3" href="$classhws_1_1gpu__amd__hardware__sampler.html" title="A hardware sampler for AMD GPUs." alt="" coords="242,57,426,98"/>
+<area shape="rect" id="node4" href="$classhws_1_1gpu__intel__hardware__sampler.html" title="A hardware sampler for Intel GPUs." alt="" coords="242,122,426,163"/>
+<area shape="rect" id="node5" href="$classhws_1_1gpu__nvidia__hardware__sampler.html" title="A hardware sampler for NVIDIA GPUs." alt="" coords="237,187,431,229"/>
+</map>

@@ -1,0 +1,11 @@
+<map id="hws::cpu_hardware_sampler" name="hws::cpu_hardware_sampler">
+<area shape="rect" id="node1" title="A hardware sampler for the CPU." alt="" coords="411,195,617,221"/>
+<area shape="rect" id="node2" href="$classhws_1_1hardware__sampler.html" title="The base class for all specialized hardware samplers." alt="" coords="18,5,195,32"/>
+<area shape="rect" id="node3" href="$classhws_1_1cpu__memory__samples.html" title="Wrapper class for all memory related CPU hardware samples." alt="" coords="5,56,208,83"/>
+<area shape="rect" id="node4" href="$classhws_1_1cpu__general__samples.html" title="Wrapper class for all general CPU hardware samples." alt="" coords="8,107,205,133"/>
+<area shape="rect" id="node5" href="$classhws_1_1cpu__idle__states__samples.html" title="Wrapper class for all idle state related CPU hardware samples." alt="" coords="28,158,185,199"/>
+<area shape="rect" id="node6" href="$classhws_1_1cpu__clock__samples.html" title="Wrapper class for all clock related CPU hardware samples." alt="" coords="15,224,198,251"/>
+<area shape="rect" id="node7" href="$classhws_1_1cpu__gfx__samples.html" title="Wrapper class for all gfx (iGPU) related CPU hardware samples." alt="" coords="22,275,191,301"/>
+<area shape="rect" id="node8" href="$classhws_1_1cpu__temperature__samples.html" title="Wrapper class for all temperature related CPU hardware samples." alt="" coords="23,326,190,367"/>
+<area shape="rect" id="node9" href="$classhws_1_1cpu__power__samples.html" title="Wrapper class for all power related CPU hardware samples." alt="" coords="13,392,201,419"/>
+</map>

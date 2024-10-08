@@ -1,0 +1,9 @@
+<map id="include/hws/hardware_sampler.hpp" name="include/hws/hardware_sampler.hpp">
+<area shape="rect" id="node1" title="Defines the base class for all hardware samplers." alt="" coords="346,5,510,47"/>
+<area shape="rect" id="node2" href="$core_8hpp.html" title="Core header containing all other necessary other headers." alt="" coords="378,184,536,211"/>
+<area shape="rect" id="node3" href="$cpu_2hardware__sampler_8hpp.html" title="Defines a hardware sampler for CPUs using the turbostat, lscpu, and free utilities (requires root)." alt="" coords="27,95,218,136"/>
+<area shape="rect" id="node4" href="$gpu__amd_2hardware__sampler_8hpp.html" title="Defines a hardware sampler for AMD GPUs using AMD&#39;s ROCm SMI library." alt="" coords="242,95,416,136"/>
+<area shape="rect" id="node5" href="$gpu__intel_2hardware__sampler_8hpp.html" title="Defines a hardware sampler for Intel GPUs using Intel&#39;s Level Zero." alt="" coords="440,95,615,136"/>
+<area shape="rect" id="node6" href="$gpu__nvidia_2hardware__sampler_8hpp.html" title="Defines a hardware sampler for NVIDIA GPUs using NVIDIA&#39;s Management Library (NVML)." alt="" coords="639,95,814,136"/>
+<area shape="rect" id="node7" href="$system__hardware__sampler_8hpp.html" title="Defines a hardware sampler for the whole system, i.e., automatically creates CPU and GPU hardware sam..." alt="" coords="838,95,1015,136"/>
+</map>
