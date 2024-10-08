@@ -272,7 +272,7 @@ void gpu_intel_hardware_sampler::sampling_loop() {
                                 break;
                         }
 
-                        power_samples_.power_enforced_limit_ = static_cast<decltype(power_samples_.power_enforced_limit_)::value_type>(desc.limit);
+                        power_samples_.power_enforced_limit_ = static_cast<decltype(power_samples_.power_enforced_limit_)::value_type>(desc.limit) / 1000.0;
                     }
 
                     // get total power consumption
@@ -581,7 +581,7 @@ void gpu_intel_hardware_sampler::sampling_loop() {
 
                         // calculate current power draw as (Energy Difference [J]) / (Time Difference [s])
                         const std::size_t last_index = this->sampling_time_points().size() - 1;
-                        const double power_usage = (power_consumption - power_samples_.power_total_energy_consumption_->back()) / (std::chrono::duration<double>(this->sampling_time_points()[last_index] - this->sampling_time_points()[last_index - 1]).count());
+                        const double power_usage = ((power_consumption - initial_total_power_consumption) - power_samples_.power_total_energy_consumption_->back()) / (std::chrono::duration<double>(this->sampling_time_points()[last_index] - this->sampling_time_points()[last_index - 1]).count());
                         power_samples_.power_usage_->push_back(power_usage);
 
                         // add power consumption last to be able to use the std::vector::back() function
