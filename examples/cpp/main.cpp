@@ -5,14 +5,14 @@
  *          See the LICENSE.md file in the project root for full license information.
  */
 
-#include "hardware_sampling/core.hpp"
+#include "hws/core.hpp"
 
 #include <cstddef>  // std::size_t
 #include <numeric>  // std::iota
 #include <vector>   // std::vector
 
 int main() {
-    hws::cpu_hardware_sampler sampler{};
+    hws::system_hardware_sampler sampler{};
     // could also be, e.g.,
     // hws::gpu_nvidia_hardware_sampler sampler{};
     sampler.start_sampling();

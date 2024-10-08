@@ -4,7 +4,7 @@
 ##          See the LICENSE.md file in the project root for full license information.
 ########################################################################################################################
 
-message(STATUS "Building Python language bindings for PLSSVM.")
+message(STATUS "Building Python language bindings.")
 
 find_package(Python COMPONENTS Interpreter Development)
 
@@ -32,7 +32,11 @@ endif ()
 # set source files that are always used
 set(HWS_PYTHON_BINDINGS_SOURCES
         ${CMAKE_CURRENT_SOURCE_DIR}/event.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/relative_event.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/hardware_sampler.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/sample_category.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/system_hardware_sampler.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/version.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
 )
 

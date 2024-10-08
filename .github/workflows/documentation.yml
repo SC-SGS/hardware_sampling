@@ -1,0 +1,43 @@
+name: Generate documentation
+
+# only trigger this action on specific events
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-documentation:
+    runs-on: ubuntu-latest
+    steps:
+      # checkout repository
+      - name: Checkout hws
+        uses: actions/checkout@v4.2.0
+        with:
+          path: hardware_sampling
+      # install dependencies
+      - name: Dependencies
+        run: |
+          sudo apt update
+          sudo apt-get install -y doxygen graphviz
+      # configure project via CMake
+      - name: Configure
+        run: |
+          cd hardware_sampling
+          mkdir build
+          cd build
+          cmake -DHWS_ENABLE_DOCUMENTATION=ON ..
+      # build project
+      - name: Generate
+        run: |
+          cd hardware_sampling/build
+          make doc
+      # deploy generated documentation using github.io
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./hardware_sampling/docs/html

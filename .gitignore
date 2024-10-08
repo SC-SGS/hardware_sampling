@@ -36,6 +36,8 @@ Prerequisites
 # CMake ================================
 bin/
 build*/
+docs/html
+install*/
 cmake-build*/
 CMakeLists.txt.user
 CMakeCache.txt
@@ -54,3 +56,6 @@ CTestTestfile.cmake
 .idea/
 .vscode/
 .vs/
+
+# auto-generated version header
+include/hws/version.hpp

@@ -6,27 +6,29 @@
 
 cmake_minimum_required(VERSION 3.22)
 
-project("HWS - Hardware Sampling for GPUs and CPUs"
+project("hws - Hardware Sampling for GPUs and CPUs"
         VERSION 1.0.0
         LANGUAGES CXX
-        DESCRIPTION "Hardware sampling (e.g., clock frequencies, memory consumption, temperatures, or energy draw) for CPUs, and GPUS.")
+        DESCRIPTION "Hardware sampling (e.g., clock frequencies, memory consumption, temperatures, or energy draw) for CPUs and GPUS.")
 
 # explicitly set library source files
 set(HWS_SOURCES
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/event.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/hardware_sampler.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/utility.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/hws/event.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/hws/hardware_sampler.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/hws/system_hardware_sampler.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/hws/utility.cpp
 )
 
 # create hardware sampling library
-set(HWS_LIBRARY_NAME hardware_sampling)
+set(HWS_LIBRARY_NAME hws)
 add_library(${HWS_LIBRARY_NAME} SHARED ${HWS_SOURCES})
+add_library(hws::hws ALIAS ${HWS_LIBRARY_NAME})
 
 # set install target
 set(HWS_TARGETS_TO_INSTALL ${HWS_LIBRARY_NAME})
 
-# use C++20
-target_compile_features(${HWS_LIBRARY_NAME} PUBLIC cxx_std_20)
+# use C++17
+target_compile_features(${HWS_LIBRARY_NAME} PUBLIC cxx_std_17)
 
 # add target include directory
 target_include_directories(${HWS_LIBRARY_NAME} PUBLIC
@@ -58,6 +60,44 @@ endif ()
 message(STATUS "Setting the hardware sampler interval to ${HWS_SAMPLING_INTERVAL}ms.")
 target_compile_definitions(${HWS_LIBRARY_NAME} PUBLIC HWS_SAMPLING_INTERVAL=${HWS_SAMPLING_INTERVAL}ms)
 
+# install fmt as dependency
+include(FetchContent)
+set(HWS_fmt_VERSION 11.0.2)
+find_package(fmt 11.0.2 QUIET)
+if (fmt_FOUND)
+    message(STATUS "Found package fmt.")
+else ()
+    message(STATUS "Couldn't find package fmt. Building version ${HWS_fmt_VERSION} from source.")
+    set(FMT_PEDANTIC OFF CACHE INTERNAL "" FORCE)
+    set(FMT_WERROR OFF CACHE INTERNAL "" FORCE)
+    set(FMT_DOC OFF CACHE INTERNAL "" FORCE)
+    set(FMT_INSTALL ON CACHE INTERNAL "" FORCE) # let {fmt} handle the install target
+    set(FMT_TEST OFF CACHE INTERNAL "" FORCE)
+    set(FMT_FUZZ OFF CACHE INTERNAL "" FORCE)
+    set(FMT_CUDA_TEST OFF CACHE INTERNAL "" FORCE)
+    set(FMT_MODULE OFF CACHE INTERNAL "" FORCE)
+    set(FMT_SYSTEM_HEADERS ON CACHE INTERNAL "" FORCE)
+    # fetch string formatting library fmt
+    FetchContent_Declare(fmt
+            GIT_REPOSITORY https://github.com/fmtlib/fmt.git
+            GIT_TAG ${HWS_fmt_VERSION}
+            QUIET
+    )
+    FetchContent_MakeAvailable(fmt)
+    set_property(TARGET fmt PROPERTY POSITION_INDEPENDENT_CODE ON)
+    add_dependencies(${HWS_LIBRARY_NAME} fmt)
+endif ()
+target_link_libraries(${HWS_LIBRARY_NAME} PUBLIC fmt::fmt)
+
+########################################################################################################################
+##                                              configure version header                                              ##
+########################################################################################################################
+message(STATUS "Configuring version information.")
+configure_file(
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/hws/version.hpp.in
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/hws/version.hpp
+        @ONLY
+)
 
 ####################################################################################################################
 ##                                                CPU measurements                                                ##
@@ -148,9 +188,9 @@ if (HWS_LSCPU_FOUND OR HWS_FREE_FOUND OR HWS_TURBOSTAT_EXECUTION_TYPE)
     # add source file to source file list
     target_sources(${HWS_LIBRARY_NAME} PRIVATE
             $<BUILD_INTERFACE:
-            ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/cpu/hardware_sampler.cpp;
-            ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/cpu/cpu_samples.cpp;
-            ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/cpu/utility.cpp;
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/hws/cpu/hardware_sampler.cpp;
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/hws/cpu/cpu_samples.cpp;
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/hws/cpu/utility.cpp;
             >)
 
     # add compile definitions
@@ -166,15 +206,16 @@ endif ()
 # find libraries necessary for NVML and link against them
 find_package(CUDAToolkit QUIET)
 if (CUDAToolkit_FOUND)
-    target_link_libraries(${HWS_LIBRARY_NAME} PRIVATE CUDA::nvml)
+    target_link_libraries(${HWS_LIBRARY_NAME} PRIVATE CUDA::nvml CUDA::cudart)
 
     message(STATUS "Enable sampling of NVIDIA GPU information using NVML.")
 
     # add source file to source file list
     target_sources(${HWS_LIBRARY_NAME} PRIVATE
             $<BUILD_INTERFACE:
-            ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/gpu_nvidia/hardware_sampler.cpp;
-            ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/gpu_nvidia/nvml_samples.cpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/hws/gpu_nvidia/hardware_sampler.cpp;
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/hws/gpu_nvidia/nvml_samples.cpp;
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/hws/gpu_nvidia/utility.cpp
             >)
 
     # add compile definition
@@ -190,7 +231,8 @@ endif ()
 ## try finding ROCm SMI
 find_package(rocm_smi QUIET)
 if (rocm_smi_FOUND)
-    target_link_libraries(${HWS_LIBRARY_NAME} PRIVATE -lrocm_smi64)
+    find_package(HIP REQUIRED)
+    target_link_libraries(${HWS_LIBRARY_NAME} PRIVATE -lrocm_smi64 hip::host)
     target_include_directories(${HWS_LIBRARY_NAME} PRIVATE ${ROCM_SMI_INCLUDE_DIR})
 
     message(STATUS "Enable sampling of AMD GPU information using ROCm SMI.")
@@ -198,8 +240,9 @@ if (rocm_smi_FOUND)
     # add source file to source file list
     target_sources(${HWS_LIBRARY_NAME} PRIVATE
             $<BUILD_INTERFACE:
-            ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/gpu_amd/hardware_sampler.cpp;
-            ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/gpu_amd/rocm_smi_samples.cpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/hws/gpu_amd/hardware_sampler.cpp;
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/hws/gpu_amd/rocm_smi_samples.cpp;
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/hws/gpu_amd/utility.cpp
             >)
 
     # add compile definition
@@ -222,9 +265,9 @@ if (level_zero_FOUND)
     # add source file to source file list
     target_sources(${HWS_LIBRARY_NAME} PRIVATE
             $<BUILD_INTERFACE:
-            ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/gpu_intel/hardware_sampler.cpp;
-            ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/gpu_intel/level_zero_samples.cpp;
-            ${CMAKE_CURRENT_SOURCE_DIR}/src/hardware_sampling/gpu_intel/utility.cpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/hws/gpu_intel/hardware_sampler.cpp;
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/hws/gpu_intel/level_zero_samples.cpp;
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/hws/gpu_intel/utility.cpp
             >)
 
     # add compile definition
@@ -238,9 +281,17 @@ endif ()
 ##                                             enable Python bindings                                             ##
 ####################################################################################################################
 option(HWS_ENABLE_PYTHON_BINDINGS "Build language bindings for Python." ON)
-
 if (HWS_ENABLE_PYTHON_BINDINGS)
     add_subdirectory(bindings)
+endif ()
+
+
+########################################################################################################################
+##                                                  add documentation                                                 ##
+########################################################################################################################
+option(HWS_ENABLE_DOCUMENTATION "Add documentation using Doxygen." OFF)
+if (HWS_ENABLE_DOCUMENTATION)
+    add_subdirectory(docs)
 endif ()
 
 
@@ -250,7 +301,7 @@ endif ()
 include(GNUInstallDirs)
 ## install all necessary library targets
 install(TARGETS ${HWS_TARGETS_TO_INSTALL}
-        EXPORT hardware_sampling_Targets
+        EXPORT hws_Targets
         ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"  # all files that are neither executables, shared lib or headers
         LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"  # all shared lib files
         RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"  # all executables
@@ -264,28 +315,28 @@ install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/"
 ## manage version comparison
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file(
-        "hardware_samplingConfigVersion.cmake"
+        "hwsConfigVersion.cmake"
         VERSION ${PROJECT_VERSION}
         COMPATIBILITY SameMajorVersion
 )
 
 ## generate configuration file
 configure_package_config_file(
-        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/hardware_samplingConfig.cmake.in"
-        "${PROJECT_BINARY_DIR}/hardware_samplingConfig.cmake"
-        INSTALL_DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/hardware_sampling/cmake
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/hwsConfig.cmake.in"
+        "${PROJECT_BINARY_DIR}/hwsConfig.cmake"
+        INSTALL_DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/hws/cmake
 )
 
 ## create and copy install-targets file
-install(EXPORT hardware_sampling_Targets
-        FILE hardware_samplingTargets.cmake
+install(EXPORT hws_Targets
+        FILE hwsTargets.cmake
         NAMESPACE hws::
-        DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/hardware_sampling/cmake
+        DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/hws/cmake
 )
 
 ## create file containing the build configuration and version information
 install(FILES
-        "${PROJECT_BINARY_DIR}/hardware_samplingConfig.cmake"
-        "${PROJECT_BINARY_DIR}/hardware_samplingConfigVersion.cmake"
-        DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/hardware_sampling/cmake
+        "${PROJECT_BINARY_DIR}/hwsConfig.cmake"
+        "${PROJECT_BINARY_DIR}/hwsConfigVersion.cmake"
+        DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/hws/cmake
 )

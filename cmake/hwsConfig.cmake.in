@@ -1,0 +1,19 @@
+## Authors: Marcel Breyer
+## Copyright (C): 2024-today All Rights Reserved
+## License: This file is released under the MIT license.
+##          See the LICENSE.md file in the project root for full license information.
+########################################################################################################################
+
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+
+# always try finding {fmt}
+# -> CMAKE_PREFIX_PATH necessary if build via FetchContent
+# -> doesn't hurt to be set everytime
+list(APPEND CMAKE_PREFIX_PATH "${CMAKE_CURRENT_LIST_DIR}/../../../lib/cmake/fmt")
+find_dependency(fmt REQUIRED)
+
+# sanity checks
+include("${CMAKE_CURRENT_LIST_DIR}/hwsTargets.cmake")
+check_required_components("hws")

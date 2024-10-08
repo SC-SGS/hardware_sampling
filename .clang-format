@@ -77,9 +77,9 @@ ForEachMacros: [ 'foreach', 'Q_FOREACH', 'BOOST_FOREACH' ]
 IfMacros: [ ]
 IncludeBlocks: Regroup
 IncludeCategories:
-  - Regex: '^"hardware_sampling/'
+  - Regex: '^"hws/'
     Priority: 1
-  - Regex: '^"(pybind|nvml|rocm_smi|level_zero|subprocess)'
+  - Regex: '^"(pybind|nvml|cuda|rocm_smi|hip|level_zero|subprocess|fmt)'
     Priority: 2
   - Regex: '^.*'
     Priority: 3
