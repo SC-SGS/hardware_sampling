@@ -46,7 +46,7 @@ if (edges && edges.length) {
         </defs>
 
 <script type="text/javascript">
-var viewWidth = 802;
+var viewWidth = 837;
 var viewHeight = 218;
 var sectionId = 'dynsection-0';
 </script>
@@ -54,13 +54,13 @@ var sectionId = 'dynsection-0';
 <svg id="graph" class="graph">
 <g id="viewport">
 <title>include/hws/event.hpp</title>
-<polygon fill="white" stroke="transparent" points="-4,4 -4,-214 797.92,-214 797.92,4 -4,4"/>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-214 833,-214 833,4 -4,4"/>
 <!-- Node1 -->
 <g id="node1" class="node">
 <title>Node1</title>
 <g id="a_node1"><a xlink:title="Defines an event type.">
-<polygon fill="#bfbfbf" stroke="black" points="17.42,-190.5 17.42,-209.5 143.42,-209.5 143.42,-190.5 17.42,-190.5"/>
-<text text-anchor="middle" x="80.42" y="-197.5" font-family="Helvetica,sans-Serif" font-size="10.00">include/hws/event.hpp</text>
+<polygon fill="#bfbfbf" stroke="black" points="325.5,-190.5 325.5,-209.5 451.5,-209.5 451.5,-190.5 325.5,-190.5"/>
+<text text-anchor="middle" x="388.5" y="-197.5" font-family="Helvetica,sans-Serif" font-size="10.00">include/hws/event.hpp</text>
 </a>
 </g>
 </g>
@@ -68,130 +68,130 @@ var sectionId = 'dynsection-0';
 <g id="node2" class="node">
 <title>Node2</title>
 <g id="a_node2"><a xlink:href="core_8hpp.html" target="_top" xlink:title="Core header containing all other necessary other headers.">
-<polygon fill="white" stroke="black" points="20.92,-0.5 20.92,-19.5 139.92,-19.5 139.92,-0.5 20.92,-0.5"/>
-<text text-anchor="middle" x="80.42" y="-7.5" font-family="Helvetica,sans-Serif" font-size="10.00">include/hws/core.hpp</text>
+<polygon fill="white" stroke="black" points="0,-0.5 0,-19.5 119,-19.5 119,-0.5 0,-0.5"/>
+<text text-anchor="middle" x="59.5" y="-7.5" font-family="Helvetica,sans-Serif" font-size="10.00">include/hws/core.hpp</text>
 </a>
 </g>
 </g>
 <!-- Node1&#45;&gt;Node2 -->
 <g id="edge1" class="edge">
 <title>Node1&#45;&gt;Node2</title>
-<path fill="none" stroke="midnightblue" d="M64.88,-183C46.31,-162.65 16.25,-125.5 4.42,-87 0.38,-73.83 -2.4,-67.97 4.42,-56 14.67,-38.02 35.25,-26.49 52.41,-19.6"/>
-<polygon fill="midnightblue" stroke="midnightblue" points="62.44,-185.51 71.83,-190.41 67.54,-180.72 62.44,-185.51"/>
+<path fill="none" stroke="midnightblue" d="M315.22,-197.37C237.06,-191.24 116.68,-168.19 58.5,-87 44.05,-66.84 51.36,-35.3 56.27,-19.97"/>
+<polygon fill="midnightblue" stroke="midnightblue" points="315.26,-200.89 325.48,-198.1 315.75,-193.9 315.26,-200.89"/>
 </g>
 <!-- Node3 -->
 <g id="node3" class="node">
 <title>Node3</title>
-<g id="a_node3"><a xlink:href="system__hardware__sampler_8hpp.html" target="_top" xlink:title="Defines a hardware sampler for the whole system, i.e., automatically creates CPU and GPU hardware sam...">
-<polygon fill="white" stroke="black" points="13.92,-56.5 13.92,-86.5 146.92,-86.5 146.92,-56.5 13.92,-56.5"/>
-<text text-anchor="start" x="21.92" y="-74.5" font-family="Helvetica,sans-Serif" font-size="10.00">include/hws/system</text>
-<text text-anchor="middle" x="80.42" y="-63.5" font-family="Helvetica,sans-Serif" font-size="10.00">_hardware_sampler.hpp</text>
+<g id="a_node3"><a xlink:href="hardware__sampler_8hpp.html" target="_top" xlink:title="Defines the base class for all hardware samplers.">
+<polygon fill="white" stroke="black" points="327,-123.5 327,-153.5 450,-153.5 450,-123.5 327,-123.5"/>
+<text text-anchor="start" x="335" y="-141.5" font-family="Helvetica,sans-Serif" font-size="10.00">include/hws/hardware</text>
+<text text-anchor="middle" x="388.5" y="-130.5" font-family="Helvetica,sans-Serif" font-size="10.00">_sampler.hpp</text>
 </a>
 </g>
 </g>
 <!-- Node1&#45;&gt;Node3 -->
 <g id="edge2" class="edge">
 <title>Node1&#45;&gt;Node3</title>
-<path fill="none" stroke="midnightblue" d="M80.42,-180.11C80.42,-154.63 80.42,-109.81 80.42,-86.89"/>
-<polygon fill="midnightblue" stroke="midnightblue" points="76.92,-180.31 80.42,-190.31 83.92,-180.31 76.92,-180.31"/>
-</g>
-<!-- Node4 -->
-<g id="node4" class="node">
-<title>Node4</title>
-<g id="a_node4"><a xlink:href="hardware__sampler_8hpp.html" target="_top" xlink:title="Defines the base class for all hardware samplers.">
-<polygon fill="white" stroke="black" points="213.92,-123.5 213.92,-153.5 336.92,-153.5 336.92,-123.5 213.92,-123.5"/>
-<text text-anchor="start" x="221.92" y="-141.5" font-family="Helvetica,sans-Serif" font-size="10.00">include/hws/hardware</text>
-<text text-anchor="middle" x="275.42" y="-130.5" font-family="Helvetica,sans-Serif" font-size="10.00">_sampler.hpp</text>
-</a>
-</g>
-</g>
-<!-- Node1&#45;&gt;Node4 -->
-<g id="edge4" class="edge">
-<title>Node1&#45;&gt;Node4</title>
-<path fill="none" stroke="midnightblue" d="M118.17,-187.48C149.96,-177.78 195.55,-163.87 229.47,-153.52"/>
-<polygon fill="midnightblue" stroke="midnightblue" points="116.91,-184.21 108.36,-190.48 118.95,-190.9 116.91,-184.21"/>
-</g>
-<!-- Node3&#45;&gt;Node2 -->
-<g id="edge3" class="edge">
-<title>Node3&#45;&gt;Node2</title>
-<path fill="none" stroke="midnightblue" d="M80.42,-46.29C80.42,-36.86 80.42,-26.65 80.42,-19.66"/>
-<polygon fill="midnightblue" stroke="midnightblue" points="76.92,-46.4 80.42,-56.4 83.92,-46.4 76.92,-46.4"/>
-</g>
-<!-- Node4&#45;&gt;Node2 -->
-<g id="edge5" class="edge">
-<title>Node4&#45;&gt;Node2</title>
-<path fill="none" stroke="midnightblue" d="M242.34,-118.05C227.44,-108.99 209.78,-97.84 194.42,-87 176.33,-74.23 173.62,-68.61 155.42,-56 135.58,-42.25 111.45,-28.22 96.02,-19.56"/>
-<polygon fill="midnightblue" stroke="midnightblue" points="240.84,-121.23 251.21,-123.39 244.45,-115.24 240.84,-121.23"/>
-</g>
-<!-- Node4&#45;&gt;Node3 -->
-<g id="edge10" class="edge">
-<title>Node4&#45;&gt;Node3</title>
-<path fill="none" stroke="midnightblue" d="M223.61,-120.23C192.06,-109.71 152.28,-96.45 122.65,-86.58"/>
-<polygon fill="midnightblue" stroke="midnightblue" points="222.52,-123.55 233.11,-123.4 224.73,-116.91 222.52,-123.55"/>
-</g>
-<!-- Node5 -->
-<g id="node5" class="node">
-<title>Node5</title>
-<g id="a_node5"><a xlink:href="cpu_2hardware__sampler_8hpp.html" target="_top" xlink:title="Defines a hardware sampler for CPUs using the turbostat, lscpu, and free utilities (requires root).">
-<polygon fill="white" stroke="black" points="203.92,-56.5 203.92,-86.5 346.92,-86.5 346.92,-56.5 203.92,-56.5"/>
-<text text-anchor="start" x="211.92" y="-74.5" font-family="Helvetica,sans-Serif" font-size="10.00">include/hws/cpu/hardware</text>
-<text text-anchor="middle" x="275.42" y="-63.5" font-family="Helvetica,sans-Serif" font-size="10.00">_sampler.hpp</text>
-</a>
-</g>
-</g>
-<!-- Node4&#45;&gt;Node5 -->
-<g id="edge6" class="edge">
-<title>Node4&#45;&gt;Node5</title>
-<path fill="none" stroke="midnightblue" d="M275.42,-113.11C275.42,-104.15 275.42,-94.32 275.42,-86.58"/>
-<polygon fill="midnightblue" stroke="midnightblue" points="271.92,-113.4 275.42,-123.4 278.92,-113.4 271.92,-113.4"/>
-</g>
-<!-- Node6 -->
-<g id="node6" class="node">
-<title>Node6</title>
-<g id="a_node6"><a xlink:href="gpu__amd_2hardware__sampler_8hpp.html" target="_top" xlink:title="Defines a hardware sampler for AMD GPUs using AMD&#39;s ROCm SMI library.">
-<polygon fill="white" stroke="black" points="364.92,-56.5 364.92,-86.5 495.92,-86.5 495.92,-56.5 364.92,-56.5"/>
-<text text-anchor="start" x="372.92" y="-74.5" font-family="Helvetica,sans-Serif" font-size="10.00">include/hws/gpu_amd</text>
-<text text-anchor="middle" x="430.42" y="-63.5" font-family="Helvetica,sans-Serif" font-size="10.00">/hardware_sampler.hpp</text>
-</a>
-</g>
-</g>
-<!-- Node4&#45;&gt;Node6 -->
-<g id="edge7" class="edge">
-<title>Node4&#45;&gt;Node6</title>
-<path fill="none" stroke="midnightblue" d="M318.57,-119.41C343.31,-109.03 373.92,-96.2 396.86,-86.58"/>
-<polygon fill="midnightblue" stroke="midnightblue" points="316.92,-116.3 309.06,-123.4 319.63,-122.76 316.92,-116.3"/>
-</g>
-<!-- Node7 -->
-<g id="node7" class="node">
-<title>Node7</title>
-<g id="a_node7"><a xlink:href="gpu__intel_2hardware__sampler_8hpp.html" target="_top" xlink:title="Defines a hardware sampler for Intel GPUs using Intel&#39;s Level Zero.">
-<polygon fill="white" stroke="black" points="513.92,-56.5 513.92,-86.5 644.92,-86.5 644.92,-56.5 513.92,-56.5"/>
-<text text-anchor="start" x="521.92" y="-74.5" font-family="Helvetica,sans-Serif" font-size="10.00">include/hws/gpu_intel</text>
-<text text-anchor="middle" x="579.42" y="-63.5" font-family="Helvetica,sans-Serif" font-size="10.00">/hardware_sampler.hpp</text>
-</a>
-</g>
-</g>
-<!-- Node4&#45;&gt;Node7 -->
-<g id="edge8" class="edge">
-<title>Node4&#45;&gt;Node7</title>
-<path fill="none" stroke="midnightblue" d="M346.81,-122.24C397.34,-111.43 464.6,-97.05 513.79,-86.53"/>
-<polygon fill="midnightblue" stroke="midnightblue" points="345.99,-118.83 336.94,-124.35 347.45,-125.68 345.99,-118.83"/>
+<path fill="none" stroke="midnightblue" d="M388.5,-180.23C388.5,-171.59 388.5,-161.5 388.5,-153.52"/>
+<polygon fill="midnightblue" stroke="midnightblue" points="385,-180.48 388.5,-190.48 392,-180.48 385,-180.48"/>
 </g>
 <!-- Node8 -->
 <g id="node8" class="node">
 <title>Node8</title>
-<g id="a_node8"><a xlink:href="gpu__nvidia_2hardware__sampler_8hpp.html" target="_top" xlink:title="Defines a hardware sampler for NVIDIA GPUs using NVIDIA&#39;s Management Library (NVML).">
-<polygon fill="white" stroke="black" points="662.92,-56.5 662.92,-86.5 793.92,-86.5 793.92,-56.5 662.92,-56.5"/>
-<text text-anchor="start" x="670.92" y="-74.5" font-family="Helvetica,sans-Serif" font-size="10.00">include/hws/gpu_nvidia</text>
-<text text-anchor="middle" x="728.42" y="-63.5" font-family="Helvetica,sans-Serif" font-size="10.00">/hardware_sampler.hpp</text>
+<g id="a_node8"><a xlink:href="system__hardware__sampler_8hpp.html" target="_top" xlink:title="Defines a hardware sampler for the whole system, i.e., automatically creates CPU and GPU hardware sam...">
+<polygon fill="white" stroke="black" points="696,-56.5 696,-86.5 829,-86.5 829,-56.5 696,-56.5"/>
+<text text-anchor="start" x="704" y="-74.5" font-family="Helvetica,sans-Serif" font-size="10.00">include/hws/system</text>
+<text text-anchor="middle" x="762.5" y="-63.5" font-family="Helvetica,sans-Serif" font-size="10.00">_hardware_sampler.hpp</text>
 </a>
 </g>
 </g>
-<!-- Node4&#45;&gt;Node8 -->
+<!-- Node1&#45;&gt;Node8 -->
+<g id="edge10" class="edge">
+<title>Node1&#45;&gt;Node8</title>
+<path fill="none" stroke="midnightblue" d="M423.49,-187.16C492.73,-163.74 646.92,-111.59 721.09,-86.51"/>
+<polygon fill="midnightblue" stroke="midnightblue" points="422.26,-183.89 413.91,-190.4 424.51,-190.52 422.26,-183.89"/>
+</g>
+<!-- Node3&#45;&gt;Node2 -->
+<g id="edge3" class="edge">
+<title>Node3&#45;&gt;Node2</title>
+<path fill="none" stroke="midnightblue" d="M316.86,-134.76C236.33,-130.18 112.37,-118.15 78.5,-87 59.28,-69.32 58.2,-35.41 58.87,-19.56"/>
+<polygon fill="midnightblue" stroke="midnightblue" points="316.77,-138.26 326.95,-135.3 317.15,-131.27 316.77,-138.26"/>
+</g>
+<!-- Node4 -->
+<g id="node4" class="node">
+<title>Node4</title>
+<g id="a_node4"><a xlink:href="cpu_2hardware__sampler_8hpp.html" target="_top" xlink:title="Defines a hardware sampler for CPUs using the turbostat, lscpu, and free utilities (requires root).">
+<polygon fill="white" stroke="black" points="88,-56.5 88,-86.5 231,-86.5 231,-56.5 88,-56.5"/>
+<text text-anchor="start" x="96" y="-74.5" font-family="Helvetica,sans-Serif" font-size="10.00">include/hws/cpu/hardware</text>
+<text text-anchor="middle" x="159.5" y="-63.5" font-family="Helvetica,sans-Serif" font-size="10.00">_sampler.hpp</text>
+</a>
+</g>
+</g>
+<!-- Node3&#45;&gt;Node4 -->
+<g id="edge4" class="edge">
+<title>Node3&#45;&gt;Node4</title>
+<path fill="none" stroke="midnightblue" d="M329.36,-120.71C292.1,-110.14 244.53,-96.63 209.21,-86.61"/>
+<polygon fill="midnightblue" stroke="midnightblue" points="328.52,-124.11 339.09,-123.48 330.43,-117.38 328.52,-124.11"/>
+</g>
+<!-- Node5 -->
+<g id="node5" class="node">
+<title>Node5</title>
+<g id="a_node5"><a xlink:href="gpu__amd_2hardware__sampler_8hpp.html" target="_top" xlink:title="Defines a hardware sampler for AMD GPUs using AMD&#39;s ROCm SMI library.">
+<polygon fill="white" stroke="black" points="249,-56.5 249,-86.5 380,-86.5 380,-56.5 249,-56.5"/>
+<text text-anchor="start" x="257" y="-74.5" font-family="Helvetica,sans-Serif" font-size="10.00">include/hws/gpu_amd</text>
+<text text-anchor="middle" x="314.5" y="-63.5" font-family="Helvetica,sans-Serif" font-size="10.00">/hardware_sampler.hpp</text>
+</a>
+</g>
+</g>
+<!-- Node3&#45;&gt;Node5 -->
+<g id="edge5" class="edge">
+<title>Node3&#45;&gt;Node5</title>
+<path fill="none" stroke="midnightblue" d="M364.7,-116.6C353.53,-106.78 340.51,-95.34 330.53,-86.58"/>
+<polygon fill="midnightblue" stroke="midnightblue" points="362.62,-119.43 372.44,-123.4 367.24,-114.17 362.62,-119.43"/>
+</g>
+<!-- Node6 -->
+<g id="node6" class="node">
+<title>Node6</title>
+<g id="a_node6"><a xlink:href="gpu__intel_2hardware__sampler_8hpp.html" target="_top" xlink:title="Defines a hardware sampler for Intel GPUs using Intel&#39;s Level Zero.">
+<polygon fill="white" stroke="black" points="398,-56.5 398,-86.5 529,-86.5 529,-56.5 398,-56.5"/>
+<text text-anchor="start" x="406" y="-74.5" font-family="Helvetica,sans-Serif" font-size="10.00">include/hws/gpu_intel</text>
+<text text-anchor="middle" x="463.5" y="-63.5" font-family="Helvetica,sans-Serif" font-size="10.00">/hardware_sampler.hpp</text>
+</a>
+</g>
+</g>
+<!-- Node3&#45;&gt;Node6 -->
+<g id="edge6" class="edge">
+<title>Node3&#45;&gt;Node6</title>
+<path fill="none" stroke="midnightblue" d="M412.62,-116.6C423.94,-106.78 437.14,-95.34 447.26,-86.58"/>
+<polygon fill="midnightblue" stroke="midnightblue" points="410.04,-114.2 404.77,-123.4 414.62,-119.49 410.04,-114.2"/>
+</g>
+<!-- Node7 -->
+<g id="node7" class="node">
+<title>Node7</title>
+<g id="a_node7"><a xlink:href="gpu__nvidia_2hardware__sampler_8hpp.html" target="_top" xlink:title="Defines a hardware sampler for NVIDIA GPUs using NVIDIA&#39;s Management Library (NVML).">
+<polygon fill="white" stroke="black" points="547,-56.5 547,-86.5 678,-86.5 678,-56.5 547,-56.5"/>
+<text text-anchor="start" x="555" y="-74.5" font-family="Helvetica,sans-Serif" font-size="10.00">include/hws/gpu_nvidia</text>
+<text text-anchor="middle" x="612.5" y="-63.5" font-family="Helvetica,sans-Serif" font-size="10.00">/hardware_sampler.hpp</text>
+</a>
+</g>
+</g>
+<!-- Node3&#45;&gt;Node7 -->
+<g id="edge7" class="edge">
+<title>Node3&#45;&gt;Node7</title>
+<path fill="none" stroke="midnightblue" d="M446.81,-120.58C483.19,-110.02 529.47,-96.59 563.87,-86.61"/>
+<polygon fill="midnightblue" stroke="midnightblue" points="445.46,-117.33 436.83,-123.48 447.41,-124.05 445.46,-117.33"/>
+</g>
+<!-- Node3&#45;&gt;Node8 -->
+<g id="edge8" class="edge">
+<title>Node3&#45;&gt;Node8</title>
+<path fill="none" stroke="midnightblue" d="M460.36,-125.85C520.98,-115.91 610.01,-101.03 687.5,-87 690.24,-86.5 693.04,-85.99 695.86,-85.47"/>
+<polygon fill="midnightblue" stroke="midnightblue" points="459.44,-122.46 450.13,-127.53 460.57,-129.37 459.44,-122.46"/>
+</g>
+<!-- Node8&#45;&gt;Node2 -->
 <g id="edge9" class="edge">
-<title>Node4&#45;&gt;Node8</title>
-<path fill="none" stroke="midnightblue" d="M346.96,-129.29C423.3,-120.22 547.7,-104.55 654.42,-87 657.14,-86.55 659.9,-86.08 662.69,-85.6"/>
-<polygon fill="midnightblue" stroke="midnightblue" points="346.49,-125.82 336.97,-130.47 347.31,-132.77 346.49,-125.82"/>
+<title>Node8&#45;&gt;Node2</title>
+<path fill="none" stroke="midnightblue" d="M685.75,-55.87C471.96,-28.21 229.12,-16.92 119.05,-12.9"/>
+<polygon fill="midnightblue" stroke="midnightblue" points="685.54,-59.37 695.91,-57.2 686.45,-52.43 685.54,-59.37"/>
 </g>
 </g>
 </svg>
