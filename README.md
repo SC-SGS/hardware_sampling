@@ -67,9 +67,9 @@ Afterward, the necessary exports should be performed:
 
 ```bash
 export CMAKE_PREFIX_PATH=${CMAKE_INSTALL_PREFIX}/share/hws/cmake:${CMAKE_PREFIX_PATH}
-export LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:${LD_LIBRARY_PATH}
+export LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:${CMAKE_INSTALL_PREFIX}/lib64:${LD_LIBRARY_PATH}
 export CPLUS_INCLUDE_PATH=${CMAKE_INSTALL_PREFIX}/include:${CPLUS_INCLUDE_PATH}
-export PYTHONPATH=${CMAKE_INSTALL_PREFIX}/lib:${PYTHONPATH}
+export PYTHONPATH=${CMAKE_INSTALL_PREFIX}/lib:${CMAKE_INSTALL_PREFIX}/lib64:${PYTHONPATH}
 ```
 
 Note: when using Intel GPUs and segmentation faults are encountered in calls to `zes` functions, it may be necessary to set `export ZES_ENABLE_SYSMAN=1`.
