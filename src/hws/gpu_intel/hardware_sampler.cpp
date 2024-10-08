@@ -146,7 +146,7 @@ void gpu_intel_hardware_sampler::sampling_loop() {
                 for (zes_freq_handle_t handle : frequency_handles) {
                     // get frequency properties
                     zes_freq_properties_t prop{};
-                    if (zesFrequencyGetProperties(handle, &prop)) {
+                    if (zesFrequencyGetProperties(handle, &prop) == ZE_RESULT_SUCCESS) {
                         // determine the frequency domain (e.g. GPU, memory, etc)
                         switch (prop.type) {
                             case ZES_FREQ_DOMAIN_GPU:
