@@ -72,6 +72,8 @@ export CPLUS_INCLUDE_PATH=${CMAKE_INSTALL_PREFIX}/include:${CPLUS_INCLUDE_PATH}
 export PYTHONPATH=${CMAKE_INSTALL_PREFIX}/lib:${PYTHONPATH}
 ```
 
+Note: when using Intel GPUs and segmentation faults are encountered in calls to `zes` functions, it may be necessary to set `export ZES_ENABLE_SYSMAN=1`.
+
 ## Available samples
 
 The sampling type `fixed` denotes samples that are gathered once per hardware samples like maximum clock frequencies or
