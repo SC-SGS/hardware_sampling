@@ -72,7 +72,8 @@ export CPLUS_INCLUDE_PATH=${CMAKE_INSTALL_PREFIX}/include:${CPLUS_INCLUDE_PATH}
 export PYTHONPATH=${CMAKE_INSTALL_PREFIX}/lib:${CMAKE_INSTALL_PREFIX}/lib64:${PYTHONPATH}
 ```
 
-Note: when using Intel GPUs and segmentation faults are encountered in calls to `zes` functions, it may be necessary to set `export ZES_ENABLE_SYSMAN=1`.
+**Note:** when using Intel GPUs, the `CMAKE_MODULE_PATH` should be updated to point to our `cmake` directory containing the
+`Findlevel_zero.cmake` file and `export ZES_ENABLE_SYSMAN=1` should be set.
 
 ## Available samples
 
@@ -256,8 +257,8 @@ sampler = hws.CpuHardwareSampler()
 sampler.start()
 
 sampler.add_event("init")
-A = np.random.rand(2**14, 2**14)
-B = np.random.rand(2**14, 2**14)
+A = np.random.rand(2 ** 14, 2 ** 14)
+B = np.random.rand(2 ** 14, 2 ** 14)
 
 sampler.add_event("matmul")
 C = A @ B
