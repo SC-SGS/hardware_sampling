@@ -73,6 +73,9 @@ system_hardware_sampler::system_hardware_sampler(const std::chrono::milliseconds
 #endif
 #if defined(HWS_FOR_INTEL_GPUS_ENABLED)
     {
+        // init level zero driver
+        HWS_LEVEL_ZERO_ERROR_CHECK(zeInit(ZE_INIT_FLAG_GPU_ONLY))
+
         // discover the number of drivers
         std::uint32_t driver_count{ 0 };
         HWS_LEVEL_ZERO_ERROR_CHECK(zeDriverGet(&driver_count, nullptr))
