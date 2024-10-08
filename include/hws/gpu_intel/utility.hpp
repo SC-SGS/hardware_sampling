@@ -36,12 +36,12 @@ namespace hws::detail {
  * @details Throws an exception if a Level Zero call returns with an error. Additionally outputs a more concrete custom error string.
  */
 #if defined(HWS_ERROR_CHECKS_ENABLED)
-    #define HWS_LEVEL_ZERO_ERROR_CHECK(level_zero_func)                                                                                            \
-        {                                                                                                                                          \
-            const ze_result_t errc = level_zero_func;                                                                                              \
-            if (errc != ZE_RESULT_SUCCESS) {                                                                                                       \
-                throw std::runtime_error{ fmt::format("Error in Level Zero function call \"{}\": {}", #level_zero_func, to_result_string(errc)) }; \
-            }                                                                                                                                      \
+    #define HWS_LEVEL_ZERO_ERROR_CHECK(level_zero_func)                                                                                                           \
+        {                                                                                                                                                         \
+            const ze_result_t errc = level_zero_func;                                                                                                             \
+            if (errc != ZE_RESULT_SUCCESS) {                                                                                                                      \
+                throw std::runtime_error{ fmt::format("Error in Level Zero function call \"{}\": {}", #level_zero_func, ::hws::detail::to_result_string(errc)) }; \
+            }                                                                                                                                                     \
         }
 #else
     #define HWS_LEVEL_ZERO_ERROR_CHECK(level_zero_func) level_zero_func;
