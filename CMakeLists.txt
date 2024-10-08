@@ -76,7 +76,7 @@ else ()
     set(FMT_FUZZ OFF CACHE INTERNAL "" FORCE)
     set(FMT_CUDA_TEST OFF CACHE INTERNAL "" FORCE)
     set(FMT_MODULE OFF CACHE INTERNAL "" FORCE)
-    set(FMT_SYSTEM_HEADERS OFF CACHE INTERNAL "" FORCE)
+    set(FMT_SYSTEM_HEADERS ON CACHE INTERNAL "" FORCE)
     # fetch string formatting library fmt
     FetchContent_Declare(fmt
             GIT_REPOSITORY https://github.com/fmtlib/fmt.git
@@ -306,7 +306,6 @@ install(TARGETS ${HWS_TARGETS_TO_INSTALL}
         LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"  # all shared lib files
         RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"  # all executables
 )
-install(TARGETS fmt)
 
 ## mark header to install via 'make install'
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/"
