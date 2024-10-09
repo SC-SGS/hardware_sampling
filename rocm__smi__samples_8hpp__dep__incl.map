@@ -1,4 +1,5 @@
 <map id="include/hws/gpu_amd/rocm_smi_samples.hpp" name="include/hws/gpu_amd/rocm_smi_samples.hpp">
-<area shape="rect" id="node1" title="Defines the samples used with ROCm SMI." alt="" coords="5,5,185,47"/>
-<area shape="rect" id="node2" href="$gpu__amd_2hardware__sampler_8hpp.html" title="Defines a hardware sampler for AMD GPUs using AMD&#39;s ROCm SMI library." alt="" coords="8,95,183,136"/>
+<area shape="rect" id="Node000001" title="Defines the samples used with ROCm SMI." alt="" coords="5,5,185,45"/>
+<area shape="rect" id="Node000002" href="$gpu__amd_2hardware__sampler_8hpp.html" title="Defines a hardware sampler for AMD GPUs using AMD&#39;s ROCm SMI library." alt="" coords="8,93,183,133"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="98,59,98,93,93,93,93,59"/>
 </map>

@@ -1,4 +1,5 @@
 <map id="include/hws/version.hpp" name="include/hws/version.hpp">
-<area shape="rect" id="node1" title="Version information for the hardware sampling." alt="" coords="5,5,184,32"/>
-<area shape="rect" id="node2" href="$core_8hpp.html" title="Core header containing all other necessary other headers." alt="" coords="15,80,174,107"/>
+<area shape="rect" id="Node000001" title="Version information for the hardware sampling." alt="" coords="5,5,184,31"/>
+<area shape="rect" id="Node000002" href="$core_8hpp.html" title="Core header containing all other necessary other headers." alt="" coords="15,79,174,104"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="97,44,97,79,92,79,92,44"/>
 </map>

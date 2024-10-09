@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['quote_268',['quote',['../utility_8hpp.html#a489c12ae9993fa830d6803fa471cda66',1,'hws::detail']]]
+  ['quote_0',['quote',['../utility_8hpp.html#a871f59eb0f9e358a43ec34e4850444ad',1,'hws::detail']]]
 ];

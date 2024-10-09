@@ -1,7 +1,11 @@
 <map id="hws::hardware_sampler" name="hws::hardware_sampler">
-<area shape="rect" id="node1" title="The base class for all specialized hardware samplers." alt="" coords="5,97,183,124"/>
-<area shape="rect" id="node2" href="$classhws_1_1cpu__hardware__sampler.html" title="A hardware sampler for the CPU." alt="" coords="231,5,437,32"/>
-<area shape="rect" id="node3" href="$classhws_1_1gpu__amd__hardware__sampler.html" title="A hardware sampler for AMD GPUs." alt="" coords="242,57,426,98"/>
-<area shape="rect" id="node4" href="$classhws_1_1gpu__intel__hardware__sampler.html" title="A hardware sampler for Intel GPUs." alt="" coords="242,122,426,163"/>
-<area shape="rect" id="node5" href="$classhws_1_1gpu__nvidia__hardware__sampler.html" title="A hardware sampler for NVIDIA GPUs." alt="" coords="237,187,431,229"/>
+<area shape="rect" id="Node000001" title="The base class for all specialized hardware samplers." alt="" coords="5,95,183,120"/>
+<area shape="rect" id="Node000002" href="$classhws_1_1cpu__hardware__sampler.html" title="A hardware sampler for the CPU." alt="" coords="231,5,437,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="129,86,176,63,230,41,272,28,274,33,232,46,179,68,132,91"/>
+<area shape="rect" id="Node000003" href="$classhws_1_1gpu__amd__hardware__sampler.html" title="A hardware sampler for AMD GPUs." alt="" coords="242,55,426,95"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="196,91,242,85,242,90,196,96"/>
+<area shape="rect" id="Node000004" href="$classhws_1_1gpu__intel__hardware__sampler.html" title="A hardware sampler for Intel GPUs." alt="" coords="242,119,426,159"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="196,118,242,124,242,130,196,124"/>
+<area shape="rect" id="Node000005" href="$classhws_1_1gpu__nvidia__hardware__sampler.html" title="A hardware sampler for NVIDIA GPUs." alt="" coords="237,183,431,223"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="133,124,232,169,265,181,263,186,230,174,131,129"/>
 </map>

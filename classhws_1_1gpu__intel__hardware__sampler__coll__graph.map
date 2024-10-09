@@ -1,10 +1,17 @@
 <map id="hws::gpu_intel_hardware_sampler" name="hws::gpu_intel_hardware_sampler">
-<area shape="rect" id="node1" title="A hardware sampler for Intel GPUs." alt="" coords="419,187,603,229"/>
-<area shape="rect" id="node2" href="$classhws_1_1hardware__sampler.html" title="The base class for all specialized hardware samplers." alt="" coords="22,5,199,32"/>
-<area shape="rect" id="node3" href="$classhws_1_1level__zero__clock__samples.html" title="Wrapper class for all clock related Level Zero hardware samples." alt="" coords="29,57,193,98"/>
-<area shape="rect" id="node4" href="$classhws_1_1level__zero__power__samples.html" title="Wrapper class for all power related Level Zero hardware samples." alt="" coords="25,122,196,163"/>
-<area shape="rect" id="node5" href="$classhws_1_1level__zero__memory__samples.html" title="Wrapper class for all memory related Level Zero hardware samples." alt="" coords="18,187,203,229"/>
-<area shape="rect" id="node6" href="$classhws_1_1level__zero__temperature__samples.html" title="Wrapper class for all temperature related Level Zero hardware samples." alt="" coords="5,253,216,294"/>
-<area shape="rect" id="node7" href="$classhws_1_1level__zero__general__samples.html" title="Wrapper class for all general Level Zero hardware samples." alt="" coords="21,318,200,359"/>
-<area shape="rect" id="node8" href="$classhws_1_1detail_1_1level__zero__device__handle.html" title="PImpl class to hide the ze_driver_handle_t and ze_device_handle_t handles from the public interface (..." alt="" coords="31,383,190,425"/>
+<area shape="rect" id="Node000001" title="A hardware sampler for Intel GPUs." alt="" coords="419,183,603,223"/>
+<area shape="rect" id="Node000002" href="$classhws_1_1hardware__sampler.html" title="The base class for all specialized hardware samplers." alt="" coords="22,5,199,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="214,22,305,39,352,55,396,76,429,99,458,128,499,182,495,185,454,132,426,104,393,80,350,60,304,45,213,27"/>
+<area shape="rect" id="Node000003" href="$classhws_1_1detail_1_1level__zero__device__handle.html" title="PImpl class to hide the ze_driver_handle_t and ze_device_handle_t handles from the public interface (..." alt="" coords="31,55,190,95"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="204,87,298,107,396,137,441,158,480,181,478,185,438,163,394,142,296,112,203,92"/>
+<area shape="rect" id="Node000004" href="$classhws_1_1level__zero__general__samples.html" title="Wrapper class for all general Level Zero hardware samples." alt="" coords="21,119,200,159"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="214,152,395,181,419,185,418,190,394,186,214,157"/>
+<area shape="rect" id="Node000005" href="$classhws_1_1level__zero__clock__samples.html" title="Wrapper class for all clock related Level Zero hardware samples." alt="" coords="29,183,193,223"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="206,201,418,201,418,206,206,206"/>
+<area shape="rect" id="Node000006" href="$classhws_1_1level__zero__power__samples.html" title="Wrapper class for all power related Level Zero hardware samples." alt="" coords="25,247,196,287"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="209,250,394,221,418,217,419,222,395,226,210,255"/>
+<area shape="rect" id="Node000007" href="$classhws_1_1level__zero__memory__samples.html" title="Wrapper class for all memory related Level Zero hardware samples." alt="" coords="18,311,203,351"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="216,313,304,294,394,266,439,245,479,221,481,226,442,249,396,271,305,299,217,318"/>
+<area shape="rect" id="Node000008" href="$classhws_1_1level__zero__temperature__samples.html" title="Wrapper class for all temperature related Level Zero hardware samples." alt="" coords="5,375,216,415"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="229,383,313,363,354,348,393,329,426,305,454,276,495,222,499,225,458,280,429,309,396,334,356,353,314,369,230,388"/>
 </map>

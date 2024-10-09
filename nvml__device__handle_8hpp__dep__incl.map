@@ -1,5 +1,7 @@
 <map id="include/hws/gpu_nvidia/nvml_device_handle.hpp" name="include/hws/gpu_nvidia/nvml_device_handle.hpp">
-<area shape="rect" id="node1" title="Defines a pImpl class for an NVML device handle." alt="" coords="111,5,299,47"/>
-<area shape="rect" id="node2" href="$gpu__nvidia_2hardware__sampler_8hpp.html" title="Defines a hardware sampler for NVIDIA GPUs using NVIDIA&#39;s Management Library (NVML)." alt="" coords="5,95,180,136"/>
-<area shape="rect" id="node3" href="$nvml__device__handle__impl_8hpp.html" title="Implements a pImpl class for an NVML device handle." alt="" coords="205,95,429,136"/>
+<area shape="rect" id="Node000001" title="Defines a pImpl class for an NVML device handle." alt="" coords="111,5,299,45"/>
+<area shape="rect" id="Node000002" href="$gpu__nvidia_2hardware__sampler_8hpp.html" title="Defines a hardware sampler for NVIDIA GPUs using NVIDIA&#39;s Management Library (NVML)." alt="" coords="5,93,180,133"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="170,56,119,95,116,91,167,52"/>
+<area shape="rect" id="Node000003" href="$nvml__device__handle__impl_8hpp.html" title="Implements a pImpl class for an NVML device handle." alt="" coords="205,93,429,133"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="242,52,293,91,290,95,239,56"/>
 </map>
