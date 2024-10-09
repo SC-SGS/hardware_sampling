@@ -157,7 +157,7 @@ void gpu_nvidia_hardware_sampler::sampling_loop() {
         general_samples_.byte_order_ = "Little Endian";
 
         // the vendor ID is fixed for NVIDIA GPUs
-        general_samples_.byte_order_ = "NVIDIA";
+        general_samples_.vendor_id_ = "NVIDIA";
 
         std::string name(NVML_DEVICE_NAME_V2_BUFFER_SIZE, '\0');
         if (nvmlDeviceGetName(device, name.data(), name.size()) == NVML_SUCCESS) {
