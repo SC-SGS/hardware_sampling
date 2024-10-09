@@ -7,6 +7,7 @@
 
 #include "hws/event.hpp"
 
+#include "fmt/chrono.h"  // direct formatting of std::chrono types
 #include "fmt/format.h"  // fmt::format
 
 #include <ostream>  // std::ostream

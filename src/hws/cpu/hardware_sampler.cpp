@@ -13,6 +13,7 @@
 #include "hws/sample_category.hpp"   // hws::sample_category
 #include "hws/utility.hpp"           // hws::detail::{split, split_as, trim, convert_to, starts_with}
 
+#include "fmt/chrono.h"  // direct formatting of std::chrono types
 #include "fmt/format.h"  // fmt::format
 #include "fmt/ranges.h"  // fmt::join
 

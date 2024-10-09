@@ -14,6 +14,7 @@
 #include "hws/sample_category.hpp"                          // hws::sample_category
 #include "hws/utility.hpp"                                  // hws::{durations_from_reference_time, join}
 
+#include "fmt/chrono.h"          // direct formatting of std::chrono types
 #include "fmt/format.h"          // fmt::format
 #include "level_zero/ze_api.h"   // Level Zero runtime functions
 #include "level_zero/zes_api.h"  // Level Zero runtime functions

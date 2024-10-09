@@ -13,6 +13,7 @@
 #include "hws/sample_category.hpp"           // hws::sample_category
 #include "hws/utility.hpp"                   // hws::detail::time_points_to_epoch
 
+#include "fmt/chrono.h"           // direct formatting of std::chrono types
 #include "fmt/format.h"           // fmt::format
 #include "fmt/ranges.h"           // fmt::join
 #include "hip/hip_runtime_api.h"  // HIP runtime functions
