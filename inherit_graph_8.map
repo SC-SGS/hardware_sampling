@@ -1,3 +1,4 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="Node000000" href="$structhws_1_1detail_1_1level__zero__device__handle_1_1level__zero__device__handle__impl.html" title="The PImpl implementation struct encapsulating a ze_driver_handle_t and ze_device_handle_t." alt="" coords="5,5,240,60"/>
+<area shape="rect" id="node1" title=" " alt="" coords="5,5,124,32"/>
+<area shape="rect" id="node2" href="$structhws_1_1detail_1_1is__vector.html" title="The case if the type T isn&#39;t a std::vector." alt="" coords="172,5,371,32"/>
 </map>

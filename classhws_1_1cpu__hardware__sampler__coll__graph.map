@@ -1,19 +1,11 @@
 <map id="hws::cpu_hardware_sampler" name="hws::cpu_hardware_sampler">
-<area shape="rect" id="Node000001" title="A hardware sampler for the CPU." alt="" coords="411,179,617,204"/>
-<area shape="rect" id="Node000002" href="$classhws_1_1hardware__sampler.html" title="The base class for all specialized hardware samplers." alt="" coords="18,5,195,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="209,14,299,25,344,38,388,56,428,83,462,117,507,177,503,180,458,121,425,87,385,60,343,43,297,30,208,19"/>
-<area shape="rect" id="Node000003" href="$classhws_1_1cpu__general__samples.html" title="Wrapper class for all general CPU hardware samples." alt="" coords="8,55,205,80"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="220,72,303,85,388,109,420,124,451,142,499,176,496,181,448,146,418,129,386,114,302,90,219,77"/>
-<area shape="rect" id="Node000004" href="$classhws_1_1cpu__clock__samples.html" title="Wrapper class for all clock related CPU hardware samples." alt="" coords="15,104,198,129"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="212,125,298,137,387,153,474,176,473,181,386,158,297,142,211,130"/>
-<area shape="rect" id="Node000005" href="$classhws_1_1cpu__power__samples.html" title="Wrapper class for all power related CPU hardware samples." alt="" coords="13,153,201,179"/>
-<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="214,170,410,182,410,188,214,175"/>
-<area shape="rect" id="Node000006" href="$classhws_1_1cpu__memory__samples.html" title="Wrapper class for all memory related CPU hardware samples." alt="" coords="5,203,208,228"/>
-<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="222,214,386,207,438,201,438,207,387,213,222,219"/>
-<area shape="rect" id="Node000007" href="$classhws_1_1cpu__temperature__samples.html" title="Wrapper class for all temperature related CPU hardware samples." alt="" coords="23,253,190,293"/>
-<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="204,263,293,252,386,234,437,219,482,202,484,206,439,224,387,239,294,257,204,268"/>
-<area shape="rect" id="Node000008" href="$classhws_1_1cpu__gfx__samples.html" title="Wrapper class for all gfx (iGPU) related CPU hardware samples." alt="" coords="22,317,191,343"/>
-<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="205,322,294,308,341,297,386,281,419,263,451,242,498,202,501,206,454,246,422,268,388,286,343,302,296,314,206,327"/>
-<area shape="rect" id="Node000009" href="$classhws_1_1cpu__idle__states__samples.html" title="Wrapper class for all idle state related CPU hardware samples." alt="" coords="28,367,185,407"/>
-<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="199,386,244,382,292,374,340,360,385,340,427,308,461,270,487,232,504,203,509,205,492,235,465,273,430,312,388,344,342,365,293,379,245,387,199,391"/>
+<area shape="rect" id="node1" title="A hardware sampler for the CPU." alt="" coords="411,195,617,221"/>
+<area shape="rect" id="node2" href="$classhws_1_1hardware__sampler.html" title="The base class for all specialized hardware samplers." alt="" coords="18,5,195,32"/>
+<area shape="rect" id="node3" href="$classhws_1_1cpu__memory__samples.html" title="Wrapper class for all memory related CPU hardware samples." alt="" coords="5,56,208,83"/>
+<area shape="rect" id="node4" href="$classhws_1_1cpu__general__samples.html" title="Wrapper class for all general CPU hardware samples." alt="" coords="8,107,205,133"/>
+<area shape="rect" id="node5" href="$classhws_1_1cpu__idle__states__samples.html" title="Wrapper class for all idle state related CPU hardware samples." alt="" coords="28,158,185,199"/>
+<area shape="rect" id="node6" href="$classhws_1_1cpu__clock__samples.html" title="Wrapper class for all clock related CPU hardware samples." alt="" coords="15,224,198,251"/>
+<area shape="rect" id="node7" href="$classhws_1_1cpu__gfx__samples.html" title="Wrapper class for all gfx (iGPU) related CPU hardware samples." alt="" coords="22,275,191,301"/>
+<area shape="rect" id="node8" href="$classhws_1_1cpu__temperature__samples.html" title="Wrapper class for all temperature related CPU hardware samples." alt="" coords="23,326,190,367"/>
+<area shape="rect" id="node9" href="$classhws_1_1cpu__power__samples.html" title="Wrapper class for all power related CPU hardware samples." alt="" coords="13,392,201,419"/>
 </map>

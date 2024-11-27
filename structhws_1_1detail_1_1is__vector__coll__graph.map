@@ -1,5 +1,4 @@
 <map id="hws::detail::is_vector&lt; T &gt;" name="hws::detail::is_vector&lt; T &gt;">
-<area shape="rect" id="Node000001" title="The case if the type T isn&#39;t a std::vector." alt="" coords="5,79,204,104"/>
-<area shape="rect" id="Node000002" title=" " alt="" coords="45,5,164,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="107,44,107,79,102,79,102,44"/>
+<area shape="rect" id="node1" title="The case if the type T isn&#39;t a std::vector." alt="" coords="5,80,204,107"/>
+<area shape="rect" id="node2" title=" " alt="" coords="45,5,164,32"/>
 </map>

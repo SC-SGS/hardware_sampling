@@ -1,8 +1,8 @@
 <map id="include/hws" name="include/hws">
-<area shape="rect" id="node2" href="dir_fcd266c0ee97acdf204667811fbe2ae1.html" title="cpu" alt="" coords="368,63,413,88"/>
-<area shape="rect" id="node3" href="dir_5890c392c7f35b4df8db4e1fd7856a62.html" title="gpu_amd" alt="" coords="261,63,344,88"/>
-<area shape="rect" id="node4" href="dir_c7a8807e68f4c96f76c5129da8c7aa33.html" title="gpu_intel" alt="" coords="155,63,237,88"/>
-<area shape="rect" id="node5" href="dir_360cb68f8b0544ab8264992b51ad3ffb.html" title="gpu_nvidia" alt="" coords="37,63,131,88"/>
-<area shape="rect" id="clust2" href="dir_2676a5d4f4f242c96d750b8a377861e6.html" alt="" coords="27,52,496,99"/>
-<area shape="rect" id="clust1" href="dir_d44c64559bbebec7f509842c48db8b23.html" title="include" alt="" coords="16,16,507,109"/>
+<area shape="rect" id="node2" href="dir_fcd266c0ee97acdf204667811fbe2ae1.html" title="cpu" alt="" coords="368,63,440,111"/>
+<area shape="rect" id="node3" href="dir_5890c392c7f35b4df8db4e1fd7856a62.html" title="gpu_amd" alt="" coords="261,63,344,111"/>
+<area shape="rect" id="node4" href="dir_c7a8807e68f4c96f76c5129da8c7aa33.html" title="gpu_intel" alt="" coords="155,63,237,111"/>
+<area shape="rect" id="node5" href="dir_360cb68f8b0544ab8264992b51ad3ffb.html" title="gpu_nvidia" alt="" coords="37,63,131,111"/>
+<area shape="rect" id="clust2" href="dir_2676a5d4f4f242c96d750b8a377861e6.html" alt="" coords="27,52,547,121"/>
+<area shape="rect" id="clust1" href="dir_d44c64559bbebec7f509842c48db8b23.html" title="include" alt="" coords="16,16,557,132"/>
 </map>

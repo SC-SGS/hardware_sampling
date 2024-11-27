@@ -1,5 +1,4 @@
 <map id="include/hws/gpu_nvidia/nvml_samples.hpp" name="include/hws/gpu_nvidia/nvml_samples.hpp">
-<area shape="rect" id="Node000001" title="Defines the samples used with NVML." alt="" coords="5,5,180,45"/>
-<area shape="rect" id="Node000002" href="$gpu__nvidia_2hardware__sampler_8hpp.html" title="Defines a hardware sampler for NVIDIA GPUs using NVIDIA&#39;s Management Library (NVML)." alt="" coords="5,93,180,133"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="95,59,95,93,90,93,90,59"/>
+<area shape="rect" id="node1" title="Defines the samples used with NVML." alt="" coords="5,5,180,47"/>
+<area shape="rect" id="node2" href="$gpu__nvidia_2hardware__sampler_8hpp.html" title="Defines a hardware sampler for NVIDIA GPUs using NVIDIA&#39;s Management Library (NVML)." alt="" coords="5,95,180,136"/>
 </map>

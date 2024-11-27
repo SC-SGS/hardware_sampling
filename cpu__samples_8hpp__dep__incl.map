@@ -1,5 +1,4 @@
 <map id="include/hws/cpu/cpu_samples.hpp" name="include/hws/cpu/cpu_samples.hpp">
-<area shape="rect" id="Node000001" title="Defines the samples used with turbostat, lscpu, and free." alt="" coords="24,5,177,45"/>
-<area shape="rect" id="Node000002" href="$cpu_2hardware__sampler_8hpp.html" title="Defines a hardware sampler for CPUs using the turbostat, lscpu, and free utilities (requires root)." alt="" coords="5,93,196,133"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="103,59,103,93,98,93,98,59"/>
+<area shape="rect" id="node1" title="Defines the samples used with turbostat, lscpu, and free." alt="" coords="24,5,177,47"/>
+<area shape="rect" id="node2" href="$cpu_2hardware__sampler_8hpp.html" title="Defines a hardware sampler for CPUs using the turbostat, lscpu, and free utilities (requires root)." alt="" coords="5,95,196,136"/>
 </map>
