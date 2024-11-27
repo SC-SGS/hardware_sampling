@@ -78,15 +78,15 @@ void cpu_hardware_sampler::sampling_loop() {
                     general_samples_.architecture_ = detail::convert_to<decltype(general_samples_.architecture_)::value_type>(value);
                 } else if (detail::starts_with(line, "Byte Order")) {
                     general_samples_.byte_order_ = detail::convert_to<decltype(general_samples_.byte_order_)::value_type>(value);
-                } else if (detail::starts_with(line, "CPU(s)")) {
+                } else if (detail::starts_with(line, "CPU(s)") && detail::is_integer(value)) {
                     general_samples_.num_threads_ = detail::convert_to<decltype(general_samples_.num_threads_)::value_type>(value);
-                } else if (detail::starts_with(line, "Thread(s) per core")) {
+                } else if (detail::starts_with(line, "Thread(s) per core") && detail::is_integer(value)) {
                     general_samples_.threads_per_core_ = detail::convert_to<decltype(general_samples_.threads_per_core_)::value_type>(value);
-                } else if (detail::starts_with(line, "Core(s) per socket")) {
+                } else if (detail::starts_with(line, "Core(s) per socket") && detail::is_integer(value)) {
                     general_samples_.cores_per_socket_ = detail::convert_to<decltype(general_samples_.cores_per_socket_)::value_type>(value);
-                } else if (detail::starts_with(line, "Socket(s)")) {
+                } else if (detail::starts_with(line, "Socket(s)") && detail::is_integer(value)) {
                     general_samples_.num_sockets_ = detail::convert_to<decltype(general_samples_.num_sockets_)::value_type>(value);
-                } else if (detail::starts_with(line, "NUMA node(s)")) {
+                } else if (detail::starts_with(line, "NUMA node(s)") && detail::is_integer(value)) {
                     general_samples_.numa_nodes_ = detail::convert_to<decltype(general_samples_.numa_nodes_)::value_type>(value);
                 } else if (detail::starts_with(line, "Vendor ID")) {
                     general_samples_.vendor_id_ = detail::convert_to<decltype(general_samples_.vendor_id_)::value_type>(value);

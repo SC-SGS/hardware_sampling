@@ -120,6 +120,13 @@ constexpr bool is_vector_v = is_vector<T>::value;
 [[nodiscard]] std::vector<std::string_view> split(std::string_view str, char delim = ' ');
 
 /**
+ * @brief Check whether @p str is an integer
+ * @param[in] str the string to check
+ * @return `true` if @p str is an integer, `false` otherwise
+ */
+[[nodiscard]] bool is_integer(std::string_view str);
+
+/**
  * @brief Convert the @p str to a value of type @p T.
  * @tparam T the type to convert the string to
  * @param[in] str the string to convert

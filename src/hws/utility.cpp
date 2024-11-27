@@ -7,8 +7,8 @@
 
 #include "hws/utility.hpp"
 
-#include <algorithm>    // std::min, std::transform
-#include <cctype>       // std::tolower
+#include <algorithm>    // std::min, std::transform, std::all_of
+#include <cctype>       // std::tolower, std::isdigit
 #include <string>       // std::string
 #include <string_view>  // std::string_view
 #include <vector>       // std::vector
@@ -55,6 +55,10 @@ std::vector<std::string_view> split(const std::string_view str, const char delim
         pos = next + 1;
     }
     return split_str;
+}
+
+bool is_integer(std::string_view str) {
+    return std::all_of(str.cbegin(), str.cend(), [](const char c) { return std::isdigit(static_cast<unsigned char>(c)); });
 }
 
 }  // namespace hws::detail
