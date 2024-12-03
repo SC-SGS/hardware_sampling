@@ -113,16 +113,19 @@ $(function() {
 <div class="line"><a name="l00052"></a><span class="lineno"><a class="line" href="gpu__nvidia_2utility_8hpp.html#a4313e41799dc5e11512d4a3659911aa9">   52</a></span>&#160;<span class="preprocessor">    #define HWS_CUDA_ERROR_CHECK(cuda_func) cuda_func;</span></div>
 <div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160; </div>
-<div class="line"><a name="l00060"></a><span class="lineno"><a class="line" href="gpu__nvidia_2utility_8hpp.html#ab01811a7ee910bd8a974e53bab48e928">   60</a></span>&#160;[[nodiscard]] std::string <a class="code" href="gpu__nvidia_2utility_8hpp.html#ab01811a7ee910bd8a974e53bab48e928">throttle_event_reason_to_string</a>(<span class="keywordtype">unsigned</span> <span class="keywordtype">long</span> <span class="keywordtype">long</span> clocks_event_reasons);</div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160; </div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;}  <span class="comment">// namespace hws::detail</span></div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;<span class="preprocessor">#if CUDA_VERSION &gt;= 12000</span></div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160; </div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;[[nodiscard]] std::string throttle_event_reason_to_string(<span class="keywordtype">unsigned</span> <span class="keywordtype">long</span> <span class="keywordtype">long</span> clocks_event_reasons);</div>
 <div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160; </div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;<span class="preprocessor">#endif  </span><span class="comment">// HWS_GPU_NVIDIA_UTILITY_HPP_</span></div>
-<div class="ttc" id="agpu__nvidia_2utility_8hpp_html_ab01811a7ee910bd8a974e53bab48e928"><div class="ttname"><a href="gpu__nvidia_2utility_8hpp.html#ab01811a7ee910bd8a974e53bab48e928">hws::detail::throttle_event_reason_to_string</a></div><div class="ttdeci">std::string throttle_event_reason_to_string(unsigned long long clocks_event_reasons)</div><div class="ttdoc">Convert the clock throttle reason event bitmask to a string representation. If the provided bitmask r...</div></div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160; </div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;}  <span class="comment">// namespace hws::detail</span></div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160; </div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;<span class="preprocessor">#endif  </span><span class="comment">// HWS_GPU_NVIDIA_UTILITY_HPP_</span></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Nov 27 2024 15:32:57 for hws - Hardware Sampling for GPUs and CPUs by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1
+Generated on Tue Dec 3 2024 13:32:15 for hws - Hardware Sampling for GPUs and CPUs by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1
 </small></address>
 </body>
 </html>

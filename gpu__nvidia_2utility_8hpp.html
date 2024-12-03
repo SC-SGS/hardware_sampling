@@ -75,8 +75,7 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
-<a href="#define-members">Macros</a> &#124;
-<a href="#func-members">Functions</a>  </div>
+<a href="#define-members">Macros</a>  </div>
   <div class="headertitle">
 <div class="title">utility.hpp File Reference</div>  </div>
 </div><!--header-->
@@ -106,12 +105,6 @@ Macros</h2></td></tr>
 <tr class="memitem:a4313e41799dc5e11512d4a3659911aa9"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="gpu__nvidia_2utility_8hpp.html#a4313e41799dc5e11512d4a3659911aa9">HWS_CUDA_ERROR_CHECK</a>(cuda_func)&#160;&#160;&#160;cuda_func;</td></tr>
 <tr class="memdesc:a4313e41799dc5e11512d4a3659911aa9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Defines the <code>HWS_CUDA_ERROR_CHECK</code> macro if <code>HWS_ERROR_CHECKS_ENABLED</code> is defined, does nothing otherwise.  <a href="gpu__nvidia_2utility_8hpp.html#a4313e41799dc5e11512d4a3659911aa9">More...</a><br /></td></tr>
 <tr class="separator:a4313e41799dc5e11512d4a3659911aa9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
-Functions</h2></td></tr>
-<tr class="memitem:ab01811a7ee910bd8a974e53bab48e928"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="gpu__nvidia_2utility_8hpp.html#ab01811a7ee910bd8a974e53bab48e928">hws::detail::throttle_event_reason_to_string</a> (unsigned long long clocks_event_reasons)</td></tr>
-<tr class="memdesc:ab01811a7ee910bd8a974e53bab48e928"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convert the clock throttle reason event bitmask to a string representation. If the provided bitmask represents multiple reasons, they are split using "|".  <a href="gpu__nvidia_2utility_8hpp.html#ab01811a7ee910bd8a974e53bab48e928">More...</a><br /></td></tr>
-<tr class="separator:ab01811a7ee910bd8a974e53bab48e928"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Implements utility functionality for the NVIDIA GPU sampler. </p>
@@ -161,38 +154,10 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<h2 class="groupheader">Function Documentation</h2>
-<a id="ab01811a7ee910bd8a974e53bab48e928"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab01811a7ee910bd8a974e53bab48e928">&#9670;&nbsp;</a></span>throttle_event_reason_to_string()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">std::string hws::detail::throttle_event_reason_to_string </td>
-          <td>(</td>
-          <td class="paramtype">unsigned long long&#160;</td>
-          <td class="paramname"><em>clocks_event_reasons</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Convert the clock throttle reason event bitmask to a string representation. If the provided bitmask represents multiple reasons, they are split using "|". </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">clocks_event_reasons</td><td>the bitmask to convert to a string </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>all event throttle reasons (<code>[[nodiscard]]</code>) </dd></dl>
-
-</div>
-</div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Nov 27 2024 15:32:57 for hws - Hardware Sampling for GPUs and CPUs by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1
+Generated on Tue Dec 3 2024 13:32:15 for hws - Hardware Sampling for GPUs and CPUs by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1
 </small></address>
 </body>
 </html>
