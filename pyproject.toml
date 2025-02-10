@@ -1,0 +1,43 @@
+[build-system]
+requires = ["scikit-build-core"]
+build-backend = "scikit_build_core.build"
+# set the necessary CMake build options
+[tool.scikit-build]
+cmake.args = [
+    "-DCMAKE_INSTALL_LIBDIR=HardwareSampling",
+    "-DCMAKE_INSTALL_BINDIR=HardwareSampling",
+    "-DCMAKE_INSTALL_INCLUDEDIR=HardwareSampling",
+    "-DCMAKE_INSTALL_MANDIR=HardwareSampling",
+    "-DCMAKE_INSTALL_DATAROOTDIR=HardwareSampling/cmake",
+    "-DCMAKE_INSTALL_RPATH=$ORIGIN"
+]
+sdist.exclude = ["build*/", "dist/", "docs/html/", ".github", "examples", "install", ".clang*", ".clion*", ".gitignore"]
+# project specific metadata
+[project]
+name = "hardware_sampling"
+version = "1.0.1"
+description = "hws - Hardware Sampling for GPUs and CPUs (e.g., clock frequencies, memory consumption, temperatures, or energy draw)"
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [
+    { name = "Marcel Breyer" }
+]
+maintainers = [
+    { name = "University of Stuttgart IPVS - SC", email = "sc@ipvs.uni-stuttgart.de" }
+]
+requires-python = ">=3.8"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: GPU",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: C++",
+    "Programming Language :: Python :: 3"
+]
+# project specific URLs
+[project.urls]
+documentation = "https://sc-sgs.github.io/hardware_sampling/"
+repository = "https://github.com/SC-SGS/hardware_sampling.git"
+issues = "https://github.com/SC-SGS/hardware_sampling/issues"

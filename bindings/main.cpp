@@ -5,6 +5,8 @@
  *          See the LICENSE.md file in the project root for full license information.
  */
 
+#include "hws/version.hpp" // hws::version::version
+
 #include "pybind11/pybind11.h"  // PYBIND11_MODULE, py::module_
 
 #include <string_view>  // std::string_view
@@ -28,6 +30,7 @@ void init_version(py::module_ &);
 
 PYBIND11_MODULE(HardwareSampling, m) {
     m.doc() = "Hardware Sampling for CPUs and GPUs";
+    m.attr("__version__") = hws::version::version;
 
     init_event(m);
     init_sample_category(m);
