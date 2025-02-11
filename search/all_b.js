@@ -1,10 +1,16 @@
 var searchData=
 [
-  ['patch_108',['patch',['../version_8hpp.html#aebb8507d57efc0fbe05a788eb3d8ef4b',1,'hws::version']]],
-  ['pause_5fsampling_109',['pause_sampling',['../classhws_1_1hardware__sampler.html#a3584f1119cc917c29dc471dff7179eb4',1,'hws::hardware_sampler::pause_sampling()'],['../classhws_1_1system__hardware__sampler.html#a25ab5a8dabd86f62c8655943bbfefb1d',1,'hws::system_hardware_sampler::pause_sampling()']]],
-  ['performance_5flevel_5fto_5fstring_110',['performance_level_to_string',['../gpu__amd_2utility_8hpp.html#a6653ce2164b9fedac703603986cb2817',1,'hws::detail']]],
-  ['power_111',['power',['../sample__category_8hpp.html#a2ed4527033451618bb855b67d3b4600ba62cd275989e78ee56a81f0265a87562e',1,'hws']]],
-  ['power_5fsamples_112',['power_samples',['../classhws_1_1cpu__hardware__sampler.html#a171e65b256f2e509874190ce091656e5',1,'hws::cpu_hardware_sampler::power_samples()'],['../classhws_1_1gpu__amd__hardware__sampler.html#a8b5a7149c449742f662a3a471f92edb2',1,'hws::gpu_amd_hardware_sampler::power_samples()'],['../classhws_1_1gpu__intel__hardware__sampler.html#a87cd125a635f56dcd4191d99eec4660d',1,'hws::gpu_intel_hardware_sampler::power_samples()'],['../classhws_1_1gpu__nvidia__hardware__sampler.html#a4d7fd67e800bca8fd3a745bd59c0b1e5',1,'hws::gpu_nvidia_hardware_sampler::power_samples()']]],
-  ['power_5fsamples_5f_113',['power_samples_',['../classhws_1_1cpu__hardware__sampler.html#afa89c52cd1b1e905c63cb8786572d8dc',1,'hws::cpu_hardware_sampler::power_samples_()'],['../classhws_1_1gpu__amd__hardware__sampler.html#ab4e9bfc6a4b48269bec7de4cfd3edc88',1,'hws::gpu_amd_hardware_sampler::power_samples_()'],['../classhws_1_1gpu__intel__hardware__sampler.html#a2ab456bdda1099c9bfa5aded454a5b2e',1,'hws::gpu_intel_hardware_sampler::power_samples_()'],['../classhws_1_1gpu__nvidia__hardware__sampler.html#a1238bfbd5b499db03182c235721fa20a',1,'hws::gpu_nvidia_hardware_sampler::power_samples_()']]],
-  ['property_5fflags_5fto_5fvector_114',['property_flags_to_vector',['../gpu__intel_2utility_8hpp.html#a0129b07bd931fbd4cfb6bb4c26abe38e',1,'hws::detail']]]
+  ['name_0',['name',['../version_8hpp.html#a923e4c5972334de92518b7dd47935336',1,'hws::version::name'],['../structhws_1_1event.html#ad6af2f6b14b7df8f5e5f326bd41949ea',1,'hws::event::name']]],
+  ['num_5fevents_1',['num_events',['../classhws_1_1system__hardware__sampler.html#ab3a2f0068ed2c662e21d045d5fe82890',1,'hws::system_hardware_sampler::num_events()'],['../classhws_1_1hardware__sampler.html#a2a362b18174ed3905b9373191c364e9c',1,'hws::hardware_sampler::num_events()']]],
+  ['num_5fsamplers_2',['num_samplers',['../classhws_1_1system__hardware__sampler.html#a285189f572bcd65954b50dce84e0db7c',1,'hws::system_hardware_sampler']]],
+  ['nvml_5fclock_5fsamples_3',['nvml_clock_samples',['../classhws_1_1nvml__clock__samples.html',1,'hws']]],
+  ['nvml_5fdevice_5fhandle_4',['nvml_device_handle',['../classhws_1_1detail_1_1nvml__device__handle.html',1,'hws::detail::nvml_device_handle'],['../classhws_1_1detail_1_1nvml__device__handle.html#a076dc3515435da32e3a8fa8dc1974f3a',1,'hws::detail::nvml_device_handle::nvml_device_handle(std::size_t device_id)'],['../classhws_1_1detail_1_1nvml__device__handle.html#abc5ec081f2cac697b2f21815a37029ed',1,'hws::detail::nvml_device_handle::nvml_device_handle()=default']]],
+  ['nvml_5fdevice_5fhandle_2ehpp_5',['nvml_device_handle.hpp',['../nvml__device__handle_8hpp.html',1,'']]],
+  ['nvml_5fdevice_5fhandle_5fimpl_6',['nvml_device_handle_impl',['../structhws_1_1detail_1_1nvml__device__handle_1_1nvml__device__handle__impl.html#a206c24debad41ad5efe6e7ba829ff117',1,'hws::detail::nvml_device_handle::nvml_device_handle_impl::nvml_device_handle_impl()'],['../structhws_1_1detail_1_1nvml__device__handle_1_1nvml__device__handle__impl.html',1,'hws::detail::nvml_device_handle::nvml_device_handle_impl']]],
+  ['nvml_5fdevice_5fhandle_5fimpl_2ehpp_7',['nvml_device_handle_impl.hpp',['../nvml__device__handle__impl_8hpp.html',1,'']]],
+  ['nvml_5fgeneral_5fsamples_8',['nvml_general_samples',['../classhws_1_1nvml__general__samples.html',1,'hws']]],
+  ['nvml_5fmemory_5fsamples_9',['nvml_memory_samples',['../classhws_1_1nvml__memory__samples.html',1,'hws']]],
+  ['nvml_5fpower_5fsamples_10',['nvml_power_samples',['../classhws_1_1nvml__power__samples.html',1,'hws']]],
+  ['nvml_5fsamples_2ehpp_11',['nvml_samples.hpp',['../nvml__samples_8hpp.html',1,'']]],
+  ['nvml_5ftemperature_5fsamples_12',['nvml_temperature_samples',['../classhws_1_1nvml__temperature__samples.html',1,'hws']]]
 ];
