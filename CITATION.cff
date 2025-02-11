@@ -1,0 +1,29 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: hws - Hardware Sampling for GPUs and CPUs
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Marcel
+    family-names: Breyer
+    email: Marcel.Breyer@ipvs.uni-stuttgart.de
+    affiliation: University of Stuttgart
+    orcid: 'https://orcid.org/0000-0003-3574-0650'
+  - given-names: Alexander
+    family-names: Van Craen
+    email: Alexander.Van-Craen@ipvs.uni-stuttgart.de
+    affiliation: University of Stuttgart
+    orcid: 'https://orcid.org/0000-0002-3336-7226'
+  - given-names: Dirk
+    family-names: Pflüger
+    email: Dirk.Pflueger@ipvs.uni-stuttgart.de
+    orcid: 'https://orcid.org/0000-0002-4360-0212'
+    affiliation: University of Stuttgart
+repository-code: 'https://github.com/SC-SGS/hardware_sampling'
+license: MIT
+version: v1.0.3
+date-released: '2024-10-09'
