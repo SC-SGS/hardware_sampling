@@ -16,6 +16,8 @@
 
 namespace hws::detail {
 
+#if CUDA_VERSION >= 12000
+
 std::string throttle_event_reason_to_string(const unsigned long long clocks_event_reasons) {
     if (clocks_event_reasons == 0ull) {
         return "None";
@@ -51,5 +53,7 @@ std::string throttle_event_reason_to_string(const unsigned long long clocks_even
         return fmt::format("{}", fmt::join(reasons, "|"));
     }
 }
+
+#endif
 
 }  // namespace hws::detail
