@@ -47,7 +47,7 @@ namespace hws::detail {
 
     #define HWS_HIP_ERROR_CHECK(hip_func)                                                                                             \
         {                                                                                                                             \
-            const hiperror_t errc = hip_func;                                                                                         \
+            const hipError_t errc = hip_func;                                                                                         \
             if (errc != hipSuccess) {                                                                                                 \
                 throw std::runtime_error{ fmt::format("Error in HIP function call \"{}\": {}", #hip_func, hipGetErrorString(errc)) }; \
             }                                                                                                                         \
