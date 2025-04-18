@@ -618,7 +618,7 @@ void cpu_hardware_sampler::sampling_loop() {
                     } else {
                         if (this->sample_category_enabled(sample_category::idle_state)) {
                             const std::string header_str{ header[i] };
-                            if (idle_state_samples_.idle_states_.value().count(header_str) > decltype(idle_state_samples_)::map_type::size_type{ 0 }) {
+                            if (idle_state_samples_.idle_states_.has_value() && idle_state_samples_.idle_states_.value().count(header_str) > decltype(idle_state_samples_)::map_type::size_type{ 0 }) {
                                 using vector_type = cpu_idle_states_samples::map_type::mapped_type;
                                 idle_state_samples_.idle_states_.value()[header_str].push_back(detail::convert_to<typename vector_type::value_type>(values[i]));
                             }
