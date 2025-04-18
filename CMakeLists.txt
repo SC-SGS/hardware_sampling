@@ -178,8 +178,6 @@ if (HWS_LSCPU_FOUND OR HWS_FREE_FOUND OR HWS_TURBOSTAT_EXECUTION_TYPE)
                 GIT_REPOSITORY https://github.com/sheredom/subprocess.h.git
                 GIT_TAG ${HWS_subprocess_VERSION}
                 QUIET
-                CONFIGURE_COMMAND ""
-                BUILD_COMMAND ""
         )
         FetchContent_MakeAvailable(subprocess)
         target_include_directories(${HWS_LIBRARY_NAME} PRIVATE $<BUILD_INTERFACE:${subprocess_SOURCE_DIR}>)
