@@ -253,6 +253,9 @@ endif ()
 ####################################################################################################################
 ##                                        Intel GPU sampling via Level Zero                                       ##
 ####################################################################################################################
+# set the CMAKE_MODULE_PATH to the cmake directory
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
+
 # try finding Level Zero
 find_package(level_zero QUIET)
 if (level_zero_FOUND)
