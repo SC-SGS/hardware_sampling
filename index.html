@@ -111,6 +111,30 @@ Building hws</h2>
 Optional CMake Options</h3>
 <p>The <code>[optional_options]</code> can be one or multiple of:</p>
 <ul>
+<li><code>HWS_ENABLE_CPU_SAMPLING=ON|OFF|AUTO</code> (default: <code>AUTO</code>):<ul>
+<li><code>ON</code>: check whether CPU information can be sampled and fail if this is not the case</li>
+<li><code>AUTO</code>: check whether CPU information can be sampled but <b>do not</b> fail if this is not the case</li>
+<li><code>OFF</code>: do not check whether CPU information can be sampled</li>
+</ul>
+</li>
+<li><code>HWS_ENABLE_GPU_NVIDIA_SAMPLING=ON|OFF|AUTO</code> (default: <code>AUTO</code>):<ul>
+<li><code>ON</code>: check whether NVIDIA GPU information can be sampled and fail if this is not the case</li>
+<li><code>AUTO</code>: check whether NVIDIA GPU information can be sampled but <b>do not</b> fail if this is not the case</li>
+<li><code>OFF</code>: do not check whether NVIDIA GPU information can be sampled</li>
+</ul>
+</li>
+<li><code>HWS_ENABLE_GPU_AMD_SAMPLING=ON|OFF|AUTO</code> (default: <code>AUTO</code>):<ul>
+<li><code>ON</code>: check whether AMD GPU information can be sampled and fail if this is not the case</li>
+<li><code>AUTO</code>: check whether AMD GPU information can be sampled but <b>do not</b> fail if this is not the case</li>
+<li><code>OFF</code>: do not check whether AMD GPU information can be sampled</li>
+</ul>
+</li>
+<li><code>HWS_ENABLE_GPU_INTEL_SAMPLING=ON|OFF|AUTO</code> (default: <code>AUTO</code>):<ul>
+<li><code>ON</code>: check whether Intel GPU information can be sampled and fail if this is not the case</li>
+<li><code>AUTO</code>: check whether Intel GPU information can be sampled but <b>do not</b> fail if this is not the case</li>
+<li><code>OFF</code>: do not check whether Intel GPU information can be sampled</li>
+</ul>
+</li>
 <li><code>HWS_ENABLE_ERROR_CHECKS=ON|OFF</code> (default: <code>OFF</code>): enable sanity checks during hardware sampling, may be problematic with smaller sample intervals</li>
 <li><code>HWS_SAMPLING_INTERVAL=100ms</code> (default: <code>100ms</code>): set the sampling interval in milliseconds</li>
 <li><code>HWS_ENABLE_PYTHON_BINDINGS=ON|OFF</code> (default: <code>ON</code>): enable Python bindings</li>
