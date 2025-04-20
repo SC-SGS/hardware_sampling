@@ -50,6 +50,26 @@ cmake --build . -j
 
 The `[optional_options]` can be one or multiple of:
 
+- `HWS_ENABLE_CPU_SAMPLING=ON|OFF|AUTO` (default: `AUTO`):
+  - `ON`: check whether CPU information can be sampled and fail if this is not the case
+  - `AUTO`: check whether CPU information can be sampled but **do not** fail if this is not the case
+  - `OFF`: do not check whether CPU information can be sampled
+
+- `HWS_ENABLE_GPU_NVIDIA_SAMPLING=ON|OFF|AUTO` (default: `AUTO`):
+  - `ON`: check whether NVIDIA GPU information can be sampled and fail if this is not the case
+  - `AUTO`: check whether NVIDIA GPU information can be sampled but **do not** fail if this is not the case
+  - `OFF`: do not check whether NVIDIA GPU information can be sampled
+
+- `HWS_ENABLE_GPU_AMD_SAMPLING=ON|OFF|AUTO` (default: `AUTO`):
+  - `ON`: check whether AMD GPU information can be sampled and fail if this is not the case
+  - `AUTO`: check whether AMD GPU information can be sampled but **do not** fail if this is not the case
+  - `OFF`: do not check whether AMD GPU information can be sampled
+
+- `HWS_ENABLE_GPU_INTEL_SAMPLING=ON|OFF|AUTO` (default: `AUTO`):
+  - `ON`: check whether Intel GPU information can be sampled and fail if this is not the case
+  - `AUTO`: check whether Intel GPU information can be sampled but **do not** fail if this is not the case
+  - `OFF`: do not check whether Intel GPU information can be sampled
+
 - `HWS_ENABLE_ERROR_CHECKS=ON|OFF` (default: `OFF`): enable sanity checks during hardware sampling, may be problematic
   with smaller sample intervals
 - `HWS_SAMPLING_INTERVAL=100ms` (default: `100ms`): set the sampling interval in milliseconds
