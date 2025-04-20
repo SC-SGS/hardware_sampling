@@ -62,8 +62,8 @@ target_compile_definitions(${HWS_LIBRARY_NAME} PUBLIC HWS_SAMPLING_INTERVAL=${HW
 
 # install fmt as dependency
 include(FetchContent)
-set(HWS_fmt_VERSION 11.1.4)
-find_package(fmt 11.1.4 QUIET)
+set(HWS_fmt_VERSION 11.0.2)
+find_package(fmt 11.0.2 QUIET)
 if (fmt_FOUND)
     message(STATUS "Found package fmt.")
 else ()
