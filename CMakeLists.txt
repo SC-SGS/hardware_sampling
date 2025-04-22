@@ -102,99 +102,10 @@ configure_file(
 ####################################################################################################################
 ##                                                CPU measurements                                                ##
 ####################################################################################################################
-## check whether lscpu could be found -> used for the CPU targets as well as for ALL host measurements
-## -> checked even if no CPU targets where provided
-## LINUX only
-find_program(HWS_LSCPU_FOUND lscpu)
-if (HWS_LSCPU_FOUND)
-    message(STATUS "Enable sampling of CPU information using lscpu.")
-    target_compile_definitions(${HWS_LIBRARY_NAME} PUBLIC HWS_VIA_LSCPU_ENABLED)
-endif ()
-
-## check whether free could be found -> used for the CPU targets as well as for ALL host measurements
-## -> checked even if no CPU targets where provided
-## LINUX only
-find_program(HWS_FREE_FOUND free)
-if (HWS_FREE_FOUND)
-    message(STATUS "Enable sampling of CPU information using free.")
-    target_compile_definitions(${HWS_LIBRARY_NAME} PUBLIC HWS_VIA_FREE_ENABLED)
-endif ()
-
-## check whether turbostat could be found -> used for the CPU targets as well as for ALL host measurements
-## -> checked even if no CPU targets where provided
-find_program(HWS_TURBOSTAT_FOUND turbostat)
-if (HWS_TURBOSTAT_FOUND)
-    ## check if the turbostat command works as intended
-    execute_process(COMMAND turbostat -n 1 -S -q
-            RESULT_VARIABLE HWS_TURBOSTAT_WITHOUT_ROOT
-            OUTPUT_QUIET
-            ERROR_QUIET)
-    if (NOT HWS_TURBOSTAT_WITHOUT_ROOT EQUAL 0)
-        message(STATUS "Can't use turbostat without root permissions! Try using with sudo...")
-        execute_process(COMMAND sudo -n turbostat -n 1 -i 0.001 -S -q
-                RESULT_VARIABLE HWS_TURBOSTAT_ROOT_PASSWORD_REQUIRED
-                OUTPUT_QUIET
-                ERROR_QUIET)
-        if (NOT HWS_TURBOSTAT_ROOT_PASSWORD_REQUIRED EQUAL 0)
-            message(STATUS "Can't use turbostat with root if a sudo password is required! Please add turbostat to the sudoer group.")
-            message(STATUS "Disabling turbostat support!")
-        else ()
-            execute_process(COMMAND sudo turbostat -n 1 -i 0.001 -S -q
-                    RESULT_VARIABLE HWS_TURBOSTAT_WITH_ROOT
-                    OUTPUT_QUIET
-                    ERROR_QUIET)
-            if (NOT HWS_TURBOSTAT_WITH_ROOT EQUAL 0)
-                message(STATUS "Can't use turbostat with root even if no sudo password is required!")
-                message(STATUS "Disabling turbostat support!")
-            else ()
-                message(STATUS "Enable sampling of CPU information using turbostat.")
-
-                set(HWS_TURBOSTAT_EXECUTION_TYPE "root")
-                # add compile definitions
-                target_compile_definitions(${HWS_LIBRARY_NAME} PUBLIC HWS_VIA_TURBOSTAT_ENABLED)
-                target_compile_definitions(${HWS_LIBRARY_NAME} PUBLIC HWS_VIA_TURBOSTAT_ROOT)
-            endif ()
-        endif ()
-    else ()
-        set(HWS_TURBOSTAT_EXECUTION_TYPE "without_root")
-        # add compile definitions
-        target_compile_definitions(${HWS_LIBRARY_NAME} PUBLIC HWS_VIA_TURBOSTAT_ENABLED)
-    endif ()
-endif ()
-
-## check if the CPU hardware tracker can be used
-if (HWS_LSCPU_FOUND OR HWS_FREE_FOUND OR HWS_TURBOSTAT_EXECUTION_TYPE)
-    ## try finding subprocess.h
-    set(HWS_subprocess_VERSION b6e1611d430e3019c423d2af26bb162e7ed5c3ae)
-    find_package(subprocess QUIET)
-    if (subprocess_FOUND)
-        message(STATUS "Found package subprocess.h.")
-        target_include_directories(${HWS_LIBRARY_NAME} PRIVATE ${subprocess_INCLUDE_DIR})
-    else ()
-        include(FetchContent)
-        message(STATUS "Couldn't find package subprocess.h. Building version ${HWS_subprocess_VERSION} from source.")
-        # fetch subprocess library subprocess.h
-        FetchContent_Declare(subprocess
-                GIT_REPOSITORY https://github.com/sheredom/subprocess.h.git
-                GIT_TAG ${HWS_subprocess_VERSION}
-                QUIET
-                CONFIGURE_COMMAND ""
-                BUILD_COMMAND ""
-        )
-        FetchContent_MakeAvailable(subprocess)
-        target_include_directories(${HWS_LIBRARY_NAME} PRIVATE $<BUILD_INTERFACE:${subprocess_SOURCE_DIR}>)
-    endif ()
-
-    # add source file to source file list
-    target_sources(${HWS_LIBRARY_NAME} PRIVATE
-            $<BUILD_INTERFACE:
-            ${CMAKE_CURRENT_SOURCE_DIR}/src/hws/cpu/hardware_sampler.cpp;
-            ${CMAKE_CURRENT_SOURCE_DIR}/src/hws/cpu/cpu_samples.cpp;
-            ${CMAKE_CURRENT_SOURCE_DIR}/src/hws/cpu/utility.cpp;
-            >)
-
-    # add compile definitions
-    target_compile_definitions(${HWS_LIBRARY_NAME} PUBLIC HWS_FOR_CPUS_ENABLED)
+set(HWS_ENABLE_CPU_SAMPLING AUTO CACHE STRING "Enable sampling of CPUs.")
+set_property(CACHE HWS_ENABLE_CPU_SAMPLING PROPERTY STRINGS AUTO ON OFF)
+if (HWS_ENABLE_CPU_SAMPLING MATCHES "AUTO" OR HWS_ENABLE_CPU_SAMPLING)
+    add_subdirectory(src/hws/cpu)
 else ()
     message(STATUS "Hardware sampling for CPUs disabled!")
 endif ()
@@ -203,23 +114,10 @@ endif ()
 ####################################################################################################################
 ##                                          NVIDIA GPU sampling via NVML                                          ##
 ####################################################################################################################
-# find libraries necessary for NVML and link against them
-find_package(CUDAToolkit QUIET)
-if (CUDAToolkit_FOUND)
-    target_link_libraries(${HWS_LIBRARY_NAME} PRIVATE CUDA::nvml CUDA::cudart)
-
-    message(STATUS "Enable sampling of NVIDIA GPU information using NVML.")
-
-    # add source file to source file list
-    target_sources(${HWS_LIBRARY_NAME} PRIVATE
-            $<BUILD_INTERFACE:
-            ${CMAKE_CURRENT_SOURCE_DIR}/src/hws/gpu_nvidia/hardware_sampler.cpp;
-            ${CMAKE_CURRENT_SOURCE_DIR}/src/hws/gpu_nvidia/nvml_samples.cpp;
-            ${CMAKE_CURRENT_SOURCE_DIR}/src/hws/gpu_nvidia/utility.cpp
-            >)
-
-    # add compile definition
-    target_compile_definitions(${HWS_LIBRARY_NAME} PUBLIC HWS_FOR_NVIDIA_GPUS_ENABLED)
+set(HWS_ENABLE_GPU_NVIDIA_SAMPLING AUTO CACHE STRING "Enable sampling of NVIDIA GPUs.")
+set_property(CACHE HWS_ENABLE_GPU_NVIDIA_SAMPLING PROPERTY STRINGS AUTO ON OFF)
+if (HWS_ENABLE_GPU_NVIDIA_SAMPLING MATCHES "AUTO" OR HWS_ENABLE_GPU_NVIDIA_SAMPLING)
+    add_subdirectory(src/hws/gpu_nvidia)
 else ()
     message(STATUS "Hardware sampling for NVIDIA GPUs disabled!")
 endif ()
@@ -228,25 +126,10 @@ endif ()
 ####################################################################################################################
 ##                                        AMD GPU sampling via ROCm SMI lib                                       ##
 ####################################################################################################################
-## try finding ROCm SMI
-find_package(rocm_smi QUIET)
-if (rocm_smi_FOUND)
-    find_package(HIP REQUIRED)
-    target_link_libraries(${HWS_LIBRARY_NAME} PRIVATE -lrocm_smi64 hip::host)
-    target_include_directories(${HWS_LIBRARY_NAME} PRIVATE ${ROCM_SMI_INCLUDE_DIR})
-
-    message(STATUS "Enable sampling of AMD GPU information using ROCm SMI.")
-
-    # add source file to source file list
-    target_sources(${HWS_LIBRARY_NAME} PRIVATE
-            $<BUILD_INTERFACE:
-            ${CMAKE_CURRENT_SOURCE_DIR}/src/hws/gpu_amd/hardware_sampler.cpp;
-            ${CMAKE_CURRENT_SOURCE_DIR}/src/hws/gpu_amd/rocm_smi_samples.cpp;
-            ${CMAKE_CURRENT_SOURCE_DIR}/src/hws/gpu_amd/utility.cpp
-            >)
-
-    # add compile definition
-    target_compile_definitions(${HWS_LIBRARY_NAME} PUBLIC HWS_FOR_AMD_GPUS_ENABLED)
+set(HWS_ENABLE_GPU_AMD_SAMPLING AUTO CACHE STRING "Enable sampling of AMD GPUs.")
+set_property(CACHE HWS_ENABLE_GPU_AMD_SAMPLING PROPERTY STRINGS AUTO ON OFF)
+if (HWS_ENABLE_GPU_AMD_SAMPLING MATCHES "AUTO" OR HWS_ENABLE_GPU_AMD_SAMPLING)
+    add_subdirectory(src/hws/gpu_amd)
 else ()
     message(STATUS "Hardware sampling for AMD GPUs disabled!")
 endif ()
@@ -255,23 +138,10 @@ endif ()
 ####################################################################################################################
 ##                                        Intel GPU sampling via Level Zero                                       ##
 ####################################################################################################################
-# try finding Level Zero
-find_package(level_zero QUIET)
-if (level_zero_FOUND)
-    target_link_libraries(${HWS_LIBRARY_NAME} PRIVATE level_zero)
-
-    message(STATUS "Enable sampling of Intel GPU information using Level Zero.")
-
-    # add source file to source file list
-    target_sources(${HWS_LIBRARY_NAME} PRIVATE
-            $<BUILD_INTERFACE:
-            ${CMAKE_CURRENT_SOURCE_DIR}/src/hws/gpu_intel/hardware_sampler.cpp;
-            ${CMAKE_CURRENT_SOURCE_DIR}/src/hws/gpu_intel/level_zero_samples.cpp;
-            ${CMAKE_CURRENT_SOURCE_DIR}/src/hws/gpu_intel/utility.cpp
-            >)
-
-    # add compile definition
-    target_compile_definitions(${HWS_LIBRARY_NAME} PUBLIC HWS_FOR_INTEL_GPUS_ENABLED)
+set(HWS_ENABLE_GPU_INTEL_SAMPLING AUTO CACHE STRING "Enable sampling of Intel GPUs.")
+set_property(CACHE HWS_ENABLE_GPU_INTEL_SAMPLING PROPERTY STRINGS AUTO ON OFF)
+if (HWS_ENABLE_GPU_INTEL_SAMPLING MATCHES "AUTO" OR HWS_ENABLE_GPU_INTEL_SAMPLING)
+    add_subdirectory(src/hws/gpu_intel)
 else ()
     message(STATUS "Hardware sampling for Intel GPUs disabled!")
 endif ()

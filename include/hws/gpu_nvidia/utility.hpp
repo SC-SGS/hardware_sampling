@@ -52,12 +52,16 @@ namespace hws::detail {
     #define HWS_CUDA_ERROR_CHECK(cuda_func) cuda_func;
 #endif
 
+#if CUDA_VERSION >= 12000
+
 /**
  * @brief Convert the clock throttle reason event bitmask to a string representation. If the provided bitmask represents multiple reasons, they are split using "|".
  * @param[in] clocks_event_reasons the bitmask to convert to a string
  * @return all event throttle reasons (`[[nodiscard]]`)
  */
 [[nodiscard]] std::string throttle_event_reason_to_string(unsigned long long clocks_event_reasons);
+
+#endif
 
 }  // namespace hws::detail
 
