@@ -16,7 +16,7 @@ if (NOT rocm_smi_FOUND)
     endif ()
     return()
 endif ()
-message(STATUS "Enable sampling of AMD GPU information using ROCm SMI.")
+message(STATUS "Enable sampling of AMD GPU information using ROCm SMI (${rocm_smi_VERSION}).")
 
 # must also find HIP
 find_package(HIP REQUIRED)
