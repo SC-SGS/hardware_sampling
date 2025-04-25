@@ -208,5 +208,6 @@ install(EXPORT hws_Targets
 install(FILES
         "${PROJECT_BINARY_DIR}/hwsConfig.cmake"
         "${PROJECT_BINARY_DIR}/hwsConfigVersion.cmake"
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Findlevel_zero.cmake"
         DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/hws/cmake
 )
