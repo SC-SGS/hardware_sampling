@@ -16,13 +16,13 @@ if (NOT rocm_smi_FOUND)
     endif ()
     return()
 endif ()
-message(STATUS "Enable sampling of AMD GPU information using ROCm SMI.")
+message(STATUS "Enable sampling of AMD GPU information using ROCm SMI (${rocm_smi_VERSION}).")
 
 # must also find HIP
 find_package(HIP REQUIRED)
 
 # link against necessary libraries
-target_link_libraries(${HWS_LIBRARY_NAME} PRIVATE -lrocm_smi64 hip::host)
+target_link_libraries(${HWS_LIBRARY_NAME} PRIVATE rocm_smi64 hip::host)
 target_include_directories(${HWS_LIBRARY_NAME} PRIVATE ${ROCM_SMI_INCLUDE_DIR})
 
 # add source file to source file list

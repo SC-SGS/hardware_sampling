@@ -6,6 +6,16 @@
 
 @PACKAGE_INIT@
 
+# helper functions to check whether a CMake string contains a substring
+function(string_contains STR SUBSTRING RESULT_VAR)
+    string(FIND "${STR}" "${SUBSTRING}" _index)
+    if(_index EQUAL -1)
+        set(${RESULT_VAR} OFF PARENT_SCOPE)
+    else()
+        set(${RESULT_VAR} ON PARENT_SCOPE)
+    endif()
+endfunction()
+
 include(CMakeFindDependencyMacro)
 
 # always try finding {fmt}
@@ -14,6 +24,143 @@ include(CMakeFindDependencyMacro)
 list(APPEND CMAKE_PREFIX_PATH "${CMAKE_CURRENT_LIST_DIR}/../../../lib/cmake/fmt")
 find_dependency(fmt REQUIRED)
 
-# sanity checks
+
+# load all targets
 include("${CMAKE_CURRENT_LIST_DIR}/hwsTargets.cmake")
+
+# assume hws can be found
+set(hws_FOUND ON)
+
+# get all compile definitions
+get_target_property(HWS_COMPILE_DEFINITIONS hws::hws INTERFACE_COMPILE_DEFINITIONS)
+
+# check whether CPUs are supported
+string_contains("${HWS_COMPILE_DEFINITIONS}" "HWS_FOR_CPUS_ENABLED" HWS_HAS_CPU_SUPPORT)
+if (HWS_HAS_CPU_SUPPORT)
+    # check if hws was build with lscpu -> check if lscpu can be found
+    if (@HWS_LSCPU_FOUND@)
+        find_program(HWS_HAS_LSCPU_SUPPORT lscpu)
+        if (NOT HWS_HAS_LSCPU_SUPPORT)
+            set(hws_FOUND OFF)
+            set(hws_NOT_FOUND_MESSAGE "Couldn't find necessary program \"lscpu\".")
+            return()
+        elseif (NOT hws_FIND_QUIETLY)
+            message(STATUS "Found \"lscpu\" program.")
+        endif ()
+    endif ()
+
+    # check if hws was build with free -> check if free can be found
+    if (@HWS_FREE_FOUND@)
+        find_program(HWS_HAS_FREE_SUPPORT free)
+        if (NOT HWS_HAS_FREE_SUPPORT)
+            set(hws_FOUND OFF)
+            set(hws_NOT_FOUND_MESSAGE "Couldn't find necessary program \"free\".")
+            return()
+        elseif (NOT hws_FIND_QUIETLY)
+            message(STATUS "Found \"free\" program.")
+        endif ()
+    endif ()
+
+    # check if hws was build with free -> check if free can be found
+    if (@HWS_TURBOSTAT_FOUND@)
+        find_program(HWS_HAS_TURBOSTAT_SUPPORT turbostat)
+        if (NOT HWS_HAS_TURBOSTAT_SUPPORT)
+            set(hws_FOUND OFF)
+            set(hws_NOT_FOUND_MESSAGE "Couldn't find necessary program \"turbostat\".")
+            return()
+        else ()
+            # check required privileges when using turbostat
+            if (@HWS_TURBOSTAT_EXECUTION_TYPE@ MATCHES "without_root")
+                # check if turbostat can be executed without root privileges
+                execute_process(COMMAND turbostat -n 1 -S -q
+                    RESULT_VARIABLE HWS_HAS_TURBOSTAT_SUPPORT_WITHOUT_ROOT
+                    OUTPUT_QUIET
+                    ERROR_QUIET)
+                if (NOT HWS_HAS_TURBOSTAT_SUPPORT_WITHOUT_ROOT EQUAL 0)
+                    set(hws_FOUND OFF)
+                    set(hws_NOT_FOUND_MESSAGE "turbostat must be configured to run without root privileges.")
+                    return()
+                endif ()
+            elseif (@HWS_TURBOSTAT_EXECUTION_TYPE@ MATCHES "root")
+                # check if turbostat can be executed with root privileges and without a password
+                execute_process(COMMAND sudo -n turbostat -n 1 -i 0.001 -S -q
+                    RESULT_VARIABLE HWS_HAS_TURBOSTAT_SUPPORT_ROOT_REQUIRED
+                    OUTPUT_QUIET
+                    ERROR_QUIET)
+                if (HWS_HAS_TURBOSTAT_SUPPORT_ROOT_REQUIRED EQUAL 0)
+                    execute_process(COMMAND sudo turbostat -n 1 -i 0.001 -S -q
+                        RESULT_VARIABLE HWS_HAS_TURBOSTAT_SUPPORT_WITH_ROOT
+                        OUTPUT_QUIET
+                        ERROR_QUIET)
+                    if (NOT HWS_HAS_TURBOSTAT_SUPPORT_WITH_ROOT EQUAL 0)
+                        set(hws_FOUND OFF)
+                        set(hws_NOT_FOUND_MESSAGE "turbostat must be configured to run with root privileges and without the need for a password.")
+                        return()
+                    endif ()
+                else ()
+                    set(hws_FOUND OFF)
+                    set(hws_NOT_FOUND_MESSAGE "Invalid turbostat configuration.")
+                    return()
+                endif ()
+            else ()
+            endif ()
+        endif ()
+    endif ()
+
+    if (NOT hws_FIND_QUIETLY)
+        message(STATUS "Enabled support for CPUs via hws.")
+    endif ()
+endif ()
+
+# check whether NVIDIA GPUs are supported
+string_contains("${HWS_COMPILE_DEFINITIONS}" "HWS_FOR_NVIDIA_GPUS_ENABLED" HWS_HAS_GPU_NVIDIA_SUPPORT)
+if (HWS_HAS_GPU_NVIDIA_SUPPORT)
+    find_dependency(CUDAToolkit)
+    if (NOT hws_FIND_QUIETLY)
+        message(STATUS "Enabled support for NVIDIA GPUs via hws.")
+    endif ()
+endif ()
+
+# check whether AMD GPUs are supported
+string_contains("${HWS_COMPILE_DEFINITIONS}" "HWS_FOR_AMD_GPUS_ENABLED" HWS_HAS_GPU_AMD_SUPPORT)
+if (HWS_HAS_GPU_AMD_SUPPORT)
+    find_dependency(rocm_smi)
+    find_dependency(HIP)
+    if (NOT hws_FIND_QUIETLY)
+        message(STATUS "Enabled support for AMD GPUs via hws.")
+    endif ()
+endif ()
+
+# check whether Intel GPUs are supported
+string_contains("${HWS_COMPILE_DEFINITIONS}" "HWS_FOR_INTEL_GPUS_ENABLED" HWS_HAS_GPU_INTEL_SUPPORT)
+if (HWS_HAS_GPU_INTEL_SUPPORT)
+    # add Findlevel_zero.cmake to module path
+    list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}")
+    find_dependency(level_zero)
+    if (NOT hws_FIND_QUIETLY)
+        message(STATUS "Enabled support for Intel GPUs via hws.")
+    endif ()
+endif ()
+
+
+# check possible provided version
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(hws
+    REQUIRED_VARS hws_FOUND
+    VERSION_VAR hws_VERSION
+)
+
+# add additional output if hws could be found
+if (NOT hws_FIND_QUIETLY AND hws_FOUND)
+    # output the available PLSSVM target platforms
+    message(STATUS "The sampling interval is @HWS_SAMPLING_INTERVAL@ms.")
+    # output the hws build type
+    message(STATUS "The hws library was built in @CMAKE_BUILD_TYPE@ mode.")
+    # output if error checks are enabled
+    if (@HWS_ENABLE_ERROR_CHECKS@)
+        message(STATUS "The hws library was built with error checks enabled.")
+    endif ()
+endif()
+
+# sanity checks
 check_required_components("hws")

@@ -58,16 +58,19 @@ endif ()
 # create pybind11 module
 set(HWS_PYTHON_BINDINGS_LIBRARY_NAME HardwareSampling)
 pybind11_add_module(${HWS_PYTHON_BINDINGS_LIBRARY_NAME} ${HWS_PYTHON_BINDINGS_SOURCES})
-list(APPEND HWS_TARGETS_TO_INSTALL "${HWS_PYTHON_BINDINGS_LIBRARY_NAME}")
-set(HWS_TARGETS_TO_INSTALL "${HWS_TARGETS_TO_INSTALL}" PARENT_SCOPE)
 
 # add necessary compile options
 target_include_directories(${HWS_PYTHON_BINDINGS_LIBRARY_NAME} PRIVATE ${CMAKE_CURRENT_LIST_DIR}/..)
 target_link_libraries(${HWS_PYTHON_BINDINGS_LIBRARY_NAME} PRIVATE ${HWS_LIBRARY_NAME})
 target_compile_definitions(${HWS_PYTHON_BINDINGS_LIBRARY_NAME} PRIVATE PYBIND11_DETAILED_ERROR_MESSAGES)
 
-# install the __init__.py file so Python recognizes the package when installed via pip
 include(GNUInstallDirs)
+# install Python bindings
+install(TARGETS ${HWS_PYTHON_BINDINGS_LIBRARY_NAME}
+        LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"  # all shared lib files
+)
+
+# install the __init__.py file so Python recognizes the package when installed via pip
 install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/__init__.py"
         DESTINATION "${CMAKE_INSTALL_LIBDIR}"
 )

@@ -16,7 +16,7 @@ if (NOT CUDAToolkit_FOUND)
     endif ()
     return()
 endif ()
-message(STATUS "Enable sampling of NVIDIA GPU information using NVML.")
+message(STATUS "Enable sampling of NVIDIA GPU information using NVML (${CUDAToolkit_VERSION}).")
 
 # link against necessary libraries
 target_link_libraries(${HWS_LIBRARY_NAME} PRIVATE CUDA::nvml CUDA::cudart)

@@ -25,7 +25,7 @@ add_library(${HWS_LIBRARY_NAME} SHARED ${HWS_SOURCES})
 add_library(hws::hws ALIAS ${HWS_LIBRARY_NAME})
 
 # set install target
-set(HWS_TARGETS_TO_INSTALL ${HWS_LIBRARY_NAME})
+set(HWS_TARGETS_TO_INSTALL )
 
 # use C++17
 target_compile_features(${HWS_LIBRARY_NAME} PUBLIC cxx_std_17)
@@ -170,7 +170,7 @@ endif ()
 ########################################################################################################################
 include(GNUInstallDirs)
 ## install all necessary library targets
-install(TARGETS ${HWS_TARGETS_TO_INSTALL}
+install(TARGETS ${HWS_LIBRARY_NAME}
         EXPORT hws_Targets
         ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"  # all files that are neither executables, shared lib or headers
         LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"  # all shared lib files
@@ -208,5 +208,6 @@ install(EXPORT hws_Targets
 install(FILES
         "${PROJECT_BINARY_DIR}/hwsConfig.cmake"
         "${PROJECT_BINARY_DIR}/hwsConfigVersion.cmake"
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Findlevel_zero.cmake"
         DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/hws/cmake
 )
