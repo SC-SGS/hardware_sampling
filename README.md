@@ -75,7 +75,7 @@ The `[optional_options]` can be one or multiple of:
 - `HWS_SAMPLING_INTERVAL=100ms` (default: `100ms`): set the sampling interval in milliseconds
 - `HWS_ENABLE_PYTHON_BINDINGS=ON|OFF` (default: `ON`): enable Python bindings
 
-### Installing
+### Installing via CMake
 
 The library supports the `install` target:
 
@@ -94,6 +94,17 @@ export PYTHONPATH=${CMAKE_INSTALL_PREFIX}/lib:${CMAKE_INSTALL_PREFIX}/lib64:${PY
 
 **Note:** when using Intel GPUs, the `CMAKE_MODULE_PATH` should be updated to point to our `cmake` directory containing the
 `Findlevel_zero.cmake` file and `export ZES_ENABLE_SYSMAN=1` should be set.
+
+### Installing via pip
+
+The library is also available via pip:
+
+```bash
+pip install hardware-sampling
+```
+
+This pip install behaves **as if** no additional CMake options were provided.
+This means that only the hardware is supported for which the respective vendor libraries was available at the point of the `pip install hardware-sampling` invocation.
 
 ## Available samples
 
@@ -307,7 +318,7 @@ plt.show()
 ```
 
 <p align="center">
-  <img alt="example frequency plot" src=".figures/clock_frequency.png" width="75%">
+  <img alt="example frequency plot" src="https://github.com/SC-SGS/hardware_sampling/raw/main/.figures/clock_frequency.png" width="75%">
 </p>
 
 ## License

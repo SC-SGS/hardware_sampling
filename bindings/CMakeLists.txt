@@ -69,3 +69,8 @@ include(GNUInstallDirs)
 install(TARGETS ${HWS_PYTHON_BINDINGS_LIBRARY_NAME}
         LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"  # all shared lib files
 )
+
+# install the __init__.py file so Python recognizes the package when installed via pip
+install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/__init__.py"
+        DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+)
