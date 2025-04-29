@@ -1,7 +1,7 @@
 var searchData=
 [
-  ['related_20igpu_20samples_0',['gfx-related (iGPU) samples',['../index.html#autotoc_md12',1,'']]],
-  ['related_20samples_1',['related samples',['../index.html#autotoc_md13',1,'&quot;idle states&quot;-related samples'],['../index.html#autotoc_md8',1,'clock-related samples'],['../index.html#autotoc_md10',1,'memory-related samples'],['../index.html#autotoc_md9',1,'power-related samples'],['../index.html#autotoc_md11',1,'temperature-related samples']]],
+  ['related_20igpu_20samples_0',['gfx-related (iGPU) samples',['../index.html#autotoc_md13',1,'']]],
+  ['related_20samples_1',['related samples',['../index.html#autotoc_md14',1,'&quot;idle states&quot;-related samples'],['../index.html#autotoc_md9',1,'clock-related samples'],['../index.html#autotoc_md11',1,'memory-related samples'],['../index.html#autotoc_md10',1,'power-related samples'],['../index.html#autotoc_md12',1,'temperature-related samples']]],
   ['remove_5fcvref_5ft_2',['remove_cvref_t',['../utility_8hpp.html#aa9eb895d245e580405b631640209d7a1',1,'hws::detail']]],
   ['resume_5fsampling_3',['resume_sampling',['../classhws_1_1hardware__sampler.html#ad2414fe56112f73219a28f9484d241cd',1,'hws::hardware_sampler::resume_sampling()'],['../classhws_1_1system__hardware__sampler.html#a4f10552ce2a261efc27d7d7e3ac5c9b8',1,'hws::system_hardware_sampler::resume_sampling()']]],
   ['rocm_5fsmi_5fclock_5fsamples_4',['rocm_smi_clock_samples',['../classhws_1_1rocm__smi__clock__samples.html',1,'hws']]],

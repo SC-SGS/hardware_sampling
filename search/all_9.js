@@ -10,5 +10,5 @@ var searchData=
   ['level_5fzero_5fpower_5fsamples_7',['level_zero_power_samples',['../classhws_1_1level__zero__power__samples.html',1,'hws']]],
   ['level_5fzero_5fsamples_2ehpp_8',['level_zero_samples.hpp',['../level__zero__samples_8hpp.html',1,'']]],
   ['level_5fzero_5ftemperature_5fsamples_9',['level_zero_temperature_samples',['../classhws_1_1level__zero__temperature__samples.html',1,'hws']]],
-  ['license_10',['License',['../index.html#autotoc_md15',1,'']]]
+  ['license_10',['License',['../index.html#autotoc_md16',1,'']]]
 ];

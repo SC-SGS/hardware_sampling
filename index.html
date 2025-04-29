@@ -140,7 +140,7 @@ Optional CMake Options</h3>
 <li><code>HWS_ENABLE_PYTHON_BINDINGS=ON|OFF</code> (default: <code>ON</code>): enable Python bindings</li>
 </ul>
 <h2><a class="anchor" id="autotoc_md5"></a>
-Installing</h2>
+Installing via CMake</h2>
 <p>The library supports the <code>install</code> target:</p>
 <div class="fragment"><div class="line">cmake --install . --prefix &quot;/home/myuser/installdir&quot;</div>
 </div><!-- fragment --><p>Afterward, the necessary exports should be performed:</p>
@@ -149,10 +149,15 @@ Installing</h2>
 <div class="line">export CPLUS_INCLUDE_PATH=${CMAKE_INSTALL_PREFIX}/include:${CPLUS_INCLUDE_PATH}</div>
 <div class="line">export PYTHONPATH=${CMAKE_INSTALL_PREFIX}/lib:${CMAKE_INSTALL_PREFIX}/lib64:${PYTHONPATH}</div>
 </div><!-- fragment --><p><b>Note:</b> when using Intel GPUs, the <code>CMAKE_MODULE_PATH</code> should be updated to point to our <code>cmake</code> directory containing the <code>Findlevel_zero.cmake</code> file and <code>export ZES_ENABLE_SYSMAN=1</code> should be set.</p>
-<h1><a class="anchor" id="autotoc_md6"></a>
+<h2><a class="anchor" id="autotoc_md6"></a>
+Installing via pip</h2>
+<p>The library is also available via pip:</p>
+<div class="fragment"><div class="line">pip install hardware-sampling</div>
+</div><!-- fragment --><p>This pip install behaves <b>as if</b> no additional CMake options were provided. This means that only the hardware is supported for which the respective vendor libraries was available at the point of the <code>pip install hardware-sampling</code> invocation.</p>
+<h1><a class="anchor" id="autotoc_md7"></a>
 Available samples</h1>
 <p>The sampling type <code>fixed</code> denotes samples that are gathered once per hardware samples like maximum clock frequencies or temperatures or the total available memory. The sampling type <code>sampled</code> denotes samples that are gathered during the whole hardware sampling process like the current clock frequencies, temperatures, or memory consumption.</p>
-<h2><a class="anchor" id="autotoc_md7"></a>
+<h2><a class="anchor" id="autotoc_md8"></a>
 General samples</h2>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -204,7 +209,7 @@ General samples</h2>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyLeft">performance_level   </td><td class="markdownTableBodyCenter">sampled   </td><td class="markdownTableBodyCenter">-   </td><td class="markdownTableBodyCenter">int   </td><td class="markdownTableBodyCenter">str   </td><td class="markdownTableBodyCenter">-   </td></tr>
 </table>
-<h2><a class="anchor" id="autotoc_md8"></a>
+<h2><a class="anchor" id="autotoc_md9"></a>
 clock-related samples</h2>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -260,7 +265,7 @@ clock-related samples</h2>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyLeft">memory_frequency_limit_tdp   </td><td class="markdownTableBodyCenter">sampled   </td><td class="markdownTableBodyCenter">-   </td><td class="markdownTableBodyCenter">-   </td><td class="markdownTableBodyCenter">-   </td><td class="markdownTableBodyCenter">MHz   </td></tr>
 </table>
-<h2><a class="anchor" id="autotoc_md9"></a>
+<h2><a class="anchor" id="autotoc_md10"></a>
 power-related samples</h2>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -292,7 +297,7 @@ power_total_energy_consumption isn't available)   </td><td class="markdownTableB
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyLeft">power_profile   </td><td class="markdownTableBodyCenter">sampled   </td><td class="markdownTableBodyCenter">-   </td><td class="markdownTableBodyCenter">int   </td><td class="markdownTableBodyCenter">str   </td><td class="markdownTableBodyCenter">-   </td></tr>
 </table>
-<h2><a class="anchor" id="autotoc_md10"></a>
+<h2><a class="anchor" id="autotoc_md11"></a>
 memory-related samples</h2>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -344,7 +349,7 @@ memory-related samples</h2>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyLeft">pcie_link_transfer_rate   </td><td class="markdownTableBodyCenter">sampled   </td><td class="markdownTableBodyCenter">-   </td><td class="markdownTableBodyCenter">-   </td><td class="markdownTableBodyCenter">T/s   </td><td class="markdownTableBodyCenter">-   </td></tr>
 </table>
-<h2><a class="anchor" id="autotoc_md11"></a>
+<h2><a class="anchor" id="autotoc_md12"></a>
 temperature-related samples</h2>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -410,7 +415,7 @@ temperature-related samples</h2>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyLeft">core_throttle_percent   </td><td class="markdownTableBodyCenter">sampled   </td><td class="markdownTableBodyCenter">%   </td><td class="markdownTableBodyCenter">-   </td><td class="markdownTableBodyCenter">-   </td><td class="markdownTableBodyCenter">-   </td></tr>
 </table>
-<h2><a class="anchor" id="autotoc_md12"></a>
+<h2><a class="anchor" id="autotoc_md13"></a>
 gfx-related (iGPU) samples</h2>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -428,7 +433,7 @@ gfx-related (iGPU) samples</h2>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyLeft">gfx_watt   </td><td class="markdownTableBodyCenter">sampled   </td><td class="markdownTableBodyCenter">W   </td></tr>
 </table>
-<h2><a class="anchor" id="autotoc_md13"></a>
+<h2><a class="anchor" id="autotoc_md14"></a>
 "idle states"-related samples</h2>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -446,7 +451,7 @@ gfx-related (iGPU) samples</h2>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyLeft">package_low_power_idle_state_percent   </td><td class="markdownTableBodyCenter">sampled   </td><td class="markdownTableBodyCenter">%   </td></tr>
 </table>
-<h1><a class="anchor" id="autotoc_md14"></a>
+<h1><a class="anchor" id="autotoc_md15"></a>
 Example Python usage</h1>
 <div class="fragment"><div class="line"><span class="keyword">import</span> HardwareSampling <span class="keyword">as</span> hws</div>
 <div class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</div>
@@ -487,8 +492,8 @@ Example Python usage</h1>
 <div class="line">plt.ylabel(<span class="stringliteral">&quot;clock frequency [MHz]&quot;</span>)</div>
 <div class="line">plt.legend()</div>
 <div class="line">plt.show()</div>
-</div><!-- fragment --><p><img src=".figures/clock_frequency.png" alt="example frequency plot" width="75%" class="inline"/> </p>
-<h1><a class="anchor" id="autotoc_md15"></a>
+</div><!-- fragment --><p><img src="https://github.com/SC-SGS/hardware_sampling/raw/main/.figures/clock_frequency.png" alt="example frequency plot" width="75%" class="inline"/> </p>
+<h1><a class="anchor" id="autotoc_md16"></a>
 License</h1>
 <p>The hws library is distributed under the <a href="https://github.com/SC-SGS/hardware_sampling/blob/main/LICENSE.md">MIT license</a>. </p>
 </div></div><!-- PageDoc -->
