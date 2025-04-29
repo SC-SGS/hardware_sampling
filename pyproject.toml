@@ -15,7 +15,7 @@ sdist.exclude = ["build*/", "dist/", "docs/html/", ".github", "examples", "insta
 # project specific metadata
 [project]
 name = "hardware_sampling"
-version = "1.1.0"
+version = "1.1.1"
 description = "hws - Hardware Sampling for GPUs and CPUs (e.g., clock frequencies, memory consumption, temperatures, or energy draw)"
 readme = "README.md"
 license = { file = "LICENSE" }
