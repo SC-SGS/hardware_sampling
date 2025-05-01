@@ -382,6 +382,19 @@ void cpu_hardware_sampler::sampling_loop() {
     }
 #endif
 
+#if defined(HWS_VIA_INTEL_RAPL_ENABLED)
+    decltype(power_samples_.power_total_energy_consumption_)::value_type::value_type initial_total_power_consumption{};
+    std::string intel_rapl_line{};
+    std::ifstream intel_rapl_file{};
+
+    intel_rapl_file.open(HWS_INTEL_RAPL_FILE);
+    if (std::getline(intel_rapl_file, intel_rapl_line)) {
+        initial_total_power_consumption = detail::convert_to<decltype(initial_total_power_consumption)>(intel_rapl_line) / 1000.0 / 1000.0;
+        power_samples_.power_total_energy_consumption_ = decltype(power_samples_.power_total_energy_consumption_)::value_type{ 0.0 };
+    }
+    intel_rapl_file.close();
+#endif
+
     //
     // loop until stop_sampling() is called
     //
@@ -629,6 +642,15 @@ void cpu_hardware_sampler::sampling_loop() {
             }
 #endif
         }
+
+#if defined(HWS_VIA_INTEL_RAPL_ENABLED)
+        if (power_samples_.power_total_energy_consumption_.has_value()) {
+            intel_rapl_file.open(HWS_INTEL_RAPL_FILE);
+            std::getline(intel_rapl_file, intel_rapl_line);
+            power_samples_.power_total_energy_consumption_->push_back((detail::convert_to<decltype(power_samples_.power_total_energy_consumption_)::value_type::value_type>(intel_rapl_line) / 1000.0 / 1000.0) - initial_total_power_consumption);
+            intel_rapl_file.close();
+        }
+#endif
 
         // wait for the sampling interval to pass to retrieve the next sample
         std::this_thread::sleep_for(this->sampling_interval());
