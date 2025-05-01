@@ -64,8 +64,31 @@ if (HWS_TURBOSTAT_FOUND)
     endif ()
 endif ()
 
+# check if turbostat could be found -> use Intel RAPL ONLY if this wasn't the case
+if (NOT HWS_TURBOSTAT_EXECUTION_TYPE)
+    # turbostat couldn't be found -> try using Intel RAPL directly for energy information
+    # check if Intel RAPL is available
+    set(HWS_INTEL_RAPL_INTERFACE_DIR "/sys/class/powercap/intel-rapl/intel-rapl:0")
+    if (EXISTS "${HWS_INTEL_RAPL_INTERFACE_DIR}")
+        message(STATUS "Found Intel RAPL interface under \"${HWS_INTEL_RAPL_INTERFACE_DIR}\".")
+        ## check if the the Intel RAPL energy file is readable without root
+        execute_process(COMMAND cat ${HWS_INTEL_RAPL_INTERFACE_DIR}/energy_uj
+                RESULT_VARIABLE HWS_RAPL_WITHOUT_ROOT
+                OUTPUT_QUIET
+                ERROR_QUIET)
+        if (HWS_RAPL_WITHOUT_ROOT EQUAL 0)
+            message(STATUS "Enable sampling of CPU energy-related information using Intel's RAPL interface.")
+            target_compile_definitions(${HWS_LIBRARY_NAME} PUBLIC HWS_VIA_INTEL_RAPL_ENABLED)
+            target_compile_definitions(${HWS_LIBRARY_NAME} PRIVATE HWS_INTEL_RAPL_FILE="${HWS_INTEL_RAPL_INTERFACE_DIR}/energy_uj")
+        else ()
+            message(STATUS "Can't read Intel RAPL data without root permissions.")
+            message(STATUS "Disabling Intel RAPL support!")
+        endif ()
+    endif ()
+endif ()
+
 # check of any CPU related utility could be found
-if (NOT (HWS_LSCPU_FOUND OR HWS_FREE_FOUND OR HWS_TURBOSTAT_EXECUTION_TYPE))
+if (NOT (HWS_LSCPU_FOUND OR HWS_FREE_FOUND OR HWS_TURBOSTAT_EXECUTION_TYPE OR HWS_RAPL_WITHOUT_ROOT EQUAL 0))
     if (HWS_ENABLE_CPU_SAMPLING MATCHES "ON")
         message(SEND_ERROR "Cannot find any CPU utility program but CPU sampling was explicitly requested!")
     else ()
