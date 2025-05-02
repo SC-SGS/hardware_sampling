@@ -58,6 +58,8 @@ std::string run_subprocess(const std::string_view cmd_line) {
     return buffer.substr(0, bytes_read);
 }
 
+#if defined(HWS_VIA_INTEL_RAPL_ENABLED)
+
 std::optional<std::string> get_intel_rapl_reading() {
     std::ifstream intel_rapl_file{ HWS_INTEL_RAPL_FILE };
     std::string intel_rapl_line{};
@@ -68,5 +70,7 @@ std::optional<std::string> get_intel_rapl_reading() {
         return std::nullopt;
     }
 }
+
+#endif
 
 }  // namespace hws::detail

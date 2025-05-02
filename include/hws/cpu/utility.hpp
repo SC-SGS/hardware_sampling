@@ -45,11 +45,15 @@ namespace hws::detail {
  */
 [[nodiscard]] std::string run_subprocess(std::string_view cmd_line);
 
+#if defined(HWS_VIA_INTEL_RAPL_ENABLED)
+
 /**
  * @brief Return the Intel RAPL power measurement read from the Intel RAPL interface.
  * @return the power measurement as string (`[[nodiscard]]`)
  */
 [[nodiscard]] std::optional<std::string> get_intel_rapl_reading();
+
+#endif
 
 }  // namespace hws::detail
 
