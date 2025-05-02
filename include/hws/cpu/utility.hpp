@@ -14,6 +14,7 @@
 
 #include "fmt/format.h"  // fmt::format
 
+#include <optional>     // std::optional
 #include <stdexcept>    // std::runtime_error
 #include <string>       // std::string
 #include <string_view>  // std::string_view
@@ -43,6 +44,12 @@ namespace hws::detail {
  * @return the stdout and stderr content encountered during executing @p cmd_line (`[[nodiscard]]`)
  */
 [[nodiscard]] std::string run_subprocess(std::string_view cmd_line);
+
+/**
+ * @brief Return the Intel RAPL power measurement read from the Intel RAPL interface.
+ * @return the power measurement as string (`[[nodiscard]]`)
+ */
+[[nodiscard]] std::optional<std::string> get_intel_rapl_reading();
 
 }  // namespace hws::detail
 

@@ -15,6 +15,8 @@
 #include <algorithm>    // std::transform
 #include <cstddef>      // std::size_t
 #include <cstdio>       // std::FILE, std::fread
+#include <fstream>      // std::ifstream
+#include <optional>     // std::optional, std::make_optional
 #include <stdexcept>    // std::runtime_error
 #include <string>       // std::string
 #include <string_view>  // std::string_view
@@ -54,6 +56,17 @@ std::string run_subprocess(const std::string_view cmd_line) {
 
     // create output
     return buffer.substr(0, bytes_read);
+}
+
+std::optional<std::string> get_intel_rapl_reading() {
+    std::ifstream intel_rapl_file{ HWS_INTEL_RAPL_FILE };
+    std::string intel_rapl_line{};
+
+    if (std::getline(intel_rapl_file, intel_rapl_line)) {
+        return std::make_optional(intel_rapl_line);
+    } else {
+        return std::nullopt;
+    }
 }
 
 }  // namespace hws::detail

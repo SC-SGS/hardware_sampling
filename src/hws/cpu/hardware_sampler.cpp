@@ -384,15 +384,12 @@ void cpu_hardware_sampler::sampling_loop() {
 
 #if defined(HWS_VIA_INTEL_RAPL_ENABLED)
     decltype(power_samples_.power_total_energy_consumption_)::value_type::value_type initial_total_power_consumption{};
-    std::string intel_rapl_line{};
-    std::ifstream intel_rapl_file{};
 
-    intel_rapl_file.open(HWS_INTEL_RAPL_FILE);
-    if (std::getline(intel_rapl_file, intel_rapl_line)) {
-        initial_total_power_consumption = detail::convert_to<decltype(initial_total_power_consumption)>(intel_rapl_line) / 1000.0 / 1000.0;
+    if (const auto intel_rapl_reading = detail::get_intel_rapl_reading(); intel_rapl_reading.has_value()) {
+        // convert Intel RAPL reading to Joule
+        initial_total_power_consumption = detail::convert_to<decltype(initial_total_power_consumption)>(intel_rapl_reading.value()) / 1000.0 / 1000.0;
         power_samples_.power_total_energy_consumption_ = decltype(power_samples_.power_total_energy_consumption_)::value_type{ 0.0 };
     }
-    intel_rapl_file.close();
 #endif
 
     //
@@ -645,10 +642,10 @@ void cpu_hardware_sampler::sampling_loop() {
 
 #if defined(HWS_VIA_INTEL_RAPL_ENABLED)
         if (power_samples_.power_total_energy_consumption_.has_value()) {
-            intel_rapl_file.open(HWS_INTEL_RAPL_FILE);
-            std::getline(intel_rapl_file, intel_rapl_line);
-            power_samples_.power_total_energy_consumption_->push_back((detail::convert_to<decltype(power_samples_.power_total_energy_consumption_)::value_type::value_type>(intel_rapl_line) / 1000.0 / 1000.0) - initial_total_power_consumption);
-            intel_rapl_file.close();
+            if (const auto intel_rapl_reading = detail::get_intel_rapl_reading(); intel_rapl_reading.has_value()) {
+                const auto current_accumulated_power_consumption = detail::convert_to<decltype(power_samples_.power_total_energy_consumption_)::value_type::value_type>(intel_rapl_reading.value()) / 1000.0 / 1000.0;
+                power_samples_.power_total_energy_consumption_->push_back(current_accumulated_power_consumption - initial_total_power_consumption);
+            }
         }
 #endif
 
