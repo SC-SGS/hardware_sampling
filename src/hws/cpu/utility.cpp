@@ -60,8 +60,8 @@ std::string run_subprocess(const std::string_view cmd_line) {
 
 #if defined(HWS_VIA_INTEL_RAPL_ENABLED)
 
-std::optional<std::string> get_intel_rapl_reading() {
-    std::ifstream intel_rapl_file{ HWS_INTEL_RAPL_FILE };
+std::optional<std::string> get_intel_rapl_reading(const std::string_view file) {
+    std::ifstream intel_rapl_file{ fmt::format("{}/{}", HWS_INTEL_RAPL_DIRECTORY, file) };
     std::string intel_rapl_line{};
 
     if (std::getline(intel_rapl_file, intel_rapl_line)) {

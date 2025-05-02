@@ -391,6 +391,14 @@ void cpu_hardware_sampler::sampling_loop() {
         power_samples_.power_total_energy_consumption_ = decltype(power_samples_.power_total_energy_consumption_)::value_type{ 0.0 };
         power_samples_.power_usage_ = decltype(power_samples_.power_total_energy_consumption_)::value_type{ 0.0 };
     }
+
+    // the maximum energy value -> necessary for potential wrap-around
+    decltype(power_samples_.power_total_energy_consumption_)::value_type::value_type max_energy_range{};
+
+    // initialize maximum value
+    if (const auto intel_rapl_reading = detail::get_intel_rapl_reading("max_energy_range_uj"); intel_rapl_reading.has_value()) {
+        max_energy_range = detail::convert_to<decltype(max_energy_range)>(intel_rapl_reading.value()) / 1000.0 / 1000.0;
+    }
 #endif
 
     //
@@ -646,13 +654,23 @@ void cpu_hardware_sampler::sampling_loop() {
             if (const auto intel_rapl_reading = detail::get_intel_rapl_reading(); intel_rapl_reading.has_value()) {
                 const auto power_consumption = detail::convert_to<decltype(power_samples_.power_total_energy_consumption_)::value_type::value_type>(intel_rapl_reading.value()) / 1000.0 / 1000.0;
 
+                // handle potential Intel RAPL wrap around
+                decltype(power_samples_.power_total_energy_consumption_)::value_type::value_type power_delta{};
+                if (power_consumption < initial_total_power_consumption) {
+                    // a wrap around occurred!
+                    power_delta = (max_energy_range - initial_total_power_consumption) + power_consumption;
+                } else {
+                    // no wrap around -> can use simple subtraction
+                    power_delta = power_consumption - initial_total_power_consumption;
+                }
+
                 // calculate current power draw as (Energy Difference [J]) / (Time Difference [s])
                 const std::size_t last_index = this->sampling_time_points().size() - 1;
-                const double power_usage = ((power_consumption - initial_total_power_consumption) - power_samples_.power_total_energy_consumption_->back()) / (std::chrono::duration<double>(this->sampling_time_points()[last_index] - this->sampling_time_points()[last_index - 1]).count());
+                const double power_usage = (power_delta - power_samples_.power_total_energy_consumption_->back()) / (std::chrono::duration<double>(this->sampling_time_points()[last_index] - this->sampling_time_points()[last_index - 1]).count());
                 power_samples_.power_usage_->push_back(power_usage);
 
                 // add power consumption last to be able to use the std::vector::back() function
-                power_samples_.power_total_energy_consumption_->push_back(power_consumption - initial_total_power_consumption);
+                power_samples_.power_total_energy_consumption_->push_back(power_delta);
             }
         }
 #endif

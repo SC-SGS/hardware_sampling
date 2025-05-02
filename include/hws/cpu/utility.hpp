@@ -51,7 +51,7 @@ namespace hws::detail {
  * @brief Return the Intel RAPL power measurement read from the Intel RAPL interface.
  * @return the power measurement as string (`[[nodiscard]]`)
  */
-[[nodiscard]] std::optional<std::string> get_intel_rapl_reading();
+[[nodiscard]] std::optional<std::string> get_intel_rapl_reading(std::string_view file = "energy_uj");
 
 #endif
 
