@@ -389,6 +389,7 @@ void cpu_hardware_sampler::sampling_loop() {
         // convert Intel RAPL reading to Joule
         initial_total_power_consumption = detail::convert_to<decltype(initial_total_power_consumption)>(intel_rapl_reading.value()) / 1000.0 / 1000.0;
         power_samples_.power_total_energy_consumption_ = decltype(power_samples_.power_total_energy_consumption_)::value_type{ 0.0 };
+        power_samples_.power_usage_ = decltype(power_samples_.power_total_energy_consumption_)::value_type{ 0.0 };
     }
 #endif
 
@@ -643,8 +644,15 @@ void cpu_hardware_sampler::sampling_loop() {
 #if defined(HWS_VIA_INTEL_RAPL_ENABLED)
         if (power_samples_.power_total_energy_consumption_.has_value()) {
             if (const auto intel_rapl_reading = detail::get_intel_rapl_reading(); intel_rapl_reading.has_value()) {
-                const auto current_accumulated_power_consumption = detail::convert_to<decltype(power_samples_.power_total_energy_consumption_)::value_type::value_type>(intel_rapl_reading.value()) / 1000.0 / 1000.0;
-                power_samples_.power_total_energy_consumption_->push_back(current_accumulated_power_consumption - initial_total_power_consumption);
+                const auto power_consumption = detail::convert_to<decltype(power_samples_.power_total_energy_consumption_)::value_type::value_type>(intel_rapl_reading.value()) / 1000.0 / 1000.0;
+
+                // calculate current power draw as (Energy Difference [J]) / (Time Difference [s])
+                const std::size_t last_index = this->sampling_time_points().size() - 1;
+                const double power_usage = ((power_consumption - initial_total_power_consumption) - power_samples_.power_total_energy_consumption_->back()) / (std::chrono::duration<double>(this->sampling_time_points()[last_index] - this->sampling_time_points()[last_index - 1]).count());
+                power_samples_.power_usage_->push_back(power_usage);
+
+                // add power consumption last to be able to use the std::vector::back() function
+                power_samples_.power_total_energy_consumption_->push_back(power_consumption - initial_total_power_consumption);
             }
         }
 #endif
