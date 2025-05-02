@@ -281,7 +281,7 @@ void gpu_intel_hardware_sampler::sampling_loop() {
                     if (zesPowerGetEnergyCounter(power_handles.front(), &energy_counter) == ZE_RESULT_SUCCESS) {
                         initial_total_power_consumption = static_cast<decltype(power_samples_.power_total_energy_consumption_)::value_type::value_type>(energy_counter.energy) / 1000.0 / 1000.0;
                         power_samples_.power_total_energy_consumption_ = decltype(power_samples_.power_total_energy_consumption_)::value_type{ 0.0 };
-                        power_samples_.power_usage_ = decltype(power_samples_.power_total_energy_consumption_)::value_type{ 0.0 };
+                        power_samples_.power_usage_ = decltype(power_samples_.power_usage_)::value_type{ 0.0 };
                     }
 
                     // get energy thresholds
