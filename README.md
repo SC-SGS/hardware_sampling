@@ -19,7 +19,8 @@ General dependencies:
 Dependencies based on the hardware to sample:
 
 - if a CPU should be targeted: at least one of [`turbostat`](https://www.linux.org/docs/man8/turbostat.html) (may
-  require root privileges), [`lscpu`](https://man7.org/linux/man-pages/man1/lscpu.1.html), or [
+  require root privileges), Intel RAPL (may require root privileges for reading; only used if turbostat is not
+  usable), [`lscpu`](https://man7.org/linux/man-pages/man1/lscpu.1.html), or [
   `free`](https://man7.org/linux/man-pages/man1/free.1.html) and the [
   `subprocess.h`](https://github.com/sheredom/subprocess.h) library (automatically build during the CMake configuration
   if it couldn't be found using the respective `find_package` call)
@@ -51,24 +52,24 @@ cmake --build . -j
 The `[optional_options]` can be one or multiple of:
 
 - `HWS_ENABLE_CPU_SAMPLING=ON|OFF|AUTO` (default: `AUTO`):
-  - `ON`: check whether CPU information can be sampled and fail if this is not the case
-  - `AUTO`: check whether CPU information can be sampled but **do not** fail if this is not the case
-  - `OFF`: do not check whether CPU information can be sampled
+    - `ON`: check whether CPU information can be sampled and fail if this is not the case
+    - `AUTO`: check whether CPU information can be sampled but **do not** fail if this is not the case
+    - `OFF`: do not check whether CPU information can be sampled
 
 - `HWS_ENABLE_GPU_NVIDIA_SAMPLING=ON|OFF|AUTO` (default: `AUTO`):
-  - `ON`: check whether NVIDIA GPU information can be sampled and fail if this is not the case
-  - `AUTO`: check whether NVIDIA GPU information can be sampled but **do not** fail if this is not the case
-  - `OFF`: do not check whether NVIDIA GPU information can be sampled
+    - `ON`: check whether NVIDIA GPU information can be sampled and fail if this is not the case
+    - `AUTO`: check whether NVIDIA GPU information can be sampled but **do not** fail if this is not the case
+    - `OFF`: do not check whether NVIDIA GPU information can be sampled
 
 - `HWS_ENABLE_GPU_AMD_SAMPLING=ON|OFF|AUTO` (default: `AUTO`):
-  - `ON`: check whether AMD GPU information can be sampled and fail if this is not the case
-  - `AUTO`: check whether AMD GPU information can be sampled but **do not** fail if this is not the case
-  - `OFF`: do not check whether AMD GPU information can be sampled
+    - `ON`: check whether AMD GPU information can be sampled and fail if this is not the case
+    - `AUTO`: check whether AMD GPU information can be sampled but **do not** fail if this is not the case
+    - `OFF`: do not check whether AMD GPU information can be sampled
 
 - `HWS_ENABLE_GPU_INTEL_SAMPLING=ON|OFF|AUTO` (default: `AUTO`):
-  - `ON`: check whether Intel GPU information can be sampled and fail if this is not the case
-  - `AUTO`: check whether Intel GPU information can be sampled but **do not** fail if this is not the case
-  - `OFF`: do not check whether Intel GPU information can be sampled
+    - `ON`: check whether Intel GPU information can be sampled and fail if this is not the case
+    - `AUTO`: check whether Intel GPU information can be sampled but **do not** fail if this is not the case
+    - `OFF`: do not check whether Intel GPU information can be sampled
 
 - `HWS_ENABLE_ERROR_CHECKS=ON|OFF` (default: `OFF`): enable sanity checks during hardware sampling, may be problematic
   with smaller sample intervals
@@ -92,7 +93,8 @@ export CPLUS_INCLUDE_PATH=${CMAKE_INSTALL_PREFIX}/include:${CPLUS_INCLUDE_PATH}
 export PYTHONPATH=${CMAKE_INSTALL_PREFIX}/lib:${CMAKE_INSTALL_PREFIX}/lib64:${PYTHONPATH}
 ```
 
-**Note:** when using Intel GPUs, the `CMAKE_MODULE_PATH` should be updated to point to our `cmake` directory containing the
+**Note:** when using Intel GPUs, the `CMAKE_MODULE_PATH` should be updated to point to our `cmake` directory containing
+the
 `Findlevel_zero.cmake` file and `export ZES_ENABLE_SYSMAN=1` should be set.
 
 ### Installing via pip
@@ -104,7 +106,8 @@ pip install hardware-sampling
 ```
 
 This pip install behaves **as if** no additional CMake options were provided.
-This means that only the hardware is supported for which the respective vendor libraries was available at the point of the `pip install hardware-sampling` invocation.
+This means that only the hardware is supported for which the respective vendor libraries was available at the point of
+the `pip install hardware-sampling` invocation.
 
 ## Available samples
 
@@ -173,20 +176,20 @@ current clock frequencies, temperatures, or memory consumption.
 
 ### power-related samples
 
-| sample                         | sample type |               CPUs                | NVIDIA GPUs |                                        AMD GPUs                                        |                      Intel GPUs                      |
-|:-------------------------------|:-----------:|:---------------------------------:|:-----------:|:--------------------------------------------------------------------------------------:|:----------------------------------------------------:|
-| power_management_limit         |    fixed    |                 -                 |      W      |                                           W                                            |                          -                           |
-| power_enforced_limit           |    fixed    |                 -                 |      W      |                                           W                                            |                          W                           |
-| power_measurement_type         |    fixed    |             str (fix)             |     str     |                                          str                                           |                         str                          |
-| power_management_mode          |    fixed    |                 -                 |    bool     |                                           -                                            |                         bool                         |
-| available_power_profiles       |    fixed    |                 -                 | list of int |                                      list of str                                       |                          -                           |
-| power_usage                    |   sampled   |                 W                 |      W      |                                           W                                            | W<br>(calculated via power_total_energy_consumption) |
-| core_watt                      |   sampled   |                 W                 |      -      |                                           -                                            |                          -                           |
-| dram_watt                      |   sampled   |                 W                 |      -      |                                           -                                            |                          -                           |
-| package_rapl_throttling        |   sampled   |                 %                 |      -      |                                           -                                            |                          -                           |
-| dram_rapl_throttling           |   sampled   |                 %                 |      -      |                                           -                                            |                          -                           |
-| power_total_energy_consumption |   sampled   | J<br>(calculated via power_usage) |      J      | J<br>(calculated via power_usage if<br>power_total_energy_consumption isn't available) |                          J                           |
-| power_profile                  |   sampled   |                 -                 |     int     |                                          str                                           |                          -                           |
+| sample                         | sample type |                                              CPUs                                              | NVIDIA GPUs |                                        AMD GPUs                                        |                      Intel GPUs                      |
+|:-------------------------------|:-----------:|:----------------------------------------------------------------------------------------------:|:-----------:|:--------------------------------------------------------------------------------------:|:----------------------------------------------------:|
+| power_management_limit         |    fixed    |                                               -                                                |      W      |                                           W                                            |                          -                           |
+| power_enforced_limit           |    fixed    |                                               -                                                |      W      |                                           W                                            |                          W                           |
+| power_measurement_type         |    fixed    |                                           str (fix)                                            |     str     |                                          str                                           |                         str                          |
+| power_management_mode          |    fixed    |                                               -                                                |    bool     |                                           -                                            |                         bool                         |
+| available_power_profiles       |    fixed    |                                               -                                                | list of int |                                      list of str                                       |                          -                           |
+| power_usage                    |   sampled   | W<br>(turbostat: direct reading;<br>Intel RAPL: calculated via power_total_energy_consumption) |      W      |                                           W                                            | W<br>(calculated via power_total_energy_consumption) |
+| core_watt                      |   sampled   |                                               W                                                |      -      |                                           -                                            |                          -                           |
+| dram_watt                      |   sampled   |                                               W                                                |      -      |                                           -                                            |                          -                           |
+| package_rapl_throttling        |   sampled   |                                               %                                                |      -      |                                           -                                            |                          -                           |
+| dram_rapl_throttling           |   sampled   |                                               %                                                |      -      |                                           -                                            |                          -                           |
+| power_total_energy_consumption |   sampled   |          J<br>(turbostat: calculated via power_usage;<br>Intel RAPL: direct reading)           |      J      | J<br>(calculated via power_usage if<br>power_total_energy_consumption isn't available) |                          J                           |
+| power_profile                  |   sampled   |                                               -                                                |     int     |                                          str                                           |                          -                           |
 
 ### memory-related samples
 
