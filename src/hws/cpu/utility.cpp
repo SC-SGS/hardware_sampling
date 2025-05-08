@@ -24,7 +24,7 @@ namespace hws::detail {
 
 std::string run_subprocess(const std::string_view cmd_line) {
     // search PATH for executable
-    constexpr int options = subprocess_option_e::subprocess_option_search_user_path | subprocess_option_e::subprocess_option_combined_stdout_stderr;
+    constexpr int options = subprocess_option_e::subprocess_option_search_user_path;
     constexpr static std::string::size_type buffer_size = 4096;
 
     // extract the separate command line arguments
