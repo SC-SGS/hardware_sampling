@@ -27,40 +27,43 @@ endif ()
 find_program(HWS_TURBOSTAT_FOUND turbostat)
 if (HWS_TURBOSTAT_FOUND)
     ## check if the turbostat command works as intended
-    execute_process(COMMAND turbostat -n 1 -S -q
-            RESULT_VARIABLE HWS_TURBOSTAT_WITHOUT_ROOT
+    execute_process(COMMAND sudo -n turbostat -n 1 -i 0.001 -S -q
+            RESULT_VARIABLE HWS_TURBOSTAT_WITH_ROOT_N
             OUTPUT_QUIET
             ERROR_QUIET)
-    if (NOT HWS_TURBOSTAT_WITHOUT_ROOT EQUAL 0)
-        message(STATUS "Can't use turbostat without root permissions! Try using with sudo...")
-        execute_process(COMMAND sudo -n turbostat -n 1 -i 0.001 -S -q
-                RESULT_VARIABLE HWS_TURBOSTAT_ROOT_PASSWORD_REQUIRED
+    if (HWS_TURBOSTAT_WITH_ROOT_N EQUAL 0)
+        ## can execute with root
+        execute_process(COMMAND sudo turbostat -n 1 -i 0.001 -S -q
+                RESULT_VARIABLE HWS_TURBOSTAT_WITH_ROOT
                 OUTPUT_QUIET
                 ERROR_QUIET)
-        if (NOT HWS_TURBOSTAT_ROOT_PASSWORD_REQUIRED EQUAL 0)
-            message(STATUS "Can't use turbostat with root if a sudo password is required! Please add turbostat to the sudoer group.")
-            message(STATUS "Disabling turbostat support!")
-        else ()
-            execute_process(COMMAND sudo turbostat -n 1 -i 0.001 -S -q
-                    RESULT_VARIABLE HWS_TURBOSTAT_WITH_ROOT
-                    OUTPUT_QUIET
-                    ERROR_QUIET)
-            if (NOT HWS_TURBOSTAT_WITH_ROOT EQUAL 0)
-                message(STATUS "Can't use turbostat with root even if no sudo password is required!")
-                message(STATUS "Disabling turbostat support!")
-            else ()
-                message(STATUS "Enable sampling of CPU information using turbostat.")
+        if (HWS_TURBOSTAT_WITH_ROOT EQUAL 0)
+            message(STATUS "Enable sampling of CPU information using turbostat with root privileges.")
 
-                set(HWS_TURBOSTAT_EXECUTION_TYPE "root")
-                # add compile definitions
-                target_compile_definitions(${HWS_LIBRARY_NAME} PUBLIC HWS_VIA_TURBOSTAT_ENABLED)
-                target_compile_definitions(${HWS_LIBRARY_NAME} PUBLIC HWS_VIA_TURBOSTAT_ROOT)
-            endif ()
+            set(HWS_TURBOSTAT_EXECUTION_TYPE "root")
+            # add compile definitions
+            target_compile_definitions(${HWS_LIBRARY_NAME} PUBLIC HWS_VIA_TURBOSTAT_ENABLED)
+            target_compile_definitions(${HWS_LIBRARY_NAME} PUBLIC HWS_VIA_TURBOSTAT_ROOT)
+        else ()
+            message(STATUS "Can't use turbostat even with root privileges!")
+            message(STATUS "Disabling turbostat support!")
         endif ()
     else ()
-        set(HWS_TURBOSTAT_EXECUTION_TYPE "without_root")
-        # add compile definitions
-        target_compile_definitions(${HWS_LIBRARY_NAME} PUBLIC HWS_VIA_TURBOSTAT_ENABLED)
+        ## check if turbostat can be executed without root -> potential less data
+        execute_process(COMMAND turbostat -n 1 -i 0.001 -S -q
+                RESULT_VARIABLE HWS_TURBOSTAT_WITHOUT_ROOT
+                OUTPUT_QUIET
+                ERROR_QUIET)
+        if (HWS_TURBOSTAT_WITHOUT_ROOT EQUAL 0)
+            message(STATUS "Enable sampling of CPU information using turbostat without root privileges.")
+
+            set(HWS_TURBOSTAT_EXECUTION_TYPE "without_root")
+            # add compile definitions
+            target_compile_definitions(${HWS_LIBRARY_NAME} PUBLIC HWS_VIA_TURBOSTAT_ENABLED)
+        else ()
+            message(STATUS "Can't use turbostat (with or without root privileges)!")
+            message(STATUS "Disabling turbostat support!")
+        endif ()
     endif ()
 endif ()
 
