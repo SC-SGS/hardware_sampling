@@ -288,7 +288,7 @@ std::ostream &operator<<(std::ostream &out, const nvml_clock_samples &samples) {
 bool nvml_power_samples::has_samples() const {
     return this->power_management_limit_.has_value() || this->power_enforced_limit_.has_value() || this->power_measurement_type_.has_value()
            || this->power_management_mode_.has_value() || this->available_power_profiles_.has_value() || this->power_usage_.has_value()
-           || this->power_total_energy_consumption_.has_value() || this->power_profile_.has_value();
+           || this->power_total_energy_consumption_.has_value() || this->power_profile_.has_value() || this->system_power_usage_.has_value();
 }
 
 std::string nvml_power_samples::generate_yaml_string() const {
@@ -356,6 +356,13 @@ std::string nvml_power_samples::generate_yaml_string() const {
                            "    values: [{}]\n",
                            fmt::join(this->power_profile_.value(), ", "));
     }
+    // current system power usage
+    if (this->system_power_usage_.has_value()) {
+        str += fmt::format("  system_power_usage:\n"
+                           "    unit: \"W\"\n"
+                           "    values: [{}]\n",
+                           fmt::join(this->system_power_usage_.value(), ", "));
+    }
 
     return str;
 }
@@ -368,7 +375,8 @@ std::ostream &operator<<(std::ostream &out, const nvml_power_samples &samples) {
                               "available_power_profiles [int]: [{}]\n"
                               "power_usage [W]: [{}]\n"
                               "power_total_energy_consumption [J]: [{}]"
-                              "power_profile [int]: [{}]\n",
+                              "power_profile [int]: [{}]\n"
+                              "system_power_usage [W]: [{}]\n",
                               detail::value_or_default(samples.get_power_management_limit()),
                               detail::value_or_default(samples.get_power_enforced_limit()),
                               detail::value_or_default(samples.get_power_measurement_type()),
@@ -376,7 +384,8 @@ std::ostream &operator<<(std::ostream &out, const nvml_power_samples &samples) {
                               fmt::join(detail::value_or_default(samples.get_available_power_profiles()), ", "),
                               fmt::join(detail::value_or_default(samples.get_power_usage()), ", "),
                               fmt::join(detail::value_or_default(samples.get_power_total_energy_consumption()), ", "),
-                              fmt::join(detail::value_or_default(samples.get_power_profile()), ", "));
+                              fmt::join(detail::value_or_default(samples.get_power_profile()), ", "),
+                              fmt::join(detail::value_or_default(samples.get_system_power_usage()), ", "));
 }
 
 //*************************************************************************************************************************************//

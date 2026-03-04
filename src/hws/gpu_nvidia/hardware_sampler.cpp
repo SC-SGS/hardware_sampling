@@ -336,6 +336,13 @@ void gpu_nvidia_hardware_sampler::sampling_loop() {
         if (nvmlDeviceGetPowerState(device, &pstate) == NVML_SUCCESS) {
             power_samples_.power_profile_ = decltype(power_samples_.power_profile_)::value_type{ static_cast<decltype(power_samples_.power_profile_)::value_type::value_type>(pstate) };
         }
+
+        nvmlFieldValue_t system_power{};
+        system_power.fieldId = NVML_FI_DEV_POWER_AVERAGE;
+        system_power.scopeId = 1;
+        if (nvmlDeviceGetFieldValues(device, 1, &system_power) == NVML_SUCCESS) {
+            power_samples_.system_power_usage_ = decltype(power_samples_.system_power_usage_)::value_type{ static_cast<decltype(power_samples_.system_power_usage_)::value_type::value_type>(system_power.value.uiVal) / 1000.0 };
+        }
     }
 
     // retrieve initial memory related information
@@ -495,6 +502,14 @@ void gpu_nvidia_hardware_sampler::sampling_loop() {
                     unsigned int value{};
                     HWS_NVML_ERROR_CHECK(nvmlDeviceGetPowerUsage(device, &value))
                     power_samples_.power_usage_->push_back(static_cast<decltype(power_samples_.power_usage_)::value_type::value_type>(value) / 1000.0);
+                }
+
+                if (power_samples_.system_power_usage_.has_value()) {
+                    nvmlFieldValue_t system_power{};
+                    system_power.fieldId = NVML_FI_DEV_POWER_AVERAGE;  // 185
+                    system_power.scopeId = 1;                          // scope for full module, not just GPU
+                    HWS_NVML_ERROR_CHECK(nvmlDeviceGetFieldValues(device, 1, &system_power))
+                    power_samples_.system_power_usage_->push_back(static_cast<decltype(power_samples_.system_power_usage_)::value_type::value_type>(system_power.value.uiVal) / 1000.0);
                 }
 
                 if (power_samples_.power_total_energy_consumption_.has_value()) {

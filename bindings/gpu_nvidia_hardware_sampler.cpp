@@ -67,6 +67,7 @@ void init_gpu_nvidia_hardware_sampler(py::module_ &m) {
         .def("get_power_management_mode", &hws::nvml_power_samples::get_power_management_mode, "true if power management algorithms are supported and active")
         .def("get_available_power_profiles", &hws::nvml_power_samples::get_available_power_profiles, "a list of the available power profiles")
         .def("get_power_usage", &hws::nvml_power_samples::get_power_usage, "the current power draw of the GPU and its related circuity (e.g., memory) in mW")
+        .def("get_system_power_usage", &hws::nvml_power_samples::get_system_power_usage, "the current power draw of the GPU+CPU module and its related circuity (e.g., memory) in mW")
         .def("get_power_total_energy_consumption", &hws::nvml_power_samples::get_power_total_energy_consumption, "the total power consumption since the last driver reload in mJ")
         .def("get_power_profile", &hws::nvml_power_samples::get_power_profile, "the current GPU power state: 0 - 15 where 0 is the maximum power and 15 the minimum power")
         .def("__repr__", [](const hws::nvml_power_samples &self) {

@@ -158,6 +158,7 @@ class nvml_power_samples {
     HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, power_usage)                     // the current power draw of the GPU and its related circuity (e.g., memory) in W
     HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, power_total_energy_consumption)  // the total power consumption since the last driver reload in J
     HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(int, power_profile)                      // the current GPU power state: 0 - 15 where 0 is the maximum power and 15 the minimum power; 32 indicates unknown
+    HWS_SAMPLE_STRUCT_SAMPLING_MEMBER(double, system_power_usage)                      // total system power for module based NVIDIA systems like GH200; includes all chips on a module (e.g. CPU+GPU or CPU+CPU)
 };
 
 /**
