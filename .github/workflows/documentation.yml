@@ -12,6 +12,8 @@ on:
 jobs:
   build-documentation:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       # checkout repository
       - name: Checkout hws
