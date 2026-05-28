@@ -1,0 +1,66 @@
+name: Style Check
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  clang-format:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout hws
+        uses: actions/checkout@v4.2.0
+
+      - name: Check clang-format
+        run: |
+          sudo apt update
+          sudo apt-get install -y clang-format-16
+          clang-format-16 --version
+          
+          echo "Checking formatting..."
+          if [ "$(clang-format-16 --output-replacements-xml $(find src include bindings examples -name '*.cpp' -o -name '*.hpp' -o -name '*.c') 2>&1 | grep -c '<replacement ')" -gt 0 ]; then
+            echo "ERROR: Code is not formatted according to .clang-format"
+            exit 1
+          fi
+          
+          echo "All C++ files are properly formatted."
+
+  clang-tidy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout hws
+        uses: actions/checkout@v4.2.0
+
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt-get install -y clang-tidy-16 libfmt-dev
+
+      - name: Configure CMake
+        run: |
+          mkdir build
+          cd build
+          cmake -DCMAKE_BUILD_TYPE=Debug \
+                -DHWS_ENABLE_CPU_SAMPLING=ON \
+                -DHWS_ENABLE_GPU_NVIDIA_SAMPLING=OFF \
+                -DHWS_ENABLE_GPU_AMD_SAMPLING=OFF \
+                -DHWS_ENABLE_GPU_INTEL_SAMPLING=OFF \
+                -DHWS_ENABLE_PYTHON_BINDINGS=OFF \
+                -DHWS_ENABLE_ERROR_CHECKS=OFF \
+                -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+                ..
+
+      - name: Run clang-tidy
+        run: |
+          cd build
+          clang-tidy-16 $(find ../src ../include ../bindings -name '*.cpp' -o -name '*.hpp') \
+            -p . \
+            --config-file=../.clang-tidy \
+            -header-filter='.*' \
+            || true

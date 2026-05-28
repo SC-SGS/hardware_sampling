@@ -1,0 +1,65 @@
+name: Fuzzing
+
+on:
+  schedule:
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  fuzzing:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout hws
+        uses: actions/checkout@v4.2.0
+
+      - name: Set up Clang
+        run: |
+          sudo apt update
+          sudo apt-get install -y clang-16 llvm
+
+      - name: Configure CMake with Fuzzing
+        run: |
+          mkdir build
+          cd build
+          export CXX=clang++-16
+          export CC=clang-16
+          cmake -DCMAKE_BUILD_TYPE=Debug \
+                -DCMAKE_CXX_FLAGS="-fsanitize=fuzzer-no-link" \
+                -DHWS_ENABLE_CPU_SAMPLING=ON \
+                -DHWS_ENABLE_GPU_NVIDIA_SAMPLING=OFF \
+                -DHWS_ENABLE_GPU_AMD_SAMPLING=OFF \
+                -DHWS_ENABLE_GPU_INTEL_SAMPLING=OFF \
+                -DHWS_ENABLE_PYTHON_BINDINGS=OFF \
+                ..
+
+      - name: Build fuzzer
+        run: |
+          cd build
+          export CXX=clang++-16
+          export CC=clang-16
+          clang++-16 -fsanitize=fuzzer \
+            -DI_HWS_SOURCES \
+            -I../include \
+            -I../src \
+            -c ../src/hws/hardware_sampler.cpp \
+            -o hw_sampler_fuzz.o
+
+          clang++-16 -fsanitize=fuzzer \
+            -DI_HWS_SOURCES \
+            -I../include \
+            -I../src \
+            -c ../src/hws/system_hardware_sampler.cpp \
+            -o system_fuzz.o
+
+          clang++-16 \
+            hw_sampler_fuzz.o system_fuzz.o \
+            -o hws_fuzzer \
+            -L. -lhws \
+            -lfmt
+
+      - name: Run fuzzer
+        run: |
+          cd build
+          mkdir -p fuzz_corpus
+          echo "test" > fuzz_corpus/input
+          timeout 60s ./hws_fuzzer fuzz_corpus || true

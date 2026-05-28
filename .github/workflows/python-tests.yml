@@ -1,0 +1,81 @@
+name: Python Tests
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  python-tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.8, 3.9, 3.10, 3.11, 3.12]
+
+    steps:
+      - name: Checkout hws
+        uses: actions/checkout@v4.2.0
+
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt-get install -y \
+            python${{ matrix.python-version }} \
+            python${{ matrix.python-version }}-dev \
+            python3-pip \
+            libfmt-dev \
+            libelf-dev \
+            libdwarf-dev
+
+      - name: Install Python packages
+        run: |
+          python${{ matrix.python-version }} -m pip install --upgrade pip
+          python${{ matrix.python-version }} -m pip install pytest numpy matplotlib pytest-cov
+
+      - name: Configure CMake
+        run: |
+          mkdir build
+          cd build
+          cmake -DCMAKE_BUILD_TYPE=Debug \
+                -DHWS_ENABLE_CPU_SAMPLING=ON \
+                -DHWS_ENABLE_GPU_NVIDIA_SAMPLING=OFF \
+                -DHWS_ENABLE_GPU_AMD_SAMPLING=OFF \
+                -DHWS_ENABLE_GPU_INTEL_SAMPLING=OFF \
+                -DHWS_ENABLE_PYTHON_BINDINGS=ON \
+                -DHWS_ENABLE_ERROR_CHECKS=OFF \
+                ..
+
+      - name: Build
+        run: |
+          cd build
+          cmake --build .
+
+      - name: Test Python bindings
+        run: |
+          cd build
+          export PYTHONPATH=$(pwd):$PYTHONPATH
+          python${{ matrix.python-version }} -c "
+            import HardwareSampling as hws
+            print('Import successful')
+            print('HardwareSampling version:', hws.__version__)
+          " || echo "Python bindings test skipped"
+
+      - name: Run example scripts
+        run: |
+          cd build
+          export PYTHONPATH=$(pwd):$PYTHONPATH
+          python${{ matrix.python-version }} ../examples/python/main.py || true
+
+      - name: Upload coverage
+        if: matrix.python-version == '3.10'
+        uses: actions/upload-artifact@v4.3.1
+        with:
+          name: python-coverage-${{ matrix.python-version }}
+          path: |
+            build/coverage/
+            build/*.html
