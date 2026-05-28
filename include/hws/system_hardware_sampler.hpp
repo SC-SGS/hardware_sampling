@@ -22,6 +22,10 @@
 #include <string>      // std::string
 #include <vector>      // std::vector
 
+#if defined(HWS_MPI_SUPPORT_ENABLED)
+    #include <mpi.h>  // MPI_Comm
+#endif
+
 namespace hws {
 
 /**
@@ -174,6 +178,23 @@ class system_hardware_sampler {
      * @copydoc hws::system_hardware_sampler::dump_yaml(const char *) const
      */
     void dump_yaml(const std::filesystem::path &filename) const;
+
+#if defined(HWS_MPI_SUPPORT_ENABLED)
+    /**
+     * @brief Let MPI rank 0 dump the hardware samples of all hardware samplers of all MPI ranks to the YAML file with @p filename.
+     * @param[in] filename the YAML file to append the hardware samples to
+     * @param[in] communicator the MPI communicator to use
+     */
+    void dump_yaml_global(const char *filename, MPI_Comm communicator) const;
+    /**
+     * @copydoc hws::system_hardware_sampler::dump_yaml(const char *) const
+     */
+    void dump_yaml_global(const std::string &filename, MPI_Comm communicator) const;
+    /**
+     * @copydoc hws::system_hardware_sampler::dump_yaml(const char *) const
+     */
+    void dump_yaml_global(const std::filesystem::path &filename, MPI_Comm communicator) const;
+#endif
 
     /**
      * @brief Return the hardware samples as YAML string.

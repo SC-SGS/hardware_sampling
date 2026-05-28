@@ -27,6 +27,10 @@
 #include <type_traits>   // std::is_same_v, std::is_floating_point_v, std::remove_cv_t, std::remove_reference_t, std::true_type, std::false_type
 #include <vector>        // std::vector
 
+#if defined(HWS_MPI_SUPPORT_ENABLED)
+#include <mpi.h>        // MPI_Comm
+#endif
+
 namespace hws::detail {
 
 /**
@@ -247,6 +251,14 @@ template <typename T>
     return quoted;
 }
 
+/**
+ * @brief Prefix all lines in a string with the given indentation.
+ * @param[in] text the input text
+ * @param[in] prefix the prefix (indentation) added to each line
+ * @return the indented string
+ */
+[[nodiscard]] std::string indent_lines(const std::string &text, const std::string &prefix);
+
 /*****************************************************************************************************/
 /**                                      other free functions                                       **/
 /*****************************************************************************************************/
@@ -311,6 +323,19 @@ template <typename T>
         return T{};
     }
 }
+
+#if defined(HWS_MPI_SUPPORT_ENABLED)
+/**
+ * @brief Gather YAML strings from all MPI ranks and assemble them in rank order on rank 0.
+ *
+ * @param[in] local_yaml the local YAML string contribution
+ * @param[in] communicator the MPI communicator
+ *
+ * @return concatenated YAML string on rank 0, empty string on all other ranks
+ */
+[[nodiscard]]
+std::string gather_yaml_strings_mpi(const std::string& local_yaml, MPI_Comm communicator);
+#endif
 
 }  // namespace hws::detail
 

@@ -41,6 +41,10 @@
 #include <stdexcept>  // std::out_of_range
 #include <vector>     // std::vector
 
+#if defined(HWS_MPI_SUPPORT_ENABLED)
+#include <mpi.h>        // MPI_Comm
+#endif
+
 namespace hws {
 
 system_hardware_sampler::system_hardware_sampler(const sample_category category) :
@@ -200,6 +204,48 @@ void system_hardware_sampler::dump_yaml(const std::string &filename) const {
 void system_hardware_sampler::dump_yaml(const std::filesystem::path &filename) const {
     std::for_each(samplers_.cbegin(), samplers_.cend(), [&filename](const auto &ptr) { ptr->dump_yaml(filename); });
 }
+
+#if defined(HWS_MPI_SUPPORT_ENABLED)
+void system_hardware_sampler::dump_yaml_global(const char *filename, MPI_Comm communicator) const {
+    int initialized = 0;
+    MPI_Initialized(&initialized);
+
+    if (!initialized) {
+        throw std::runtime_error("MPI must already be initialized");
+    }
+
+    // MPI rank and world size for identification and communication
+    int rank = 0;
+    MPI_Comm_rank(communicator, &rank);
+
+    std::string rank_yaml_output;  // yaml file as string per rank
+
+    rank_yaml_output += "---\n\n";
+    rank_yaml_output += "rank: " + std::to_string(rank) + "\n\n";
+
+    // accumulate string from each sampler
+    std::size_t sampler_idx = 0;
+    std::for_each(samplers_.cbegin(), samplers_.cend(), [&rank_yaml_output, &sampler_idx](const auto &ptr) {
+        rank_yaml_output += "sampler_" + std::to_string(sampler_idx++) + ":\n";
+        rank_yaml_output += detail::indent_lines(ptr->as_yaml_string(), "  ");
+    });
+
+    const std::string global_yaml_output = detail::gather_yaml_strings_mpi(rank_yaml_output, communicator);
+
+    if (rank == 0) {
+        std::ofstream file(filename);
+        file << global_yaml_output;
+    }
+}
+
+void system_hardware_sampler::dump_yaml_global(const std::string &filename, MPI_Comm communicator) const {
+    this->dump_yaml_global(filename.c_str(), communicator);
+}
+
+void system_hardware_sampler::dump_yaml_global(const std::filesystem::path &filename, MPI_Comm communicator) const {
+    this->dump_yaml_global(filename.string().c_str(), communicator);
+}
+#endif
 
 std::string system_hardware_sampler::as_yaml_string() const {
     return std::accumulate(samplers_.cbegin(), samplers_.cend(), std::string{}, [](const std::string str, const auto &ptr) { return str + ptr->as_yaml_string(); });

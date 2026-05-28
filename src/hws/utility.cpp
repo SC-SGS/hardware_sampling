@@ -9,9 +9,14 @@
 
 #include <algorithm>    // std::min, std::transform, std::all_of
 #include <cctype>       // std::tolower, std::isdigit
+#include <sstream>      // std::stringstream
 #include <string>       // std::string
 #include <string_view>  // std::string_view
 #include <vector>       // std::vector
+
+#if defined(HWS_MPI_SUPPORT_ENABLED)
+#include <mpi.h>        // MPI_Comm, MPI_Gatherv, MPI_Gather, MPI_Initialized, MPI_Comm_rank, MPI_Comm_size
+#endif
 
 namespace hws::detail {
 
@@ -60,5 +65,79 @@ std::vector<std::string_view> split(const std::string_view str, const char delim
 bool is_integer(std::string_view str) {
     return std::all_of(str.cbegin(), str.cend(), [](const char c) { return std::isdigit(static_cast<unsigned char>(c)); });
 }
+
+std::string indent_lines(const std::string &text, const std::string &prefix) {
+    std::stringstream ss{ text };
+
+    std::string line;
+    std::string out;
+
+    while (std::getline(ss, line)) {
+        out += prefix + line + '\n';
+    }
+
+    return out;
+}
+
+#if defined(HWS_MPI_SUPPORT_ENABLED)
+std::string gather_yaml_strings_mpi(const std::string &local_yaml, MPI_Comm communicator) {
+    int initialized = 0;
+    MPI_Initialized(&initialized);
+
+    if (!initialized) {
+        throw std::runtime_error("MPI must already be initialized");
+    }
+
+    // MPI rank and world size for identification and communication
+    int rank = 0, world_size = 0;
+    MPI_Comm_rank(communicator, &rank);
+    MPI_Comm_size(communicator, &world_size);
+
+    // gather the size of the yaml string from each rank
+    int local_size = static_cast<int>(local_yaml.size());
+
+    std::vector<int> recv_sizes;
+
+    if (rank == 0) {
+        recv_sizes.resize(world_size);
+    }
+
+    MPI_Gather(&local_size, 1, MPI_INT, recv_sizes.data(), 1, MPI_INT, 0, communicator);
+
+    // compute the displacements from the rank string sizes
+    std::vector<int> displacements;
+    int total_size = 0;
+
+    if (rank == 0) {
+        displacements.resize(world_size);
+
+        for (int i = 0; i < world_size; ++i) {
+            displacements[i] = total_size;
+            total_size += recv_sizes[i];
+        }
+    }
+
+    // gather the local yaml strings from all ranks
+    std::vector<char> recv_buffer;
+
+    if (rank == 0) {
+        recv_buffer.resize(total_size);
+    }
+
+    MPI_Gatherv(local_yaml.data(), local_size, MPI_CHAR, recv_buffer.data(), recv_sizes.data(), displacements.data(), MPI_CHAR, 0, communicator);
+
+    // build final yaml string on rank 0
+    std::string global_yaml;
+
+    if (rank == 0) {
+        for (int r = 0; r < world_size; ++r) {
+            global_yaml.append(recv_buffer.data() + displacements[r], recv_sizes[r]);
+            global_yaml += '\n';
+        }
+    }
+
+    return global_yaml;
+}
+#endif
 
 }  // namespace hws::detail
