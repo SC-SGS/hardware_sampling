@@ -75,6 +75,11 @@ The `[optional_options]` can be one or multiple of:
 - `HWS_SAMPLING_INTERVAL=100ms` (default: `100ms`): set the sampling interval in milliseconds
 - `HWS_ENABLE_PYTHON_BINDINGS=ON|OFF` (default: `ON`): enable Python bindings
 
+- `HWS_ENABLE_MPI_SUPPORT=ON|OFF|AUTO` (default: `AUTO`):
+  - `ON`: check whether MPI is available and fail if this is not the case
+  - `AUTO`: check whether MPI is available but **do not** fail if this is not the case
+  - `OFF`: do not check whether MPI is available
+
 ### Installing via CMake
 
 The library supports the `install` target:

@@ -25,7 +25,7 @@ add_library(${HWS_LIBRARY_NAME} SHARED ${HWS_SOURCES})
 add_library(hws::hws ALIAS ${HWS_LIBRARY_NAME})
 
 # set install target
-set(HWS_TARGETS_TO_INSTALL )
+set(HWS_TARGETS_TO_INSTALL)
 
 # use C++17
 target_compile_features(${HWS_LIBRARY_NAME} PUBLIC cxx_std_17)
@@ -153,6 +153,35 @@ endif ()
 option(HWS_ENABLE_PYTHON_BINDINGS "Build language bindings for Python." ON)
 if (HWS_ENABLE_PYTHON_BINDINGS)
     add_subdirectory(bindings)
+endif ()
+
+
+####################################################################################################################
+##                                               enable MPI support                                               ##
+####################################################################################################################
+set(HWS_ENABLE_MPI_SUPPORT AUTO CACHE STRING "Enable MPI support.")
+set_property(CACHE HWS_ENABLE_MPI_SUPPORT PROPERTY STRINGS AUTO ON OFF)
+
+if (HWS_ENABLE_MPI_SUPPORT MATCHES "AUTO" OR HWS_ENABLE_MPI_SUPPORT)
+    # try finding MPI
+    find_package(MPI QUIET)
+
+    # check if MPI could be found
+    if (NOT MPI_FOUND)
+        if (HWS_ENABLE_MPI_SUPPORT MATCHES "ON")
+            message(SEND_ERROR "Cannot find MPI but MPI support was explicitly requested!")
+        else ()
+            message(STATUS "Cannot find MPI. MPI support disabled.")
+        endif ()
+    else ()
+        message(STATUS "Enable MPI support (${MPI_CXX_VERSION}).")
+
+        # link against necessary libraries
+        target_link_libraries(${HWS_LIBRARY_NAME} PUBLIC MPI::MPI_CXX)
+
+        # add compile definition
+        target_compile_definitions(${HWS_LIBRARY_NAME} PUBLIC HWS_MPI_SUPPORT_ENABLED)
+    endif ()
 endif ()
 
 
