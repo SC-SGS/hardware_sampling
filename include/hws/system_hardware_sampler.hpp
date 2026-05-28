@@ -187,11 +187,11 @@ class system_hardware_sampler {
      */
     void dump_yaml_global(const char *filename, MPI_Comm communicator) const;
     /**
-     * @copydoc hws::system_hardware_sampler::dump_yaml(const char *) const
+     * @copydoc hws::system_hardware_sampler::dump_yaml_global(const char *) const
      */
     void dump_yaml_global(const std::string &filename, MPI_Comm communicator) const;
     /**
-     * @copydoc hws::system_hardware_sampler::dump_yaml(const char *) const
+     * @copydoc hws::system_hardware_sampler::dump_yaml_global(const char *) const
      */
     void dump_yaml_global(const std::filesystem::path &filename, MPI_Comm communicator) const;
 #endif
