@@ -31,7 +31,6 @@ jobs:
             intel-sampling: ON
           - python-bindings: OFF
             error-checks: ON
-        fail-fast: false
 
     steps:
       - name: Checkout hws
