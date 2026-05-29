@@ -36,6 +36,9 @@ classifiers = [
     "Programming Language :: C++",
     "Programming Language :: Python :: 3"
 ]
+# optional dependencies
+[project.optional-dependencies]
+mpi = ["mpi4py>=4"]
 # project specific URLs
 [project.urls]
 documentation = "https://sc-sgs.github.io/hardware_sampling/"

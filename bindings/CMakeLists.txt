@@ -64,6 +64,30 @@ target_include_directories(${HWS_PYTHON_BINDINGS_LIBRARY_NAME} PRIVATE ${CMAKE_C
 target_link_libraries(${HWS_PYTHON_BINDINGS_LIBRARY_NAME} PRIVATE ${HWS_LIBRARY_NAME})
 target_compile_definitions(${HWS_PYTHON_BINDINGS_LIBRARY_NAME} PRIVATE PYBIND11_DETAILED_ERROR_MESSAGES)
 
+if(HWS_MPI_SUPPORT_ACTIVE)
+    message(STATUS "MPI support enabled. Adding mpi4py include directory and linking against MPI.")
+    # Get mpi4py's C header location, simultaneously checking if mpi4py is importable in the current Python environment
+    execute_process(
+            COMMAND "${Python_EXECUTABLE}" -c
+            "import mpi4py, sys; sys.stdout.write(mpi4py.get_include())"
+            RESULT_VARIABLE MPI4PY_IMPORT_RESULT
+            OUTPUT_VARIABLE MPI4PY_INCLUDE_DIR
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+
+    if(MPI4PY_IMPORT_RESULT)
+        message(FATAL_ERROR
+                "MPI support is enabled in hws (HWS_ENABLE_MPI_SUPPORT=AUTO/ON and MPI_FOUND) "
+                "but mpi4py is not importable in Python_EXECUTABLE='${Python_EXECUTABLE}'. "
+                "Install mpi4py in this environment or disable python bindings.")
+    endif()
+
+    target_include_directories(${HWS_PYTHON_BINDINGS_LIBRARY_NAME} PRIVATE ${MPI4PY_INCLUDE_DIR})
+
+    # Propagate the same macro used on the C++ side into the Python module
+    target_compile_definitions(${HWS_PYTHON_BINDINGS_LIBRARY_NAME} PRIVATE HWS_MPI_SUPPORT_ENABLED)
+endif()
+
 include(GNUInstallDirs)
 # install Python bindings
 install(TARGETS ${HWS_PYTHON_BINDINGS_LIBRARY_NAME}

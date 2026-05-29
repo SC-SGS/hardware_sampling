@@ -148,19 +148,12 @@ endif ()
 
 
 ####################################################################################################################
-##                                             enable Python bindings                                             ##
-####################################################################################################################
-option(HWS_ENABLE_PYTHON_BINDINGS "Build language bindings for Python." ON)
-if (HWS_ENABLE_PYTHON_BINDINGS)
-    add_subdirectory(bindings)
-endif ()
-
-
-####################################################################################################################
 ##                                               enable MPI support                                               ##
 ####################################################################################################################
 set(HWS_ENABLE_MPI_SUPPORT AUTO CACHE STRING "Enable MPI support.")
 set_property(CACHE HWS_ENABLE_MPI_SUPPORT PROPERTY STRINGS AUTO ON OFF)
+# Default: assume MPI support inactive
+set(HWS_MPI_SUPPORT_ACTIVE FALSE CACHE BOOL "MPI support enabled in core library")
 
 if (HWS_ENABLE_MPI_SUPPORT MATCHES "AUTO" OR HWS_ENABLE_MPI_SUPPORT)
     # try finding MPI
@@ -181,7 +174,19 @@ if (HWS_ENABLE_MPI_SUPPORT MATCHES "AUTO" OR HWS_ENABLE_MPI_SUPPORT)
 
         # add compile definition
         target_compile_definitions(${HWS_LIBRARY_NAME} PUBLIC HWS_MPI_SUPPORT_ENABLED)
+
+        # Expose that MPI is really enabled for the Python bindings (and potentially other submodules) via a cache variable.
+        set(HWS_MPI_SUPPORT_ACTIVE TRUE CACHE BOOL "MPI support enabled in core library" FORCE)
     endif ()
+endif ()
+
+
+####################################################################################################################
+##                                             enable Python bindings                                             ##
+####################################################################################################################
+option(HWS_ENABLE_PYTHON_BINDINGS "Build language bindings for Python." ON)
+if (HWS_ENABLE_PYTHON_BINDINGS)
+    add_subdirectory(bindings)
 endif ()
 
 
