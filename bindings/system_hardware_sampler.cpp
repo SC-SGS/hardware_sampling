@@ -19,6 +19,11 @@
 #include "relative_event.hpp"  // hws::detail::relative_event
 #include <string>              // std::string
 
+#if defined(HWS_MPI_SUPPORT_ENABLED)
+#include <mpi.h>
+#include "mpi4py_communicator.hpp"
+#endif
+
 namespace py = pybind11;
 
 void init_system_hardware_sampler(py::module_ &m) {
@@ -67,5 +72,18 @@ void init_system_hardware_sampler(py::module_ &m) {
         .def("sampler", [](hws::system_hardware_sampler &self, const std::size_t idx) { return self.sampler(idx).get(); }, "get the i-th hardware sampler available for the whole system")
         .def("dump_yaml", py::overload_cast<const std::string &>(&hws::system_hardware_sampler::dump_yaml, py::const_), "dump all hardware samples for all hardware samplers to the given YAML file")
         .def("as_yaml_string", &hws::system_hardware_sampler::as_yaml_string, "return all hardware samples for all hardware samplers as YAML string")
+#if defined(HWS_MPI_SUPPORT_ENABLED)
+        .def("dump_yaml_global",
+            [](const hws::system_hardware_sampler &self,
+               const std::string &filename,
+               py::object py_comm) {
+                const MPI_Comm comm = mpi_comm_from_python(py_comm);
+                self.dump_yaml_global(filename, comm);
+            },
+            py::arg("filename"),
+            py::arg("comm"),
+            "Let MPI rank 0 dump the hardware samples of all hardware samplers of all MPI ranks to the given YAML file using the provided mpi4py communicator."
+        )
+#endif
         .def("__repr__", [](const hws::system_hardware_sampler &self) { return fmt::format("<hws.SystemHardwareSampler with {} samples>", self.num_samplers()); });
 }
