@@ -1,5 +1,11 @@
 # hws - Hardware Sampling for CPUs and GPUs
 
+[![Build & Test (CPU only)](https://github.com/SC-SGS/hardware_sampling/actions/workflows/build-test-cpu.yml/badge.svg)](https://github.com/SC-SGS/hardware_sampling/actions/workflows/build-test-cpu.yml)
+[![Style Check](https://github.com/SC-SGS/hardware_sampling/actions/workflows/style-check.yml/badge.svg)](https://github.com/SC-SGS/hardware_sampling/actions/workflows/style-check.yml)
+[![Static Analysis](https://github.com/SC-SGS/hardware_sampling/actions/workflows/static-analysis.yml/badge.svg)](https://github.com/SC-SGS/hardware_sampling/actions/workflows/static-analysis.yml)
+[![Python Tests](https://github.com/SC-SGS/hardware_sampling/actions/workflows/python-tests.yml/badge.svg)](https://github.com/SC-SGS/hardware_sampling/actions/workflows/python-tests.yml)
+[![CMake Matrix](https://github.com/SC-SGS/hardware_sampling/actions/workflows/cmake-matrix.yml/badge.svg)](https://github.com/SC-SGS/hardware_sampling/actions/workflows/cmake-matrix.yml)
+
 The Hardware Sampling (hws) library can be used to track hardware performance like clock frequency, memory usage,
 temperatures, or power draw.
 It currently supports CPUs as well as GPUs from NVIDIA, AMD, and Intel.
@@ -25,9 +31,28 @@ Dependencies based on the hardware to sample:
   if it couldn't be found using the respective `find_package` call)
 - if an NVIDIA GPU should be targeted: NVIDIA's Management Library [`NVML`](https://docs.nvidia.com/deploy/nvml-api/)
 - if an AMD GPU should be targeted: AMD's ROCm SMI library [
-  `rocm_smi_lib`](https://rocm.docs.amd.com/projects/rocm_smi_lib/en/latest/doxygen/html/modules.html)
+  `rocm_smi_lib`](https://rocmdocs.amd.com/en/docs/projects/rocm_smi_lib/en/latest/doxygen/html/modules.html)
 - if an Intel GPU should be targeted: Intel's [
   `Level Zero library`](https://spec.oneapi.io/level-zero/latest/core/INTRO.html)
+
+### CI/CD Pipeline
+
+This repository uses a hybrid CI/CD approach:
+
+**GitHub Actions** (automated, cloud-based):
+- CPU-only builds (Linux/macOS/Windows)
+- Code style checks (clang-format, clang-tidy)
+- Static analysis (cppcheck)
+- Python tests (pytest, mypy)
+- CMake configuration matrix testing
+
+**Jenkins** (local, hardware-specific):
+- GPU-specific tests (NVIDIA/AMD/Intel)
+- Stress tests (24h+ continuous sampling)
+- Multi-GPU tests
+- Production hardware validation
+
+See [.github/workflows/](.github/workflows/) for GitHub Actions and [Jenkins pipelines](.jenkins/) for GPU-specific testing.
 
 ### Building hws
 

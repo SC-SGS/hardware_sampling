@@ -1,0 +1,47 @@
+name: Static Analysis
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+  workflow_dispatch:
+
+jobs:
+  cppcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout hws
+        uses: actions/checkout@v4.2.0
+
+      - name: Install cppcheck
+        run: |
+          sudo apt update
+          sudo apt-get install -y cppcheck
+
+      - name: Run cppcheck
+        run: |
+          cppcheck --enable=all \
+            --suppress=missingIncludeSystem \
+            --suppress=unusedFunction \
+            --check-config \
+            --std=c++17 \
+            --platform=unix64 \
+            --inconclusive \
+            -i build \
+            -i cmake-build-* \
+            src \
+            include \
+            bindings \
+            examples
+
+      - name: Upload report
+        if: failure()
+        uses: actions/upload-artifact@v4.3.1
+        with:
+          name: cppcheck-report
+          path: cppcheck.log

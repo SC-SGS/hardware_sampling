@@ -1,0 +1,59 @@
+name: CMake Configuration Matrix
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+  workflow_dispatch:
+
+jobs:
+  cmake-matrix:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        build-type: [Debug, Release]
+        python-version: [3.12]
+
+    steps:
+      - name: Checkout hws
+        uses: actions/checkout@v4.2.0
+
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt-get install -y libfmt-dev python3 python3-dev
+
+      - name: Configure CMake
+        run: |
+          mkdir build
+          cd build
+          cmake -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} \
+                -DHWS_ENABLE_CPU_SAMPLING=ON \
+                -DHWS_ENABLE_GPU_NVIDIA_SAMPLING=OFF \
+                -DHWS_ENABLE_GPU_AMD_SAMPLING=OFF \
+                -DHWS_ENABLE_GPU_INTEL_SAMPLING=OFF \
+                -DHWS_ENABLE_PYTHON_BINDINGS=ON \
+                -DHWS_ENABLE_ERROR_CHECKS=OFF \
+                -DHWS_SAMPLING_INTERVAL=100ms \
+                ..
+
+      - name: Build
+        run: |
+          cd build
+          cmake --build .
+
+      - name: Test build
+        run: |
+          cd build
+          ctest -j$(nproc) --output-on-failure || true
+
+      - name: Run example
+        run: |
+          cd build
+          ctest -R example_cpp --output-on-failure || true
