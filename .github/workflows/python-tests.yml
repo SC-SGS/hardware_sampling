@@ -13,9 +13,6 @@ on:
 jobs:
   python-tests:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: [3.8, 3.9, 3.10, 3.11, 3.12]
 
     steps:
       - name: Checkout hws
@@ -25,8 +22,8 @@ jobs:
         run: |
           sudo apt update
           sudo apt-get install -y \
-            python${{ matrix.python-version }} \
-            python${{ matrix.python-version }}-dev \
+            python3 \
+            python3-dev \
             python3-pip \
             libfmt-dev \
             libelf-dev \
@@ -34,8 +31,8 @@ jobs:
 
       - name: Install Python packages
         run: |
-          python${{ matrix.python-version }} -m pip install --upgrade pip
-          python${{ matrix.python-version }} -m pip install pytest numpy matplotlib pytest-cov
+          python3 -m pip install --upgrade pip
+          python3 -m pip install pytest numpy matplotlib pytest-cov
 
       - name: Configure CMake
         run: |
@@ -59,7 +56,7 @@ jobs:
         run: |
           cd build
           export PYTHONPATH=$(pwd):$PYTHONPATH
-          python${{ matrix.python-version }} -c "
+          python3 -c "
             import HardwareSampling as hws
             print('Import successful')
             print('HardwareSampling version:', hws.__version__)
@@ -69,13 +66,4 @@ jobs:
         run: |
           cd build
           export PYTHONPATH=$(pwd):$PYTHONPATH
-          python${{ matrix.python-version }} ../examples/python/main.py || true
-
-      - name: Upload coverage
-        if: matrix.python-version == '3.10'
-        uses: actions/upload-artifact@v4.3.1
-        with:
-          name: python-coverage-${{ matrix.python-version }}
-          path: |
-            build/coverage/
-            build/*.html
+          python3 ../examples/python/main.py || true

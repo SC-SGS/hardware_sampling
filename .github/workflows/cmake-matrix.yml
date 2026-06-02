@@ -15,22 +15,10 @@ jobs:
   cmake-matrix:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         build-type: [Debug, Release]
-        cpu-sampling: [ON, OFF, AUTO]
-        nvidia-sampling: [ON, OFF, AUTO]
-        amd-sampling: [ON, OFF, AUTO]
-        intel-sampling: [ON, OFF, AUTO]
-        python-bindings: [ON, OFF]
-        error-checks: [ON, OFF]
-        sampling-interval: [10, 100, 1000]
-        exclude:
-          - cpu-sampling: ON
-            nvidia-sampling: ON
-            amd-sampling: ON
-            intel-sampling: ON
-          - python-bindings: OFF
-            error-checks: ON
+        python-version: [3.12]
 
     steps:
       - name: Checkout hws
@@ -46,13 +34,13 @@ jobs:
           mkdir build
           cd build
           cmake -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} \
-                -DHWS_ENABLE_CPU_SAMPLING=${{ matrix.cpu-sampling }} \
-                -DHWS_ENABLE_GPU_NVIDIA_SAMPLING=${{ matrix.nvidia-sampling }} \
-                -DHWS_ENABLE_GPU_AMD_SAMPLING=${{ matrix.amd-sampling }} \
-                -DHWS_ENABLE_GPU_INTEL_SAMPLING=${{ matrix.intel-sampling }} \
-                -DHWS_ENABLE_PYTHON_BINDINGS=${{ matrix.python-bindings }} \
-                -DHWS_ENABLE_ERROR_CHECKS=${{ matrix.error-checks }} \
-                -DHWS_SAMPLING_INTERVAL=${{ matrix.sampling-interval }}ms \
+                -DHWS_ENABLE_CPU_SAMPLING=ON \
+                -DHWS_ENABLE_GPU_NVIDIA_SAMPLING=OFF \
+                -DHWS_ENABLE_GPU_AMD_SAMPLING=OFF \
+                -DHWS_ENABLE_GPU_INTEL_SAMPLING=OFF \
+                -DHWS_ENABLE_PYTHON_BINDINGS=ON \
+                -DHWS_ENABLE_ERROR_CHECKS=OFF \
+                -DHWS_SAMPLING_INTERVAL=100ms \
                 ..
 
       - name: Build

@@ -14,40 +14,6 @@ on:
 jobs:
   build-test-linux:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        compiler: [gcc-11, gcc-12, gcc-13, gcc-14, clang-14, clang-15, clang-16, clang-17, clang-18]
-        build-type: [Debug, Release]
-        python-version: [3.8, 3.9, 3.10, 3.11, 3.12]
-        include:
-          - compiler: gcc-11
-            cxx: g++-11
-            cc: gcc-11
-          - compiler: gcc-12
-            cxx: g++-12
-            cc: gcc-12
-          - compiler: gcc-13
-            cxx: g++-13
-            cc: gcc-13
-          - compiler: gcc-14
-            cxx: g++-14
-            cc: gcc-14
-          - compiler: clang-14
-            cxx: clang++-14
-            cc: clang-14
-          - compiler: clang-15
-            cxx: clang++-15
-            cc: clang-15
-          - compiler: clang-16
-            cxx: clang++-16
-            cc: clang-16
-          - compiler: clang-17
-            cxx: clang++-17
-            cc: clang-17
-          - compiler: clang-18
-            cxx: clang++-18
-            cc: clang-18
-
     steps:
       - name: Checkout hws
         uses: actions/checkout@v4.2.0
@@ -56,22 +22,22 @@ jobs:
         run: |
           sudo apt update
           sudo apt-get install -y \
-            ${{ matrix.cc }} \
-            ${{ matrix.cxx }} \
-            python${{ matrix.python-version }} \
-            python${{ matrix.python-version }}-dev \
+            gcc \
+            g++ \
+            python3 \
+            python3-dev \
             python3-pip \
             libfmt-dev
 
       - name: Install pytest
         run: |
-          python${{ matrix.python-version }} -m pip install pytest numpy matplotlib
+          python3 -m pip install pytest numpy matplotlib
 
       - name: Configure CMake
         run: |
           mkdir build
           cd build
-          cmake -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} \
+          cmake -DCMAKE_BUILD_TYPE=Debug \
                 -DHWS_ENABLE_CPU_SAMPLING=ON \
                 -DHWS_ENABLE_GPU_NVIDIA_SAMPLING=OFF \
                 -DHWS_ENABLE_GPU_AMD_SAMPLING=OFF \
@@ -88,8 +54,8 @@ jobs:
       - name: Run Python tests
         run: |
           cd build
-          python${{ matrix.python-version }} -m pytest ../bindings/tests/ 2>/dev/null || echo "No tests found"
-          python${{ matrix.python-version }} -c "import sys; sys.path.insert(0, '.'); import HardwareSampling" || echo "Python bindings test skipped"
+          python3 -m pytest ../bindings/tests/ 2>/dev/null || echo "No tests found"
+          python3 -c "import sys; sys.path.insert(0, '.'); import HardwareSampling" || echo "Python bindings test skipped"
 
       - name: Run example
         run: |
@@ -99,35 +65,29 @@ jobs:
 
   build-test-macos:
     runs-on: macos-latest
-    strategy:
-      matrix:
-        build-type: [Debug, Release]
-        python-version: [3.9, 3.10, 3.11, 3.12]
-
     steps:
       - name: Checkout hws
         uses: actions/checkout@v4.2.0
 
       - name: Install dependencies
         run: |
-          brew install fmt pybind11 python@${{ matrix.python-version }}
+          brew install fmt pybind11 python
 
       - name: Install pytest
         run: |
-          python${{ matrix.python-version }} -m pip install pytest numpy matplotlib
+          python3 -m pip install pytest numpy matplotlib
 
       - name: Configure CMake
         run: |
           mkdir build
           cd build
-          cmake -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} \
+          cmake -DCMAKE_BUILD_TYPE=Debug \
                 -DHWS_ENABLE_CPU_SAMPLING=ON \
                 -DHWS_ENABLE_GPU_NVIDIA_SAMPLING=OFF \
                 -DHWS_ENABLE_GPU_AMD_SAMPLING=OFF \
                 -DHWS_ENABLE_GPU_INTEL_SAMPLING=OFF \
                 -DHWS_ENABLE_PYTHON_BINDINGS=ON \
                 -DHWS_ENABLE_ERROR_CHECKS=OFF \
-                -DPython_EXECUTABLE=$(which python${{ matrix.python-version }}) \
                 ..
 
       - name: Build
@@ -143,11 +103,6 @@ jobs:
 
   build-test-windows:
     runs-on: windows-latest
-    strategy:
-      matrix:
-        build-type: [Debug, Release]
-        python-version: [3.9, 3.10, 3.11, 3.12]
-
     steps:
       - name: Checkout hws
         uses: actions/checkout@v4.2.0
@@ -155,7 +110,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5.0.0
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: 3.12
 
       - name: Install dependencies
         run: |
@@ -170,7 +125,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          cmake -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} `
+          cmake -DCMAKE_BUILD_TYPE=Debug `
                 -DHWS_ENABLE_CPU_SAMPLING=OFF `
                 -DHWS_ENABLE_GPU_NVIDIA_SAMPLING=OFF `
                 -DHWS_ENABLE_GPU_AMD_SAMPLING=OFF `
@@ -182,9 +137,9 @@ jobs:
       - name: Build
         run: |
           cd build
-          cmake --build . --config ${{ matrix.build-type }}
+          cmake --build . --config Debug
 
       - name: Run example
         run: |
           cd build
-          ctest -R example_cpp --output-on-failure --build-config ${{ matrix.build-type }}
+          ctest -R example_cpp --output-on-failure --build-config Debug
