@@ -14,6 +14,7 @@
 #include "hws/event.hpp"             // hws::event
 #include "hws/hardware_sampler.hpp"  // hws::hardware_sampler
 #include "hws/sample_category.hpp"   // hws::sample_category
+#include "hws/utility.hpp"           // hws::detail::mpi_sampling_mode
 
 #include <chrono>      // std::chrono::{milliseconds, steady_clock::time_point}
 #include <cstddef>     // std::size_t
@@ -45,6 +46,24 @@ class system_hardware_sampler {
      * @param[in] category the sample categories that are enabled for hardware sampling (default: all)
      */
     explicit system_hardware_sampler(std::chrono::milliseconds sampling_interval, sample_category category = sample_category::all);
+#if defined(HWS_MPI_SUPPORT_ENABLED)
+    /**
+     * @brief Construct hardware samplers with the default sampling interval and MPI support.
+     * @param[in] communicator the MPI communicator
+     * @param[in] mode the MPI sampling mode
+     * @param[in] category the sample categories that are enabled for hardware sampling (default: all)
+     */
+    explicit system_hardware_sampler(MPI_Comm communicator, detail::mpi_sampling_mode mode, sample_category category = sample_category::all);
+    /**
+     * @brief Construct hardware samplers with the provided @p sampling_interval and MPI support.
+     * @param[in] communicator the MPI communicator
+     * @param[in] mode the MPI sampling mode
+     * @param[in] sampling_interval the used sampling interval
+     * @param[in] category the sample categories that are enabled for hardware sampling (default: all)
+     */
+    explicit system_hardware_sampler(MPI_Comm communicator, detail::mpi_sampling_mode mode, std::chrono::milliseconds sampling_interval, sample_category category = sample_category::all);
+#endif
+
 
     /**
      * @brief Delete the copy-constructor.
@@ -211,6 +230,15 @@ class system_hardware_sampler {
   private:
     /// The different hardware sampler for the current system.
     std::vector<std::unique_ptr<hardware_sampler>> samplers_;
+
+    /**
+     * Creates hardware samplers for all visible devices. Used by non-MPI class constructor.
+     * @param sampling_interval the used sampling interval
+     * @param category the sample category
+     */
+    void create_local_samplers(std::chrono::milliseconds sampling_interval, hws::sample_category category);
+
+
 };
 
 }  // namespace hws

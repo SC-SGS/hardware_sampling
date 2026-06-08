@@ -42,7 +42,7 @@
 #include <vector>     // std::vector
 
 #if defined(HWS_MPI_SUPPORT_ENABLED)
-#include <mpi.h>        // MPI_Comm
+    #include <mpi.h>  // MPI_Comm
 #endif
 
 namespace hws {
@@ -52,56 +52,68 @@ system_hardware_sampler::system_hardware_sampler(const sample_category category)
 
 system_hardware_sampler::system_hardware_sampler(const std::chrono::milliseconds sampling_interval, sample_category category) {
     // create the hardware samplers based on the available hardware
-#if defined(HWS_FOR_CPUS_ENABLED)
-    {
-        samplers_.push_back(std::make_unique<cpu_hardware_sampler>(sampling_interval, category));
-    }
-#endif
-#if defined(HWS_FOR_NVIDIA_GPUS_ENABLED)
-    {
-        int device_count{};
-        HWS_CUDA_ERROR_CHECK(cudaGetDeviceCount(&device_count));
-        for (int device = 0; device < device_count; ++device) {
-            samplers_.push_back(std::make_unique<gpu_nvidia_hardware_sampler>(static_cast<std::size_t>(device), sampling_interval, category));
-        }
-    }
-#endif
-#if defined(HWS_FOR_AMD_GPUS_ENABLED)
-    {
-        int device_count{};
-        HWS_HIP_ERROR_CHECK(hipGetDeviceCount(&device_count));
-        for (int device = 0; device < device_count; ++device) {
-            samplers_.push_back(std::make_unique<gpu_amd_hardware_sampler>(static_cast<std::size_t>(device), sampling_interval, category));
-        }
-    }
-#endif
-#if defined(HWS_FOR_INTEL_GPUS_ENABLED)
-    {
-        // init level zero driver
-        HWS_LEVEL_ZERO_ERROR_CHECK(zeInit(ZE_INIT_FLAG_GPU_ONLY))
-
-        // discover the number of drivers
-        std::uint32_t driver_count{ 0 };
-        HWS_LEVEL_ZERO_ERROR_CHECK(zeDriverGet(&driver_count, nullptr))
-
-        // check if only the single GPU driver has been found
-        if (driver_count > 1) {
-            throw std::runtime_error{ fmt::format("Found too many GPU drivers ({})!", driver_count) };
-        }
-
-        // get the GPU driver
-        ze_driver_handle_t driver{};
-        HWS_LEVEL_ZERO_ERROR_CHECK(zeDriverGet(&driver_count, &driver))
-
-        // get all GPUs for the current driver
-        std::uint32_t device_count{ 0 };
-        HWS_LEVEL_ZERO_ERROR_CHECK(zeDeviceGet(driver, &device_count, nullptr))
-        for (std::uint32_t device = 0; device < device_count; ++device) {
-            samplers_.push_back(std::make_unique<gpu_intel_hardware_sampler>(static_cast<std::size_t>(device), sampling_interval, category));
-        }
-    }
-#endif
+    create_local_samplers(sampling_interval, category);
 }
+
+#if defined(HWS_MPI_SUPPORT_ENABLED)
+system_hardware_sampler::system_hardware_sampler(MPI_Comm communicator, detail::mpi_sampling_mode mode, sample_category category) :
+    system_hardware_sampler(communicator, mode, HWS_SAMPLING_INTERVAL, category) { }
+
+system_hardware_sampler::system_hardware_sampler(MPI_Comm communicator, detail::mpi_sampling_mode mode, std::chrono::milliseconds sampling_interval, sample_category category) {
+    if (mode == detail::mpi_sampling_mode::per_rank) {
+        // each rank creates samplers for all devices visible to him
+        create_local_samplers(sampling_interval, category);
+    } else if (mode == detail::mpi_sampling_mode::whole_node) {
+        // create a custom, node-local MPI communicator
+        auto nc = detail::make_hostname_comm(communicator);
+
+    // CPU: one sampler per node --> node leader only
+    #if defined(HWS_FOR_CPUS_ENABLED)
+        if (nc.node_rank == 0) {
+            samplers_.push_back(std::make_unique<cpu_hardware_sampler>(sampling_interval, category));
+        }
+    #endif
+
+    // NVIDIA
+    #if defined(HWS_FOR_NVIDIA_GPUS_ENABLED)
+        {
+            const auto local = detail::enumerate_local_nvidia_devices();
+            const auto owned = detail::owned_local_indices_for_backend(local, nc.node_comm);
+            for (int idx : owned) {
+                samplers_.push_back(std::make_unique<gpu_nvidia_hardware_sampler>(static_cast<std::size_t>(idx), sampling_interval, category));
+            }
+        }
+    #endif
+
+    // AMD
+    #if defined(HWS_FOR_AMD_GPUS_ENABLED)
+        {
+            const auto local = detail::enumerate_local_amd_devices();
+            const auto owned = detail::owned_local_indices_for_backend(local, nc.node_comm);
+            for (int idx : owned) {
+                samplers_.push_back(std::make_unique<gpu_amd_hardware_sampler>(
+                    static_cast<std::size_t>(idx), sampling_interval, category));
+            }
+        }
+    #endif
+
+    // Intel
+    #if defined(HWS_FOR_INTEL_GPUS_ENABLED)
+        {
+            const auto local = detail::enumerate_local_intel_devices();
+            const auto owned = detail::owned_local_indices_for_backend(local, nc.node_comm);
+            for (int idx : owned) {
+                samplers_.push_back(std::make_unique<gpu_intel_hardware_sampler>(static_cast<std::size_t>(idx), sampling_interval, category));
+            }
+        }
+    #endif
+
+        detail::free_hostname_comm(nc);
+    } else {
+        throw std::runtime_error{ fmt::format("Unknown MPI sampling mode {}!", static_cast<int>(mode)) };
+    }
+}
+#endif
 
 void system_hardware_sampler::start_sampling() {
     std::for_each(samplers_.begin(), samplers_.end(), [](auto &ptr) { ptr->start_sampling(); });
@@ -253,6 +265,58 @@ std::string system_hardware_sampler::as_yaml_string() const {
 
 std::string system_hardware_sampler::samples_only_as_yaml_string() const {
     return std::accumulate(samplers_.cbegin(), samplers_.cend(), std::string{}, [](const std::string str, const auto &ptr) { return str + ptr->samples_only_as_yaml_string(); });
+}
+
+void system_hardware_sampler::create_local_samplers(std::chrono::milliseconds sampling_interval, sample_category category) {
+#if defined(HWS_FOR_CPUS_ENABLED)
+    {
+        samplers_.push_back(std::make_unique<cpu_hardware_sampler>(sampling_interval, category));
+    }
+#endif
+#if defined(HWS_FOR_NVIDIA_GPUS_ENABLED)
+    {
+        int device_count{};
+        HWS_CUDA_ERROR_CHECK(cudaGetDeviceCount(&device_count));
+        for (int device = 0; device < device_count; ++device) {
+            samplers_.push_back(std::make_unique<gpu_nvidia_hardware_sampler>(static_cast<std::size_t>(device), sampling_interval, category));
+        }
+    }
+#endif
+#if defined(HWS_FOR_AMD_GPUS_ENABLED)
+    {
+        int device_count{};
+        HWS_HIP_ERROR_CHECK(hipGetDeviceCount(&device_count));
+        for (int device = 0; device < device_count; ++device) {
+            samplers_.push_back(std::make_unique<gpu_amd_hardware_sampler>(static_cast<std::size_t>(device), sampling_interval, category));
+        }
+    }
+#endif
+#if defined(HWS_FOR_INTEL_GPUS_ENABLED)
+    {
+        // init level zero driver
+        HWS_LEVEL_ZERO_ERROR_CHECK(zeInit(ZE_INIT_FLAG_GPU_ONLY))
+
+        // discover the number of drivers
+        std::uint32_t driver_count{ 0 };
+        HWS_LEVEL_ZERO_ERROR_CHECK(zeDriverGet(&driver_count, nullptr))
+
+        // check if only the single GPU driver has been found
+        if (driver_count > 1) {
+            throw std::runtime_error{ fmt::format("Found too many GPU drivers ({})!", driver_count) };
+        }
+
+        // get the GPU driver
+        ze_driver_handle_t driver{};
+        HWS_LEVEL_ZERO_ERROR_CHECK(zeDriverGet(&driver_count, &driver))
+
+        // get all GPUs for the current driver
+        std::uint32_t device_count{ 0 };
+        HWS_LEVEL_ZERO_ERROR_CHECK(zeDeviceGet(driver, &device_count, nullptr))
+        for (std::uint32_t device = 0; device < device_count; ++device) {
+            samplers_.push_back(std::make_unique<gpu_intel_hardware_sampler>(static_cast<std::size_t>(device), sampling_interval, category));
+        }
+    }
+#endif
 }
 
 }  // namespace hws

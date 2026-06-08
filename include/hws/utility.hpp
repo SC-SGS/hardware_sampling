@@ -15,20 +15,30 @@
 #include "fmt/format.h"  // fmt::format
 #include "fmt/ranges.h"  // fmt::join
 
-#include <charconv>      // std::from_chars
-#include <chrono>        // std::chrono::duration
-#include <cmath>         // std::trunc
-#include <cstddef>       // std::size_t
-#include <optional>      // std::optional
-#include <stdexcept>     // std::runtime_error
-#include <string>        // std::string, std::stof, std::stod, std::stold
-#include <string_view>   // std::string_view
-#include <system_error>  // std::errc
-#include <type_traits>   // std::is_same_v, std::is_floating_point_v, std::remove_cv_t, std::remove_reference_t, std::true_type, std::false_type
-#include <vector>        // std::vector
+#include <charconv>       // std::from_chars
+#include <chrono>         // std::chrono::duration
+#include <cmath>          // std::trunc
+#include <cstddef>        // std::size_t
+#include <optional>       // std::optional
+#include <stdexcept>      // std::runtime_error
+#include <string>         // std::string, std::stof, std::stod, std::stold
+#include <string_view>    // std::string_view
+#include <system_error>   // std::errc
+#include <type_traits>    // std::is_same_v, std::is_floating_point_v, std::remove_cv_t, std::remove_reference_t, std::true_type, std::false_type
+#include <vector>         // std::vector
+#include <unordered_map>  // std::unordered_map
 
 #if defined(HWS_MPI_SUPPORT_ENABLED)
-#include <mpi.h>        // MPI_Comm
+    #include <mpi.h>  // MPI_Comm
+#endif
+
+#if defined(HWS_FOR_NVIDIA_GPUS_ENABLED)
+    #include "hws/gpu_nvidia/utility.hpp"  // HWS_CUDA_ERROR_CHECK
+    #include "cuda_runtime.h"  // cuda functions
+#endif
+#if defined(HWS_FOR_AMD_GPUS_ENABLED)
+    #include "hws/gpu_amd/utility.hpp"  // HWS_HIP_ERROR_CHECK
+    #include "hip/hip_runtime.h"  // hip functions
 #endif
 
 namespace hws::detail {
@@ -333,8 +343,297 @@ template <typename T>
  *
  * @return concatenated YAML string on rank 0, empty string on all other ranks
  */
-[[nodiscard]]
-std::string gather_yaml_strings_mpi(const std::string& local_yaml, MPI_Comm communicator);
+[[nodiscard]] std::string gather_yaml_strings_mpi(const std::string &local_yaml, MPI_Comm communicator);
+
+/**
+ * @brief The mode to use for MPI sampling.
+ * per_rank: each rank creates hardware samplers for all devices visible to that rank
+ * whole_node: if the same device is visible to more than one rank, only one of those ranks creates a hardware sampler for that device
+ */
+enum class mpi_sampling_mode {
+    per_rank,
+    whole_node
+};
+
+/**
+ * @brief Information about a node-local MPI communicator for whole-node sampling.
+ */
+struct hostname_comm_info {
+    MPI_Comm node_comm = MPI_COMM_NULL;
+    int node_rank = 0;
+    int node_size = 1;
+};
+
+/**
+ * @brief Create a node-local MPI communicator for whole-node sampling based on node hostnames.
+ * @param comm the parent MPI communicator to split into node-local communicators
+ * @return the node-local MPI communicator information
+ */
+inline hostname_comm_info make_hostname_comm(MPI_Comm comm) {
+    int world_rank = 0, world_size = 0;
+    MPI_Comm_rank(comm, &world_rank);
+    MPI_Comm_size(comm, &world_size);
+
+    // Gather all hostnames
+    char name[MPI_MAX_PROCESSOR_NAME];
+    int name_len = 0;
+    MPI_Get_processor_name(name, &name_len);
+
+    std::vector<int> name_lengths(world_size);
+    MPI_Allgather(&name_len, 1, MPI_INT, name_lengths.data(), 1, MPI_INT, comm);
+
+    // Build displacements and total byte count
+    std::vector<int> displs(world_size);
+    int total = 0;
+    for (int i = 0; i < world_size; ++i) {
+        displs[i] = total;
+        total += name_lengths[i];
+    }
+
+    std::vector<char> all_names(total);
+    MPI_Allgatherv(name, name_len, MPI_CHAR, all_names.data(), name_lengths.data(), displs.data(), MPI_CHAR, comm);
+
+    // Assign colors locally on every rank
+    //
+    // All ranks hold identical copies of all_names, name_lengths, and displs,
+    // so they can each compute the same deterministic color map independently.
+
+    std::unordered_map<std::string_view, int> host_to_color;
+    host_to_color.reserve(world_size);
+    std::vector<int> colors(world_size);
+    int next_color = 0;
+    for (int r = 0; r < world_size; ++r) {
+        // get host name of rank r
+        std::string_view host(&all_names[displs[r]], static_cast<std::size_t>(name_lengths[r]));
+
+        // try to insert it into the host_to_color map
+        auto [it, inserted] = host_to_color.emplace(host, next_color);
+
+        // check if host was new, if yes, increment color
+        if (inserted) {
+            ++next_color;
+        }
+        // save color of current rank, either from newly created or existing entry
+        colors[r] = it->second;
+    }
+
+    // Split communicator
+
+    hostname_comm_info info{};
+    MPI_Comm_split(comm, colors[world_rank], world_rank, &info.node_comm);
+    MPI_Comm_rank(info.node_comm, &info.node_rank);
+    MPI_Comm_size(info.node_comm, &info.node_size);
+    return info;
+}
+
+/**
+ * @brief Free a node-local MPI communicator for whole-node sampling.
+ * @param info the node-local MPI communicator information to free
+ */
+inline void free_hostname_comm(hostname_comm_info &info) {
+    if (info.node_comm != MPI_COMM_NULL) {
+        MPI_Comm_free(&info.node_comm);
+    }
+}
+
+enum class device_backend_kind {
+    nvidia,
+    amd,
+    intel
+};
+
+struct visible_gpu_device {
+    device_backend_kind backend;
+    int local_index;          // device index for that backend on this rank
+    std::string physical_id;  // stable per-node identifier
+};
+
+#endif
+
+#if defined(HWS_FOR_NVIDIA_GPUS_ENABLED)
+/**
+ * @brief returns a stable physical ID for the NVIDIA GPU device with the given local index
+ * The ID is at least unique per node and can be used to identify the same device across different MPI ranks on the same node.
+ *
+ * @param local_index the local index of the NVIDIA GPU device
+ * @return the physical ID of the NVIDIA GPU device
+ */
+inline std::string nvidia_physical_id(int local_index) {
+    char bus_id[64] = {};
+    HWS_CUDA_ERROR_CHECK(cudaDeviceGetPCIBusId(bus_id, sizeof(bus_id), local_index));
+    return std::string{ "nvidia:" } + bus_id;
+}
+
+/**
+ * @brief creates a list of all visible nvidia GPU devices
+ *
+ * @return a vector of all visible NVIDIA GPU devices on the local node, each with its local index and physical ID
+ */
+inline std::vector<visible_gpu_device> enumerate_local_nvidia_devices() {
+    std::vector<visible_gpu_device> out;
+    int count = 0;
+    HWS_CUDA_ERROR_CHECK(cudaGetDeviceCount(&count));
+    for (int i = 0; i < count; ++i) {
+        visible_gpu_device d;
+        d.backend = device_backend_kind::nvidia;
+        d.local_index = i;
+        d.physical_id = nvidia_physical_id(i);
+        out.push_back(std::move(d));
+    }
+    return out;
+}
+
+#endif
+
+#if defined(HWS_FOR_AMD_GPUS_ENABLED)
+inline std::string amd_physical_id(int local_index) {
+    char bus_id[64] = {};
+    HWS_HIP_ERROR_CHECK(hipDeviceGetPCIBusId(bus_id, sizeof(bus_id), local_index));
+    return std::string{ "amd:" } + bus_id;
+}
+
+inline std::vector<visible_gpu_device> enumerate_local_amd_devices() {
+    std::vector<visible_gpu_device> out;
+    int count = 0;
+    HWS_HIP_ERROR_CHECK(hipGetDeviceCount(&count));
+    for (int i = 0; i < count; ++i) {
+        visible_gpu_device d;
+        d.backend = device_backend_kind::amd;
+        d.local_index = i;
+        d.physical_id = amd_physical_id(i);
+        out.push_back(std::move(d));
+    }
+    return out;
+}
+#endif
+
+#if defined(HWS_FOR_INTEL_GPUS_ENABLED)
+inline std::string intel_physical_id(ze_device_handle_t device) {
+    ze_device_properties_t props{};
+    props.stype = ZE_STRUCTURE_TYPE_DEVICE_PROPERTIES;
+    props.pNext = nullptr;
+    HWS_LEVEL_ZERO_ERROR_CHECK(zeDeviceGetProperties(device, &props));
+
+    char buf[2 * ZE_MAX_DEVICE_UUID_SIZE + 1] = {};
+    for (std::size_t i = 0; i < ZE_MAX_DEVICE_UUID_SIZE; ++i) {
+        snprintf(buf + 2 * i, 3, "%02x", props.uuid.id[i]);
+    }
+
+    return std::string{ "intel:" } + buf;
+}
+
+inline std::vector<visible_gpu_device> enumerate_local_intel_devices() {
+    std::vector<visible_gpu_device> out;
+
+    // get the GPU driver
+    ze_driver_handle_t driver{};
+    HWS_LEVEL_ZERO_ERROR_CHECK(zeDriverGet(&driver_count, &driver));
+
+    // Discover devices for this driver
+    std::uint32_t device_count = 0;
+    HWS_LEVEL_ZERO_ERROR_CHECK(zeDeviceGet(driver, &device_count, nullptr));
+    if (device_count == 0) {
+        return out; // no Intel GPUs visible
+    }
+
+    std::vector<ze_device_handle_t> devices(device_count);
+    HWS_LEVEL_ZERO_ERROR_CHECK(zeDeviceGet(driver, &device_count, devices.data()));
+
+    // Fill visible_gpu_device list
+    for (std::uint32_t i = 0; i < device_count; ++i) {
+        ze_device_handle_t dev = devices[i];
+
+        visible_gpu_device d;
+        d.backend     = device_backend_kind::intel;
+        d.local_index = static_cast<int>(i);
+        d.physical_id = intel_physical_id(dev);
+
+        out.push_back(std::move(d));
+    }
+
+    return out;
+}
+#endif
+
+#if defined(HWS_MPI_SUPPORT_ENABLED)
+
+/**
+ * Computes for each MPI rank a list of devices that have to be sampled by this rank. Ensures that
+ * each device is sampled by exactly one rank.
+ *
+ * @param local_devices a vector of visible_gpu_device for the local rank, each containing a local index and a physical ID
+ * @param node_comm a node local MPI communicator
+ * @return all device indices that have to be sampled by this rank
+ */
+inline std::vector<int> owned_local_indices_for_backend(const std::vector<visible_gpu_device> &local_devices, MPI_Comm node_comm) {
+    int node_rank = 0, node_size = 0;
+    MPI_Comm_rank(node_comm, &node_rank);
+    MPI_Comm_size(node_comm, &node_size);
+
+    // Pack physical IDs into a newline-separated string
+    std::string packed;
+    for (const auto &d : local_devices) {
+        packed += d.physical_id;
+        packed += '\n';
+    }
+    const int local_size = static_cast<int>(packed.size());
+
+    // Allgather sizes
+    std::vector<int> sizes(node_size);
+    MPI_Allgather(&local_size, 1, MPI_INT, sizes.data(), 1, MPI_INT, node_comm);
+
+    // Displacements and total length
+    std::vector<int> displs(node_size);
+    int total = 0;
+    for (int r = 0; r < node_size; ++r) {
+        displs[r] = total;
+        total += sizes[r];
+    }
+
+    // Allgatherv packed physical IDs
+    std::vector<char> all_data(total);
+    MPI_Allgatherv(packed.data(), local_size, MPI_CHAR, all_data.data(), sizes.data(), displs.data(), MPI_CHAR, node_comm);
+
+    // Build owner map: physical_id -> first node_rank that reports it
+    std::unordered_map<std::string, int> owner_rank_for_id;
+    owner_rank_for_id.reserve(local_devices.size() * 2 + 1);
+
+    for (int r = 0; r < node_size; ++r) {
+        if (sizes[r] == 0) {
+            continue;
+        }
+
+        const char *base = all_data.data() + displs[r];
+        const int len = sizes[r];
+
+        int line_start = 0;
+        while (line_start < len) {
+            int line_end = line_start;
+            while (line_end < len && base[line_end] != '\n') {
+                ++line_end;
+            }
+            if (line_end > line_start) {
+                const std::string id(base + line_start, base + line_end);  // copy just this ID
+                owner_rank_for_id.emplace(id, r);                           // first insertion wins
+            }
+            line_start = line_end + 1;
+        }
+    }
+
+    // Decide which local indices we own: those whose physical_id is mapped to node_rank
+    std::vector<int> owned_indices;
+    owned_indices.reserve(local_devices.size());
+
+    for (const auto &d : local_devices) {
+        auto it = owner_rank_for_id.find(d.physical_id);
+        if (it != owner_rank_for_id.end() && it->second == node_rank) {
+            owned_indices.push_back(d.local_index);
+        }
+    }
+
+    return owned_indices;
+}
+
 #endif
 
 }  // namespace hws::detail
