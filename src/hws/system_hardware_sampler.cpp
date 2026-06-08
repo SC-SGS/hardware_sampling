@@ -119,9 +119,22 @@ void system_hardware_sampler::start_sampling() {
     std::for_each(samplers_.begin(), samplers_.end(), [](auto &ptr) { ptr->start_sampling(); });
 }
 
+#if defined(HWS_MPI_SUPPORT_ENABLED)
+void system_hardware_sampler::start_sampling(MPI_Comm communicator) {
+    MPI_Barrier(communicator);
+    std::for_each(samplers_.begin(), samplers_.end(), [](auto &ptr) { ptr->start_sampling(); });
+}
+#endif
 void system_hardware_sampler::stop_sampling() {
     std::for_each(samplers_.begin(), samplers_.end(), [](auto &ptr) { ptr->stop_sampling(); });
 }
+
+#if defined(HWS_MPI_SUPPORT_ENABLED)
+void system_hardware_sampler::stop_sampling(MPI_Comm communicator) {
+    std::for_each(samplers_.begin(), samplers_.end(), [](auto &ptr) { ptr->stop_sampling(); });
+    MPI_Barrier(communicator);
+}
+#endif
 
 void system_hardware_sampler::pause_sampling() {
     std::for_each(samplers_.begin(), samplers_.end(), [](auto &ptr) { ptr->pause_sampling(); });

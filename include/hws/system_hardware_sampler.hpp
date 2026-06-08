@@ -64,7 +64,6 @@ class system_hardware_sampler {
     explicit system_hardware_sampler(MPI_Comm communicator, detail::mpi_sampling_mode mode, std::chrono::milliseconds sampling_interval, sample_category category = sample_category::all);
 #endif
 
-
     /**
      * @brief Delete the copy-constructor.
      */
@@ -91,10 +90,24 @@ class system_hardware_sampler {
      * @brief Start hardware sampling for all wrapped hardware samplers.
      */
     void start_sampling();
+#if defined(HWS_MPI_SUPPORT_ENABLED)
+    /**
+     * @brief Start hardware sampling for all wrapped hardware samplers. Executes an MPI barrier before starting sampling to synchronize all MPI ranks.
+     * @param[in] communicator the MPI communicator to use
+     */
+    void start_sampling(MPI_Comm communicator);
+#endif
     /**
      * @brief Stop hardware sampling for all wrapped hardware samplers.
      */
     void stop_sampling();
+#if defined(HWS_MPI_SUPPORT_ENABLED)
+    /**
+     * @brief Stop hardware sampling for all wrapped hardware samplers. Executes an MPI barrier after stopping sampling to synchronize all MPI ranks.
+     * @param[in] communicator the MPI communicator to use
+     */
+    void stop_sampling(MPI_Comm communicator);
+#endif
     /**
      * @brief Pause hardware sampling for all wrapped hardware samplers.
      */
@@ -237,8 +250,6 @@ class system_hardware_sampler {
      * @param category the sample category
      */
     void create_local_samplers(std::chrono::milliseconds sampling_interval, hws::sample_category category);
-
-
 };
 
 }  // namespace hws
