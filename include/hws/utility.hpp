@@ -25,8 +25,8 @@
 #include <string_view>    // std::string_view
 #include <system_error>   // std::errc
 #include <type_traits>    // std::is_same_v, std::is_floating_point_v, std::remove_cv_t, std::remove_reference_t, std::true_type, std::false_type
-#include <vector>         // std::vector
 #include <unordered_map>  // std::unordered_map
+#include <vector>         // std::vector
 
 #if defined(HWS_MPI_SUPPORT_ENABLED)
     #include <mpi.h>  // MPI_Comm
@@ -39,6 +39,10 @@
 #if defined(HWS_FOR_AMD_GPUS_ENABLED)
     #include "hws/gpu_amd/utility.hpp"  // HWS_HIP_ERROR_CHECK
     #include "hip/hip_runtime.h"  // hip functions
+#endif
+#if defined(HWS_FOR_INTEL_GPUS_ENABLED)
+    #include "hws/gpu_intel/utility.hpp"  // HWS_LEVEL_ZERO_ERROR_CHECK
+    #include "level_zero/ze_api.h"   // Level Zero runtime functions
 #endif
 
 namespace hws::detail {
@@ -525,6 +529,18 @@ inline std::string intel_physical_id(ze_device_handle_t device) {
 inline std::vector<visible_gpu_device> enumerate_local_intel_devices() {
     std::vector<visible_gpu_device> out;
 
+    // init level zero driver
+    HWS_LEVEL_ZERO_ERROR_CHECK(zeInit(ZE_INIT_FLAG_GPU_ONLY))
+
+    // discover the number of drivers
+    std::uint32_t driver_count{ 0 };
+    HWS_LEVEL_ZERO_ERROR_CHECK(zeDriverGet(&driver_count, nullptr))
+
+    // check if only the single GPU driver has been found
+    if (driver_count > 1) {
+        throw std::runtime_error{ fmt::format("Found too many GPU drivers ({})!", driver_count) };
+    }
+
     // get the GPU driver
     ze_driver_handle_t driver{};
     HWS_LEVEL_ZERO_ERROR_CHECK(zeDriverGet(&driver_count, &driver));
@@ -533,7 +549,7 @@ inline std::vector<visible_gpu_device> enumerate_local_intel_devices() {
     std::uint32_t device_count = 0;
     HWS_LEVEL_ZERO_ERROR_CHECK(zeDeviceGet(driver, &device_count, nullptr));
     if (device_count == 0) {
-        return out; // no Intel GPUs visible
+        return out;  // no Intel GPUs visible
     }
 
     std::vector<ze_device_handle_t> devices(device_count);
@@ -544,7 +560,7 @@ inline std::vector<visible_gpu_device> enumerate_local_intel_devices() {
         ze_device_handle_t dev = devices[i];
 
         visible_gpu_device d;
-        d.backend     = device_backend_kind::intel;
+        d.backend = device_backend_kind::intel;
         d.local_index = static_cast<int>(i);
         d.physical_id = intel_physical_id(dev);
 
@@ -614,7 +630,7 @@ inline std::vector<int> owned_local_indices_for_backend(const std::vector<visibl
             }
             if (line_end > line_start) {
                 const std::string id(base + line_start, base + line_end);  // copy just this ID
-                owner_rank_for_id.emplace(id, r);                           // first insertion wins
+                owner_rank_for_id.emplace(id, r);                          // first insertion wins
             }
             line_start = line_end + 1;
         }
