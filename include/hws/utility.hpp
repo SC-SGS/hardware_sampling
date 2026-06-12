@@ -452,7 +452,6 @@ struct visible_gpu_device {
     std::string physical_id;  // stable per-node identifier
 };
 
-#endif
 
 #if defined(HWS_FOR_NVIDIA_GPUS_ENABLED)
 /**
@@ -571,7 +570,6 @@ inline std::vector<visible_gpu_device> enumerate_local_intel_devices() {
 }
 #endif
 
-#if defined(HWS_MPI_SUPPORT_ENABLED)
 
 /**
  * Computes for each MPI rank a list of devices that have to be sampled by this rank. Ensures that
