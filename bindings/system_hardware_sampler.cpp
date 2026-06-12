@@ -82,7 +82,7 @@ void init_system_hardware_sampler(py::module_ &m) {
 #else
         // No MPI support: only the simple overloads exist, no ambiguity
         .def("start", &hws::system_hardware_sampler::start_sampling, "start hardware sampling for all available hardware samplers")
-        .def("stop", &hws::system_hardware_sampler::stop_sampling, "stop hardware sampling for all available hardware samplers");
+        .def("stop", &hws::system_hardware_sampler::stop_sampling, "stop hardware sampling for all available hardware samplers")
 #endif
         .def("pause", &hws::system_hardware_sampler::pause_sampling, "pause hardware sampling for all available hardware samplers")
         .def("resume", &hws::system_hardware_sampler::resume_sampling, "resume hardware sampling for all available hardware samplers")
