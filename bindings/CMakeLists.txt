@@ -82,6 +82,13 @@ if(HWS_MPI_SUPPORT_ACTIVE)
                 "Install mpi4py in this environment or disable python bindings.")
     endif()
 
+    if(NOT EXISTS "${MPI4PY_INCLUDE_DIR}/mpi4py/mpi4py.h")
+        message(FATAL_ERROR
+                "mpi4py include path '${MPI4PY_INCLUDE_DIR}' does not contain mpi4py/mpi4py.h. "
+                "The mpi4py installation appears to be broken. "
+                "Reinstall mpi4py in this environment or disable python bindings.")
+    endif()
+
     target_include_directories(${HWS_PYTHON_BINDINGS_LIBRARY_NAME} PRIVATE ${MPI4PY_INCLUDE_DIR})
 
     # Propagate the same macro used on the C++ side into the Python module
