@@ -15,7 +15,7 @@
 #include <vector>       // std::vector
 
 #if defined(HWS_MPI_SUPPORT_ENABLED)
-#include <mpi.h>        // MPI_Comm, MPI_Gatherv, MPI_Gather, MPI_Initialized, MPI_Comm_rank, MPI_Comm_size
+    #include <mpi.h>  // MPI_Comm, MPI_Gatherv, MPI_Gather, MPI_Initialized, MPI_Comm_rank, MPI_Comm_size
 #endif
 
 namespace hws::detail {

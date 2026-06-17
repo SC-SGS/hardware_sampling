@@ -5,16 +5,16 @@
  *          See the LICENSE.md file in the project root for full license information.
  */
 
-#include "hws/version.hpp" // hws::version::version
+#include "hws/version.hpp"  // hws::version::version
 
 #include "pybind11/pybind11.h"  // PYBIND11_MODULE, py::module_
 
 #include <string_view>  // std::string_view
 
 #if defined(HWS_MPI_SUPPORT_ENABLED)
-#include <mpi.h>
-#include <mpi4py/mpi4py.h>
-#include "mpi4py_communicator.hpp"
+    #include "mpi4py_communicator.hpp"
+    #include <mpi.h>
+    #include <mpi4py/mpi4py.h>
 #endif
 
 #define HWS_IS_DEFINED_HELPER(x) #x
@@ -79,8 +79,6 @@ PYBIND11_MODULE(HardwareSampling, m) {
 
     init_version(m);
 }
-
-
 
 #if defined(HWS_MPI_SUPPORT_ENABLED)
 /**
