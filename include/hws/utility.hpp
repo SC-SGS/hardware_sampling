@@ -32,19 +32,6 @@
     #include <mpi.h>  // MPI_Comm
 #endif
 
-#if defined(HWS_FOR_NVIDIA_GPUS_ENABLED)
-    #include "hws/gpu_nvidia/utility.hpp"  // HWS_CUDA_ERROR_CHECK
-    #include "cuda_runtime.h"  // cuda functions
-#endif
-#if defined(HWS_FOR_AMD_GPUS_ENABLED)
-    #include "hws/gpu_amd/utility.hpp"  // HWS_HIP_ERROR_CHECK
-    #include "hip/hip_runtime.h"  // hip functions
-#endif
-#if defined(HWS_FOR_INTEL_GPUS_ENABLED)
-    #include "hws/gpu_intel/utility.hpp"  // HWS_LEVEL_ZERO_ERROR_CHECK
-    #include "level_zero/ze_api.h"   // Level Zero runtime functions
-#endif
-
 namespace hws::detail {
 
 /**
@@ -455,119 +442,29 @@ struct visible_gpu_device {
 
 #if defined(HWS_FOR_NVIDIA_GPUS_ENABLED)
 /**
- * @brief returns a stable physical ID for the NVIDIA GPU device with the given local index
- * The ID is at least unique per node and can be used to identify the same device across different MPI ranks on the same node.
- *
- * @param local_index the local index of the NVIDIA GPU device
- * @return the physical ID of the NVIDIA GPU device
- */
-inline std::string nvidia_physical_id(int local_index) {
-    char bus_id[64] = {};
-    HWS_CUDA_ERROR_CHECK(cudaDeviceGetPCIBusId(bus_id, sizeof(bus_id), local_index));
-    return std::string{ "nvidia:" } + bus_id;
-}
-
-/**
- * @brief creates a list of all visible nvidia GPU devices
+ * @brief creates a list of all visible NVIDIA GPU devices
  *
  * @return a vector of all visible NVIDIA GPU devices on the local node, each with its local index and physical ID
  */
-inline std::vector<visible_gpu_device> enumerate_local_nvidia_devices() {
-    std::vector<visible_gpu_device> out;
-    int count = 0;
-    HWS_CUDA_ERROR_CHECK(cudaGetDeviceCount(&count));
-    for (int i = 0; i < count; ++i) {
-        visible_gpu_device d;
-        d.backend = device_backend_kind::nvidia;
-        d.local_index = i;
-        d.physical_id = nvidia_physical_id(i);
-        out.push_back(std::move(d));
-    }
-    return out;
-}
-
+[[nodiscard]] std::vector<visible_gpu_device> enumerate_local_nvidia_devices();
 #endif
 
 #if defined(HWS_FOR_AMD_GPUS_ENABLED)
-inline std::string amd_physical_id(int local_index) {
-    char bus_id[64] = {};
-    HWS_HIP_ERROR_CHECK(hipDeviceGetPCIBusId(bus_id, sizeof(bus_id), local_index));
-    return std::string{ "amd:" } + bus_id;
-}
-
-inline std::vector<visible_gpu_device> enumerate_local_amd_devices() {
-    std::vector<visible_gpu_device> out;
-    int count = 0;
-    HWS_HIP_ERROR_CHECK(hipGetDeviceCount(&count));
-    for (int i = 0; i < count; ++i) {
-        visible_gpu_device d;
-        d.backend = device_backend_kind::amd;
-        d.local_index = i;
-        d.physical_id = amd_physical_id(i);
-        out.push_back(std::move(d));
-    }
-    return out;
-}
+/**
+ * @brief creates a list of all visible AMD GPU devices
+ *
+ * @return a vector of all visible AMD GPU devices on the local node, each with its local index and physical ID
+ */
+[[nodiscard]] std::vector<visible_gpu_device> enumerate_local_amd_devices();
 #endif
 
 #if defined(HWS_FOR_INTEL_GPUS_ENABLED)
-inline std::string intel_physical_id(ze_device_handle_t device) {
-    ze_device_properties_t props{};
-    props.stype = ZE_STRUCTURE_TYPE_DEVICE_PROPERTIES;
-    props.pNext = nullptr;
-    HWS_LEVEL_ZERO_ERROR_CHECK(zeDeviceGetProperties(device, &props));
-
-    char buf[2 * ZE_MAX_DEVICE_UUID_SIZE + 1] = {};
-    for (std::size_t i = 0; i < ZE_MAX_DEVICE_UUID_SIZE; ++i) {
-        snprintf(buf + 2 * i, 3, "%02x", props.uuid.id[i]);
-    }
-
-    return std::string{ "intel:" } + buf;
-}
-
-inline std::vector<visible_gpu_device> enumerate_local_intel_devices() {
-    std::vector<visible_gpu_device> out;
-
-    // init level zero driver
-    HWS_LEVEL_ZERO_ERROR_CHECK(zeInit(ZE_INIT_FLAG_GPU_ONLY))
-
-    // discover the number of drivers
-    std::uint32_t driver_count{ 0 };
-    HWS_LEVEL_ZERO_ERROR_CHECK(zeDriverGet(&driver_count, nullptr))
-
-    // check if only the single GPU driver has been found
-    if (driver_count > 1) {
-        throw std::runtime_error{ fmt::format("Found too many GPU drivers ({})!", driver_count) };
-    }
-
-    // get the GPU driver
-    ze_driver_handle_t driver{};
-    HWS_LEVEL_ZERO_ERROR_CHECK(zeDriverGet(&driver_count, &driver));
-
-    // Discover devices for this driver
-    std::uint32_t device_count = 0;
-    HWS_LEVEL_ZERO_ERROR_CHECK(zeDeviceGet(driver, &device_count, nullptr));
-    if (device_count == 0) {
-        return out;  // no Intel GPUs visible
-    }
-
-    std::vector<ze_device_handle_t> devices(device_count);
-    HWS_LEVEL_ZERO_ERROR_CHECK(zeDeviceGet(driver, &device_count, devices.data()));
-
-    // Fill visible_gpu_device list
-    for (std::uint32_t i = 0; i < device_count; ++i) {
-        ze_device_handle_t dev = devices[i];
-
-        visible_gpu_device d;
-        d.backend = device_backend_kind::intel;
-        d.local_index = static_cast<int>(i);
-        d.physical_id = intel_physical_id(dev);
-
-        out.push_back(std::move(d));
-    }
-
-    return out;
-}
+/**
+ * @brief creates a list of all visible Intel GPU devices
+ *
+ * @return a vector of all visible Intel GPU devices on the local node, each with its local index and physical ID
+ */
+[[nodiscard]] std::vector<visible_gpu_device> enumerate_local_intel_devices();
 #endif
 
 

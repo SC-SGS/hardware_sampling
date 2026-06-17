@@ -12,9 +12,17 @@
 #include "level_zero/ze_api.h"   // Level Zero runtime functions
 #include "level_zero/zes_api.h"  // Level Zero runtime functions
 
+#include <cstddef>      // std::size_t
+#include <cstdint>      // std::uint32_t
+#include <cstdio>       // snprintf
+#include <stdexcept>    // std::runtime_error
 #include <string>       // std::string
 #include <string_view>  // std::string_view
 #include <vector>       // std::vector
+
+#if defined(HWS_MPI_SUPPORT_ENABLED) && defined(HWS_FOR_INTEL_GPUS_ENABLED)
+    #include "hws/utility.hpp"  // hws::detail::visible_gpu_device, hws::detail::device_backend_kind
+#endif
 
 namespace hws::detail {
 
@@ -226,5 +234,78 @@ std::string memory_location_to_name(const zes_mem_loc_t mem_loc) {
             return "";
     }
 }
+
+#if defined(HWS_MPI_SUPPORT_ENABLED) && defined(HWS_FOR_INTEL_GPUS_ENABLED)
+
+namespace {
+
+/**
+ * @brief returns a stable physical ID for the Intel GPU @p device
+ * The ID is at least unique per node and can be used to identify the same device across different MPI ranks on the same node.
+ *
+ * @param device the Level Zero device handle of the Intel GPU device
+ * @return the physical ID of the Intel GPU device
+ */
+std::string intel_physical_id(ze_device_handle_t device) {
+    ze_device_properties_t props{};
+    props.stype = ZE_STRUCTURE_TYPE_DEVICE_PROPERTIES;
+    props.pNext = nullptr;
+    HWS_LEVEL_ZERO_ERROR_CHECK(zeDeviceGetProperties(device, &props));
+
+    char buf[2 * ZE_MAX_DEVICE_UUID_SIZE + 1] = {};
+    for (std::size_t i = 0; i < ZE_MAX_DEVICE_UUID_SIZE; ++i) {
+        snprintf(buf + 2 * i, 3, "%02x", props.uuid.id[i]);
+    }
+
+    return std::string{ "intel:" } + buf;
+}
+
+}  // namespace
+
+std::vector<visible_gpu_device> enumerate_local_intel_devices() {
+    std::vector<visible_gpu_device> out;
+
+    // init level zero driver
+    HWS_LEVEL_ZERO_ERROR_CHECK(zeInit(ZE_INIT_FLAG_GPU_ONLY))
+
+    // discover the number of drivers
+    std::uint32_t driver_count{ 0 };
+    HWS_LEVEL_ZERO_ERROR_CHECK(zeDriverGet(&driver_count, nullptr))
+
+    // check if only the single GPU driver has been found
+    if (driver_count > 1) {
+        throw std::runtime_error{ fmt::format("Found too many GPU drivers ({})!", driver_count) };
+    }
+
+    // get the GPU driver
+    ze_driver_handle_t driver{};
+    HWS_LEVEL_ZERO_ERROR_CHECK(zeDriverGet(&driver_count, &driver));
+
+    // Discover devices for this driver
+    std::uint32_t device_count = 0;
+    HWS_LEVEL_ZERO_ERROR_CHECK(zeDeviceGet(driver, &device_count, nullptr));
+    if (device_count == 0) {
+        return out;  // no Intel GPUs visible
+    }
+
+    std::vector<ze_device_handle_t> devices(device_count);
+    HWS_LEVEL_ZERO_ERROR_CHECK(zeDeviceGet(driver, &device_count, devices.data()));
+
+    // Fill visible_gpu_device list
+    for (std::uint32_t i = 0; i < device_count; ++i) {
+        ze_device_handle_t dev = devices[i];
+
+        visible_gpu_device d;
+        d.backend = device_backend_kind::intel;
+        d.local_index = static_cast<int>(i);
+        d.physical_id = intel_physical_id(dev);
+
+        out.push_back(std::move(d));
+    }
+
+    return out;
+}
+
+#endif
 
 }  // namespace hws::detail

@@ -19,7 +19,7 @@ endif ()
 message(STATUS "Enable sampling of NVIDIA GPU information using NVML (${CUDAToolkit_VERSION}).")
 
 # link against necessary libraries
-target_link_libraries(${HWS_LIBRARY_NAME} PUBLIC CUDA::nvml CUDA::cudart)
+target_link_libraries(${HWS_LIBRARY_NAME} PRIVATE CUDA::nvml CUDA::cudart)
 
 # add source file to source file list
 target_sources(${HWS_LIBRARY_NAME} PRIVATE
