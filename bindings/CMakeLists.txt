@@ -89,6 +89,18 @@ if(HWS_MPI_SUPPORT_ACTIVE)
                 "Reinstall mpi4py in this environment or disable python bindings.")
     endif()
 
+    execute_process(
+            COMMAND "${Python_EXECUTABLE}" -c
+            "import mpi4py, sys; sys.stdout.write(mpi4py.__version__)"
+            OUTPUT_VARIABLE MPI4PY_VERSION
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+    if(MPI4PY_VERSION VERSION_LESS "4.0")
+        message(FATAL_ERROR
+                "mpi4py>=4.0 is required but found ${MPI4PY_VERSION} in Python_EXECUTABLE='${Python_EXECUTABLE}'. "
+                "Upgrade mpi4py or disable python bindings.")
+    endif()
+
     target_include_directories(${HWS_PYTHON_BINDINGS_LIBRARY_NAME} PRIVATE ${MPI4PY_INCLUDE_DIR})
 
     # Propagate the same macro used on the C++ side into the Python module
