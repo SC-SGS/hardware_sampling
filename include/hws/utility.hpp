@@ -347,86 +347,77 @@ enum class mpi_sampling_mode {
 };
 
 /**
- * @brief Information about a node-local MPI communicator for whole-node sampling.
+ * @brief RAII wrapper around a node-local MPI communicator for whole-node sampling.
  */
 struct hostname_comm_info {
     MPI_Comm node_comm = MPI_COMM_NULL;
     int node_rank = 0;
     int node_size = 1;
-};
 
-/**
- * @brief Create a node-local MPI communicator for whole-node sampling based on node hostnames.
- * @param comm the parent MPI communicator to split into node-local communicators
- * @return the node-local MPI communicator information
- */
-inline hostname_comm_info make_hostname_comm(MPI_Comm comm) {
-    int world_rank = 0;
-    int world_size = 0;
-    MPI_Comm_rank(comm, &world_rank);
-    MPI_Comm_size(comm, &world_size);
+    explicit hostname_comm_info(MPI_Comm comm) {
+        int world_rank = 0;
+        int world_size = 0;
+        MPI_Comm_rank(comm, &world_rank);
+        MPI_Comm_size(comm, &world_size);
 
-    // Gather all hostnames
-    char name[MPI_MAX_PROCESSOR_NAME];
-    int name_len = 0;
-    MPI_Get_processor_name(name, &name_len);
+        // Gather all hostnames
+        char name[MPI_MAX_PROCESSOR_NAME];
+        int name_len = 0;
+        MPI_Get_processor_name(name, &name_len);
 
-    std::vector<int> name_lengths(world_size);
-    MPI_Allgather(&name_len, 1, MPI_INT, name_lengths.data(), 1, MPI_INT, comm);
+        std::vector<int> name_lengths(world_size);
+        MPI_Allgather(&name_len, 1, MPI_INT, name_lengths.data(), 1, MPI_INT, comm);
 
-    // Build displacements and total byte count
-    std::vector<int> displs(world_size);
-    int total = 0;
-    for (int i = 0; i < world_size; ++i) {
-        displs[i] = total;
-        total += name_lengths[i];
-    }
-
-    std::vector<char> all_names(total);
-    MPI_Allgatherv(name, name_len, MPI_CHAR, all_names.data(), name_lengths.data(), displs.data(), MPI_CHAR, comm);
-
-    // Assign colors locally on every rank
-    //
-    // All ranks hold identical copies of all_names, name_lengths, and displs,
-    // so they can each compute the same deterministic color map independently.
-
-    std::unordered_map<std::string_view, int> host_to_color;
-    host_to_color.reserve(world_size);
-    std::vector<int> colors(world_size);
-    int next_color = 0;
-    for (int r = 0; r < world_size; ++r) {
-        // get host name of rank r
-        std::string_view host(&all_names[displs[r]], static_cast<std::size_t>(name_lengths[r]));
-
-        // try to insert it into the host_to_color map
-        auto [it, inserted] = host_to_color.emplace(host, next_color);
-
-        // check if host was new, if yes, increment color
-        if (inserted) {
-            ++next_color;
+        // Build displacements and total byte count
+        std::vector<int> displs(world_size);
+        int total = 0;
+        for (int i = 0; i < world_size; ++i) {
+            displs[i] = total;
+            total += name_lengths[i];
         }
-        // save color of current rank, either from newly created or existing entry
-        colors[r] = it->second;
+
+        std::vector<char> all_names(total);
+        MPI_Allgatherv(name, name_len, MPI_CHAR, all_names.data(), name_lengths.data(), displs.data(), MPI_CHAR, comm);
+
+        // Assign colors locally on every rank
+        //
+        // All ranks hold identical copies of all_names, name_lengths, and displs,
+        // so they can each compute the same deterministic color map independently.
+
+        std::unordered_map<std::string_view, int> host_to_color;
+        host_to_color.reserve(world_size);
+        std::vector<int> colors(world_size);
+        int next_color = 0;
+        for (int r = 0; r < world_size; ++r) {
+            // get host name of rank r
+            std::string_view host(&all_names[displs[r]], static_cast<std::size_t>(name_lengths[r]));
+
+            // try to insert it into the host_to_color map
+            auto [it, inserted] = host_to_color.emplace(host, next_color);
+
+            // check if host was new, if yes, increment color
+            if (inserted) {
+                ++next_color;
+            }
+            // save color of current rank, either from newly created or existing entry
+            colors[r] = it->second;
+        }
+
+        // Split communicator
+        MPI_Comm_split(comm, colors[world_rank], world_rank, &node_comm);
+        MPI_Comm_rank(node_comm, &node_rank);
+        MPI_Comm_size(node_comm, &node_size);
     }
 
-    // Split communicator
+    hostname_comm_info(const hostname_comm_info &) = delete;
+    hostname_comm_info &operator=(const hostname_comm_info &) = delete;
 
-    hostname_comm_info info{};
-    MPI_Comm_split(comm, colors[world_rank], world_rank, &info.node_comm);
-    MPI_Comm_rank(info.node_comm, &info.node_rank);
-    MPI_Comm_size(info.node_comm, &info.node_size);
-    return info;
-}
-
-/**
- * @brief Free a node-local MPI communicator for whole-node sampling.
- * @param info the node-local MPI communicator information to free
- */
-inline void free_hostname_comm(hostname_comm_info &info) {
-    if (info.node_comm != MPI_COMM_NULL) {
-        MPI_Comm_free(&info.node_comm);
+    ~hostname_comm_info() {
+        if (node_comm != MPI_COMM_NULL) {
+            MPI_Comm_free(&node_comm);
+        }
     }
-}
+};
 
 enum class device_backend_kind {
     nvidia,

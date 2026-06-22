@@ -65,7 +65,7 @@ system_hardware_sampler::system_hardware_sampler(MPI_Comm communicator, const de
         create_local_samplers(sampling_interval, category);
     } else if (mode == detail::mpi_sampling_mode::whole_node) {
         // create a custom, node-local MPI communicator
-        detail::hostname_comm_info nc = detail::make_hostname_comm(communicator);
+        detail::hostname_comm_info nc{ communicator };
 
     // CPU: one sampler per node --> node leader only
     #if defined(HWS_FOR_CPUS_ENABLED)
@@ -108,7 +108,6 @@ system_hardware_sampler::system_hardware_sampler(MPI_Comm communicator, const de
         }
     #endif
 
-        detail::free_hostname_comm(nc);
     } else {
         throw std::runtime_error{ fmt::format("Unknown MPI sampling mode {}!", static_cast<int>(mode)) };
     }
