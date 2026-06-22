@@ -85,7 +85,7 @@ std::string gather_yaml_strings_mpi(const std::string &local_yaml, MPI_Comm comm
     MPI_Initialized(&initialized);
 
     if (!initialized) {
-        throw std::runtime_error("MPI must already be initialized");
+        throw std::runtime_error{"MPI must already be initialized"};
     }
 
     // MPI rank and world size for identification and communication

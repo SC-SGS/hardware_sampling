@@ -154,7 +154,7 @@ void hardware_sampler::dump_yaml_global(const char *filename, MPI_Comm communica
     MPI_Initialized(&initialized);
 
     if (!initialized) {
-        throw std::runtime_error("MPI must already be initialized");
+        throw std::runtime_error{"MPI must already be initialized"};
     }
 
     // MPI rank and world size for identification and communication
