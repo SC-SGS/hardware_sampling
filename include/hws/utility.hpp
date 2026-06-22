@@ -258,7 +258,7 @@ template <typename T>
  * @param[in] prefix the prefix (indentation) added to each line
  * @return the indented string
  */
-[[nodiscard]] std::string indent_lines(const std::string &text, const std::string &prefix);
+[[nodiscard]] std::string indent_lines(const std::string &text, std::string_view prefix);
 
 /*****************************************************************************************************/
 /**                                      other free functions                                       **/

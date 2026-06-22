@@ -66,14 +66,16 @@ bool is_integer(std::string_view str) {
     return std::all_of(str.cbegin(), str.cend(), [](const char c) { return std::isdigit(static_cast<unsigned char>(c)); });
 }
 
-std::string indent_lines(const std::string &text, const std::string &prefix) {
+std::string indent_lines(const std::string &text, const std::string_view prefix) {
     std::stringstream ss{ text };
 
     std::string line;
     std::string out;
 
     while (std::getline(ss, line)) {
-        out += prefix + line + '\n';
+        out += prefix;
+        out += line;
+        out += '\n';
     }
 
     return out;
