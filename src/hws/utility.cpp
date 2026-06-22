@@ -95,7 +95,7 @@ std::string gather_yaml_strings_mpi(const std::string &local_yaml, MPI_Comm comm
     MPI_Comm_size(communicator, &world_size);
 
     // gather the size of the yaml string from each rank
-    int local_size = static_cast<int>(local_yaml.size());
+    const int local_size = static_cast<int>(local_yaml.size());
 
     std::vector<int> recv_sizes;
 

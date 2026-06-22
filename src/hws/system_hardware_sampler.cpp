@@ -56,10 +56,10 @@ system_hardware_sampler::system_hardware_sampler(const std::chrono::milliseconds
 }
 
 #if defined(HWS_MPI_SUPPORT_ENABLED)
-system_hardware_sampler::system_hardware_sampler(MPI_Comm communicator, detail::mpi_sampling_mode mode, sample_category category) :
+system_hardware_sampler::system_hardware_sampler(MPI_Comm communicator, const detail::mpi_sampling_mode mode, const sample_category category) :
     system_hardware_sampler(communicator, mode, HWS_SAMPLING_INTERVAL, category) { }
 
-system_hardware_sampler::system_hardware_sampler(MPI_Comm communicator, detail::mpi_sampling_mode mode, std::chrono::milliseconds sampling_interval, sample_category category) {
+system_hardware_sampler::system_hardware_sampler(MPI_Comm communicator, const detail::mpi_sampling_mode mode, const std::chrono::milliseconds sampling_interval, const sample_category category) {
     if (mode == detail::mpi_sampling_mode::per_rank) {
         // each rank creates samplers for all devices visible to him
         create_local_samplers(sampling_interval, category);
@@ -79,7 +79,7 @@ system_hardware_sampler::system_hardware_sampler(MPI_Comm communicator, detail::
         {
             const auto local = detail::enumerate_local_nvidia_devices();
             const auto owned = detail::owned_local_indices_for_backend(local, nc.node_comm);
-            for (int idx : owned) {
+            for (int const idx : owned) {
                 samplers_.push_back(std::make_unique<gpu_nvidia_hardware_sampler>(static_cast<std::size_t>(idx), sampling_interval, category));
             }
         }
@@ -90,7 +90,7 @@ system_hardware_sampler::system_hardware_sampler(MPI_Comm communicator, detail::
         {
             const auto local = detail::enumerate_local_amd_devices();
             const auto owned = detail::owned_local_indices_for_backend(local, nc.node_comm);
-            for (int idx : owned) {
+            for (int const idx : owned) {
                 samplers_.push_back(std::make_unique<gpu_amd_hardware_sampler>(
                     static_cast<std::size_t>(idx), sampling_interval, category));
             }
@@ -102,7 +102,7 @@ system_hardware_sampler::system_hardware_sampler(MPI_Comm communicator, detail::
         {
             const auto local = detail::enumerate_local_intel_devices();
             const auto owned = detail::owned_local_indices_for_backend(local, nc.node_comm);
-            for (int idx : owned) {
+            for (int const idx : owned) {
                 samplers_.push_back(std::make_unique<gpu_intel_hardware_sampler>(static_cast<std::size_t>(idx), sampling_interval, category));
             }
         }
