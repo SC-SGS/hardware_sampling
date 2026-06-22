@@ -65,7 +65,7 @@ system_hardware_sampler::system_hardware_sampler(MPI_Comm communicator, const de
         create_local_samplers(sampling_interval, category);
     } else if (mode == detail::mpi_sampling_mode::whole_node) {
         // create a custom, node-local MPI communicator
-        auto nc = detail::make_hostname_comm(communicator);
+        detail::hostname_comm_info nc = detail::make_hostname_comm(communicator);
 
     // CPU: one sampler per node --> node leader only
     #if defined(HWS_FOR_CPUS_ENABLED)
@@ -77,8 +77,8 @@ system_hardware_sampler::system_hardware_sampler(MPI_Comm communicator, const de
     // NVIDIA
     #if defined(HWS_FOR_NVIDIA_GPUS_ENABLED)
         {
-            const auto local = detail::enumerate_local_nvidia_devices();
-            const auto owned = detail::owned_local_indices_for_backend(local, nc.node_comm);
+            const std::vector<detail::visible_gpu_device> local = detail::enumerate_local_nvidia_devices();
+            const std::vector<int> owned = detail::owned_local_indices_for_backend(local, nc.node_comm);
             for (int const idx : owned) {
                 samplers_.push_back(std::make_unique<gpu_nvidia_hardware_sampler>(static_cast<std::size_t>(idx), sampling_interval, category));
             }
@@ -88,8 +88,8 @@ system_hardware_sampler::system_hardware_sampler(MPI_Comm communicator, const de
     // AMD
     #if defined(HWS_FOR_AMD_GPUS_ENABLED)
         {
-            const auto local = detail::enumerate_local_amd_devices();
-            const auto owned = detail::owned_local_indices_for_backend(local, nc.node_comm);
+            const std::vector<detail::visible_gpu_device> local = detail::enumerate_local_amd_devices();
+            const std::vector<int> owned = detail::owned_local_indices_for_backend(local, nc.node_comm);
             for (int const idx : owned) {
                 samplers_.push_back(std::make_unique<gpu_amd_hardware_sampler>(
                     static_cast<std::size_t>(idx), sampling_interval, category));
@@ -100,8 +100,8 @@ system_hardware_sampler::system_hardware_sampler(MPI_Comm communicator, const de
     // Intel
     #if defined(HWS_FOR_INTEL_GPUS_ENABLED)
         {
-            const auto local = detail::enumerate_local_intel_devices();
-            const auto owned = detail::owned_local_indices_for_backend(local, nc.node_comm);
+            const std::vector<detail::visible_gpu_device> local = detail::enumerate_local_intel_devices();
+            const std::vector<int> owned = detail::owned_local_indices_for_backend(local, nc.node_comm);
             for (int const idx : owned) {
                 samplers_.push_back(std::make_unique<gpu_intel_hardware_sampler>(static_cast<std::size_t>(idx), sampling_interval, category));
             }
