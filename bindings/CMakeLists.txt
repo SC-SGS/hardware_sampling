@@ -70,21 +70,21 @@ if(HWS_MPI_SUPPORT_ACTIVE)
     execute_process(
             COMMAND "${Python_EXECUTABLE}" -c
             "import mpi4py, sys; sys.stdout.write(mpi4py.get_include())"
-            RESULT_VARIABLE MPI4PY_IMPORT_RESULT
-            OUTPUT_VARIABLE MPI4PY_INCLUDE_DIR
+            RESULT_VARIABLE HWS_MPI4PY_IMPORT_RESULT
+            OUTPUT_VARIABLE HWS_MPI4PY_INCLUDE_DIR
             OUTPUT_STRIP_TRAILING_WHITESPACE
     )
 
-    if(MPI4PY_IMPORT_RESULT)
+    if(HWS_MPI4PY_IMPORT_RESULT)
         message(FATAL_ERROR
                 "MPI support is enabled in hws (HWS_ENABLE_MPI_SUPPORT=AUTO/ON and MPI_FOUND) "
                 "but mpi4py is not importable in Python_EXECUTABLE='${Python_EXECUTABLE}'. "
                 "Install mpi4py in this environment or disable python bindings.")
     endif()
 
-    if(NOT EXISTS "${MPI4PY_INCLUDE_DIR}/mpi4py/mpi4py.h")
+    if(NOT EXISTS "${HWS_MPI4PY_INCLUDE_DIR}/mpi4py/mpi4py.h")
         message(FATAL_ERROR
-                "mpi4py include path '${MPI4PY_INCLUDE_DIR}' does not contain mpi4py/mpi4py.h. "
+                "mpi4py include path '${HWS_MPI4PY_INCLUDE_DIR}' does not contain mpi4py/mpi4py.h. "
                 "The mpi4py installation appears to be broken. "
                 "Reinstall mpi4py in this environment or disable python bindings.")
     endif()
@@ -92,16 +92,16 @@ if(HWS_MPI_SUPPORT_ACTIVE)
     execute_process(
             COMMAND "${Python_EXECUTABLE}" -c
             "import mpi4py, sys; sys.stdout.write(mpi4py.__version__)"
-            OUTPUT_VARIABLE MPI4PY_VERSION
+            OUTPUT_VARIABLE HWS_MPI4PY_VERSION
             OUTPUT_STRIP_TRAILING_WHITESPACE
     )
-    if(MPI4PY_VERSION VERSION_LESS "4.0")
+    if(HWS_MPI4PY_VERSION VERSION_LESS "4.0")
         message(FATAL_ERROR
-                "mpi4py>=4.0 is required but found ${MPI4PY_VERSION} in Python_EXECUTABLE='${Python_EXECUTABLE}'. "
+                "mpi4py>=4.0 is required but found ${HWS_MPI4PY_VERSION} in Python_EXECUTABLE='${Python_EXECUTABLE}'. "
                 "Upgrade mpi4py or disable python bindings.")
     endif()
 
-    target_include_directories(${HWS_PYTHON_BINDINGS_LIBRARY_NAME} PRIVATE ${MPI4PY_INCLUDE_DIR})
+    target_include_directories(${HWS_PYTHON_BINDINGS_LIBRARY_NAME} PRIVATE ${HWS_MPI4PY_INCLUDE_DIR})
 
     # Propagate the same macro used on the C++ side into the Python module
     target_compile_definitions(${HWS_PYTHON_BINDINGS_LIBRARY_NAME} PRIVATE HWS_MPI_SUPPORT_ENABLED)
