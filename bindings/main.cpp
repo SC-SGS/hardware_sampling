@@ -90,12 +90,12 @@ PYBIND11_MODULE(HardwareSampling, m) {
  */
 MPI_Comm mpi_comm_from_python(py::object py_comm) {
     if (!PyObject_TypeCheck(py_comm.ptr(), &PyMPIComm_Type)) {
-        throw std::runtime_error("expected mpi4py.MPI.Comm as communicator argument");
+        throw std::runtime_error{"expected mpi4py.MPI.Comm as communicator argument"};
     }
 
     MPI_Comm *comm_ptr = PyMPIComm_Get(py_comm.ptr());
     if (comm_ptr == nullptr) {
-        throw std::runtime_error("could not extract MPI_Comm from mpi4py communicator");
+        throw std::runtime_error{"could not extract MPI_Comm from mpi4py communicator"};
     }
 
     return *comm_ptr;
