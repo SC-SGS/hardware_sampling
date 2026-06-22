@@ -246,7 +246,7 @@ namespace {
  * @param device the Level Zero device handle of the Intel GPU device
  * @return the physical ID of the Intel GPU device
  */
-std::string intel_physical_id(ze_device_handle_t device) {
+[[nodiscard]] std::string intel_physical_id(const ze_device_handle_t device) {
     ze_device_properties_t props{};
     props.stype = ZE_STRUCTURE_TYPE_DEVICE_PROPERTIES;
     props.pNext = nullptr;
@@ -262,7 +262,7 @@ std::string intel_physical_id(ze_device_handle_t device) {
 
 }  // namespace
 
-std::vector<visible_gpu_device> enumerate_local_intel_devices() {
+[[nodiscard]] std::vector<visible_gpu_device> enumerate_local_intel_devices() {
     std::vector<visible_gpu_device> out;
 
     // init level zero driver

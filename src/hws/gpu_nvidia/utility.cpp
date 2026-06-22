@@ -71,7 +71,7 @@ namespace {
  * @param local_index the local index of the NVIDIA GPU device
  * @return the physical ID of the NVIDIA GPU device
  */
-std::string nvidia_physical_id(int local_index) {
+[[nodiscard]] std::string nvidia_physical_id(const int local_index) {
     char bus_id[64] = {};
     HWS_CUDA_ERROR_CHECK(cudaDeviceGetPCIBusId(bus_id, sizeof(bus_id), local_index));
     return std::string{ "nvidia:" } + bus_id;
@@ -79,7 +79,7 @@ std::string nvidia_physical_id(int local_index) {
 
 }  // namespace
 
-std::vector<visible_gpu_device> enumerate_local_nvidia_devices() {
+[[nodiscard]] std::vector<visible_gpu_device> enumerate_local_nvidia_devices() {
     std::vector<visible_gpu_device> out;
     int count = 0;
     HWS_CUDA_ERROR_CHECK(cudaGetDeviceCount(&count));

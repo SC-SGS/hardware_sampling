@@ -57,7 +57,7 @@ namespace {
  * @param local_index the local index of the AMD GPU device
  * @return the physical ID of the AMD GPU device
  */
-std::string amd_physical_id(int local_index) {
+[[nodiscard]] std::string amd_physical_id(const int local_index) {
     char bus_id[64] = {};
     HWS_HIP_ERROR_CHECK(hipDeviceGetPCIBusId(bus_id, sizeof(bus_id), local_index));
     return std::string{ "amd:" } + bus_id;
@@ -65,7 +65,7 @@ std::string amd_physical_id(int local_index) {
 
 }  // namespace
 
-std::vector<visible_gpu_device> enumerate_local_amd_devices() {
+[[nodiscard]] std::vector<visible_gpu_device> enumerate_local_amd_devices() {
     std::vector<visible_gpu_device> out;
     int count = 0;
     HWS_HIP_ERROR_CHECK(hipGetDeviceCount(&count));
