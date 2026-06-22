@@ -361,7 +361,8 @@ struct hostname_comm_info {
  * @return the node-local MPI communicator information
  */
 inline hostname_comm_info make_hostname_comm(MPI_Comm comm) {
-    int world_rank = 0, world_size = 0;
+    int world_rank = 0;
+    int world_size = 0;
     MPI_Comm_rank(comm, &world_rank);
     MPI_Comm_size(comm, &world_size);
 
@@ -475,7 +476,8 @@ struct visible_gpu_device {
  * @return all device indices that have to be sampled by this rank
  */
 inline std::vector<int> owned_local_indices_for_backend(const std::vector<visible_gpu_device> &local_devices, MPI_Comm node_comm) {
-    int node_rank = 0, node_size = 0;
+    int node_rank = 0;
+    int node_size = 0;
     MPI_Comm_rank(node_comm, &node_rank);
     MPI_Comm_size(node_comm, &node_size);
 

@@ -89,7 +89,8 @@ std::string gather_yaml_strings_mpi(const std::string &local_yaml, MPI_Comm comm
     }
 
     // MPI rank and world size for identification and communication
-    int rank = 0, world_size = 0;
+    int rank = 0;
+    int world_size = 0;
     MPI_Comm_rank(communicator, &rank);
     MPI_Comm_size(communicator, &world_size);
 
