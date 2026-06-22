@@ -8,8 +8,8 @@
  * @brief Utility functions for transforming mpi4py communicators into C++ MPI communicators
  */
 
-#ifndef HWS_HARDWARE_SAMPLING_FOR_GPUS_AND_CPUS_MPI4PY_COMMUNICATOR_HPP
-#define HWS_HARDWARE_SAMPLING_FOR_GPUS_AND_CPUS_MPI4PY_COMMUNICATOR_HPP
+#ifndef HWS_BINDINGS_MPI4PY_COMMUNICATOR_HPP
+#define HWS_BINDINGS_MPI4PY_COMMUNICATOR_HPP
 #pragma once
 
 #include "pybind11/pybind11.h"
@@ -24,4 +24,4 @@ namespace py = pybind11;
 MPI_Comm mpi_comm_from_python(py::object py_comm);
 #endif
 
-#endif  // HWS_HARDWARE_SAMPLING_FOR_GPUS_AND_CPUS_MPI4PY_COMMUNICATOR_HPP
+#endif  // HWS_BINDINGS_MPI4PY_COMMUNICATOR_HPP
