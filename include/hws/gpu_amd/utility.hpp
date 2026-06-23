@@ -18,6 +18,12 @@
 #include <stdexcept>  // std::runtime_error
 #include <string>     // std::string
 
+#if defined(HWS_MPI_SUPPORT_ENABLED)
+    #include "hws/visible_gpu_device.hpp"  // hws::detail::visible_gpu_device
+
+    #include <vector>  // std::vector
+#endif
+
 namespace hws::detail {
 
 /**
@@ -67,6 +73,18 @@ namespace hws::detail {
  * @return all event throttle reasons (`[[nodiscard]]`)
  */
 [[nodiscard]] std::string performance_level_to_string(rsmi_dev_perf_level_t perf_level);
+
+
+#if defined(HWS_MPI_SUPPORT_ENABLED)
+
+/**
+ * @brief creates a list of all visible AMD GPU devices
+ *
+ * @return a vector of all visible AMD GPU devices on the local node, each with its local index and physical ID
+ */
+[[nodiscard]] std::vector<visible_gpu_device> enumerate_local_amd_devices();
+
+#endif
 
 }  // namespace hws::detail
 

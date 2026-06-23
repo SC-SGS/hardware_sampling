@@ -14,7 +14,7 @@
 #include "hws/event.hpp"             // hws::event
 #include "hws/hardware_sampler.hpp"  // hws::hardware_sampler
 #include "hws/sample_category.hpp"   // hws::sample_category
-#include "hws/utility.hpp"           // hws::detail::mpi_sampling_mode
+#include "hws/utility.hpp"           // hws::detail::indent_lines
 
 #include <chrono>      // std::chrono::{milliseconds, steady_clock::time_point}
 #include <cstddef>     // std::size_t
@@ -24,7 +24,8 @@
 #include <vector>      // std::vector
 
 #if defined(HWS_MPI_SUPPORT_ENABLED)
-    #include <mpi.h>  // MPI_Comm
+    #include "hws/mpi_sampling_mode.hpp"  // hws::detail::mpi_sampling_mode
+    #include <mpi.h>                      // MPI_Comm
 #endif
 
 namespace hws {

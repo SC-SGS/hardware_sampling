@@ -177,6 +177,8 @@ if (HWS_ENABLE_MPI_SUPPORT MATCHES "AUTO" OR HWS_ENABLE_MPI_SUPPORT)
 
         # Expose that MPI is really enabled for the Python bindings (and potentially other submodules) via a cache variable.
         set(HWS_MPI_SUPPORT_ACTIVE TRUE CACHE BOOL "MPI support enabled in core library" FORCE)
+
+        target_sources(${HWS_LIBRARY_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/hws/mpi_utility.cpp)
     endif ()
 endif ()
 

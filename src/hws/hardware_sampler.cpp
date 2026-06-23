@@ -25,7 +25,7 @@
 #include <utility>    // std::move
 
 #if defined(HWS_MPI_SUPPORT_ENABLED)
-    #include <mpi.h>  // MPI_Comm
+    #include "hws/mpi_utility.hpp"  // hws::detail::gather_yaml_strings_mpi
 #endif
 
 namespace hws {

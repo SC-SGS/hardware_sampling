@@ -42,7 +42,7 @@
 #include <vector>     // std::vector
 
 #if defined(HWS_MPI_SUPPORT_ENABLED)
-    #include <mpi.h>  // MPI_Comm
+    #include "hws/mpi_utility.hpp"  // hws::detail::hostname_comm_info, hws::detail::owned_local_indices_for_backend
 #endif
 
 namespace hws {

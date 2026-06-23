@@ -21,6 +21,10 @@
 #include <string_view>  // std::string_view
 #include <vector>       // std::vector
 
+#if defined(HWS_MPI_SUPPORT_ENABLED)
+    #include "hws/visible_gpu_device.hpp"  // hws::detail::visible_gpu_device
+#endif
+
 namespace hws::detail {
 
 /**
@@ -74,6 +78,17 @@ namespace hws::detail {
  * @return the string representation (`[[nodiscard]]`)
  */
 [[nodiscard]] std::string memory_location_to_name(zes_mem_loc_t mem_loc);
+
+#if defined(HWS_MPI_SUPPORT_ENABLED)
+
+/**
+ * @brief creates a list of all visible Intel GPU devices
+ *
+ * @return a vector of all visible Intel GPU devices on the local node, each with its local index and physical ID
+ */
+[[nodiscard]] std::vector<visible_gpu_device> enumerate_local_intel_devices();
+
+#endif
 
 }  // namespace hws::detail
 

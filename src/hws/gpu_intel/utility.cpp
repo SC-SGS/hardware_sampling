@@ -21,7 +21,7 @@
 #include <vector>       // std::vector
 
 #if defined(HWS_MPI_SUPPORT_ENABLED) && defined(HWS_FOR_INTEL_GPUS_ENABLED)
-    #include "hws/utility.hpp"  // hws::detail::visible_gpu_device, hws::detail::device_backend_kind
+    #include "hws/visible_gpu_device.hpp"  // hws::detail::visible_gpu_device, hws::detail::device_backend_kind
 #endif
 
 namespace hws::detail {
