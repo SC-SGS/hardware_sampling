@@ -79,14 +79,20 @@ if(HWS_MPI_SUPPORT_ACTIVE)
         message(FATAL_ERROR
                 "MPI support is enabled in hws (HWS_ENABLE_MPI_SUPPORT=AUTO/ON and MPI_FOUND) "
                 "but mpi4py is not importable in Python_EXECUTABLE='${Python_EXECUTABLE}'. "
-                "Install mpi4py in this environment or disable python bindings.")
+                "To fix this, either:\n"
+                "  1. Reinstall mpi4py in this environment  \n"
+                "  2. Disable Python bindings:               -DHWS_ENABLE_PYTHON_BINDINGS=OFF\n"
+                "  3. Disable MPI support:                   -DHWS_ENABLE_MPI_SUPPORT=OFF")
     endif()
 
     if(NOT EXISTS "${HWS_MPI4PY_INCLUDE_DIR}/mpi4py/mpi4py.h")
         message(FATAL_ERROR
                 "mpi4py include path '${HWS_MPI4PY_INCLUDE_DIR}' does not contain mpi4py/mpi4py.h. "
                 "The mpi4py installation appears to be broken. "
-                "Reinstall mpi4py in this environment or disable python bindings.")
+                "To fix this, either:\n"
+                "  1. Reinstall mpi4py in this environment  \n"
+                "  2. Disable Python bindings:               -DHWS_ENABLE_PYTHON_BINDINGS=OFF\n"
+                "  3. Disable MPI support:                   -DHWS_ENABLE_MPI_SUPPORT=OFF")
     endif()
 
     execute_process(
