@@ -18,12 +18,20 @@
 
 namespace hws::detail {
 
+/**
+ * @brief Enum class representing the backend kind of visible GPU device.
+ * @details The backend kind can be NVIDIA, AMD, or Intel.
+ */
 enum class device_backend_kind {
     nvidia,
     amd,
     intel
 };
 
+/**
+ * @brief Represents a visible GPU device on the local rank.
+ * @details Contains the backend kind, the local index of the device for that backend on this rank, and a stable per-node identifier (physical ID) for the device.
+ */
 struct visible_gpu_device {
     device_backend_kind backend;
     int local_index;          // device index for that backend on this rank
