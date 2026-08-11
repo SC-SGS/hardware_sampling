@@ -38,4 +38,9 @@
     #include "hws/gpu_intel/level_zero_samples.hpp"
 #endif
 
+#if defined(HWS_FOR_CRAY_PM_COUNTERS_ENABLED)
+    #include "hws/cray_pm_counters/hardware_sampler.hpp"
+    #include "hws/cray_pm_counters/pm_counters_samples.hpp"
+#endif
+
 #endif  // HWS_CORE_HPP_

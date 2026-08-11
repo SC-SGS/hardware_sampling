@@ -13,6 +13,10 @@
 #if defined(HWS_FOR_CPUS_ENABLED)
     #include "hws/cpu/hardware_sampler.hpp"  // hws::cpu_hardware_sampler
 #endif
+#if defined(HWS_FOR_CRAY_PM_COUNTERS_ENABLED)
+    #include "hws/cray_pm_counters/hardware_sampler.hpp"  // hws::cray_pm_counters_hardware_sampler
+    #include "hws/cray_pm_counters/utility.hpp"            // hws::detail::pm_counters_available
+#endif
 #if defined(HWS_FOR_NVIDIA_GPUS_ENABLED)
     #include "hws/gpu_nvidia/hardware_sampler.hpp"  // hws::gpu_nvidia_hardware_sampler
     #include "hws/gpu_nvidia/utility.hpp"           // HWS_CUDA_ERROR_CHECK
@@ -67,46 +71,53 @@ system_hardware_sampler::system_hardware_sampler(MPI_Comm communicator, const de
         // create a custom, node-local MPI communicator
         detail::hostname_comm_info nc{ communicator };
 
-    // CPU: one sampler per node --> node leader only
-    #if defined(HWS_FOR_CPUS_ENABLED)
-        if (nc.node_rank == 0) {
-            samplers_.push_back(std::make_unique<cpu_hardware_sampler>(sampling_interval, category));
-        }
-    #endif
-
-    // NVIDIA
-    #if defined(HWS_FOR_NVIDIA_GPUS_ENABLED)
-        {
-            const std::vector<detail::visible_gpu_device> local = detail::enumerate_local_nvidia_devices();
-            const std::vector<int> owned = detail::owned_local_indices_for_backend(local, nc.node_comm);
-            for (int const idx : owned) {
-                samplers_.push_back(std::make_unique<gpu_nvidia_hardware_sampler>(static_cast<std::size_t>(idx), sampling_interval, category));
+        // CPU: one sampler per node --> node leader only
+        #if defined(HWS_FOR_CPUS_ENABLED)
+            if (nc.node_rank == 0) {
+                samplers_.push_back(std::make_unique<cpu_hardware_sampler>(sampling_interval, category));
             }
-        }
-    #endif
+        #endif
 
-    // AMD
-    #if defined(HWS_FOR_AMD_GPUS_ENABLED)
-        {
-            const std::vector<detail::visible_gpu_device> local = detail::enumerate_local_amd_devices();
-            const std::vector<int> owned = detail::owned_local_indices_for_backend(local, nc.node_comm);
-            for (int const idx : owned) {
-                samplers_.push_back(std::make_unique<gpu_amd_hardware_sampler>(
-                    static_cast<std::size_t>(idx), sampling_interval, category));
+        // Cray pm_counters: one sampler per node --> node leader only
+        #if defined(HWS_FOR_CRAY_PM_COUNTERS_ENABLED)
+            if (nc.node_rank == 0 && detail::pm_counters_available()) {
+                samplers_.push_back(std::make_unique<cray_pm_counters_hardware_sampler>(sampling_interval, category));
             }
-        }
-    #endif
+        #endif
 
-    // Intel
-    #if defined(HWS_FOR_INTEL_GPUS_ENABLED)
-        {
-            const std::vector<detail::visible_gpu_device> local = detail::enumerate_local_intel_devices();
-            const std::vector<int> owned = detail::owned_local_indices_for_backend(local, nc.node_comm);
-            for (int const idx : owned) {
-                samplers_.push_back(std::make_unique<gpu_intel_hardware_sampler>(static_cast<std::size_t>(idx), sampling_interval, category));
+        // NVIDIA
+        #if defined(HWS_FOR_NVIDIA_GPUS_ENABLED)
+            {
+                const std::vector<detail::visible_gpu_device> local = detail::enumerate_local_nvidia_devices();
+                const std::vector<int> owned = detail::owned_local_indices_for_backend(local, nc.node_comm);
+                for (int const idx : owned) {
+                    samplers_.push_back(std::make_unique<gpu_nvidia_hardware_sampler>(static_cast<std::size_t>(idx), sampling_interval, category));
+                }
             }
-        }
-    #endif
+        #endif
+
+        // AMD
+        #if defined(HWS_FOR_AMD_GPUS_ENABLED)
+            {
+                const std::vector<detail::visible_gpu_device> local = detail::enumerate_local_amd_devices();
+                const std::vector<int> owned = detail::owned_local_indices_for_backend(local, nc.node_comm);
+                for (int const idx : owned) {
+                    samplers_.push_back(std::make_unique<gpu_amd_hardware_sampler>(
+                        static_cast<std::size_t>(idx), sampling_interval, category));
+                }
+            }
+        #endif
+
+        // Intel
+        #if defined(HWS_FOR_INTEL_GPUS_ENABLED)
+            {
+                const std::vector<detail::visible_gpu_device> local = detail::enumerate_local_intel_devices();
+                const std::vector<int> owned = detail::owned_local_indices_for_backend(local, nc.node_comm);
+                for (int const idx : owned) {
+                    samplers_.push_back(std::make_unique<gpu_intel_hardware_sampler>(static_cast<std::size_t>(idx), sampling_interval, category));
+                }
+            }
+        #endif
 
     } else {
         throw std::runtime_error{ fmt::format("Unknown MPI sampling mode {}!", static_cast<int>(mode)) };
@@ -283,6 +294,11 @@ void system_hardware_sampler::create_local_samplers(std::chrono::milliseconds sa
 #if defined(HWS_FOR_CPUS_ENABLED)
     {
         samplers_.push_back(std::make_unique<cpu_hardware_sampler>(sampling_interval, category));
+    }
+#endif
+#if defined(HWS_FOR_CRAY_PM_COUNTERS_ENABLED)
+    if (detail::pm_counters_available()) {
+        samplers_.push_back(std::make_unique<cray_pm_counters_hardware_sampler>(sampling_interval, category));
     }
 #endif
 #if defined(HWS_FOR_NVIDIA_GPUS_ENABLED)
