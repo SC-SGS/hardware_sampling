@@ -13,14 +13,18 @@
  */
 
 #include "hws/core.hpp"
+#include "hws/cray_pm_counters/utility.hpp"  // hws::detail::{accel_index_from_counter_key, accel_indices_from_counter_keys, guess_accel_index, accel_correlation_yaml_block}
 
 #include <chrono>    // std::chrono::milliseconds
 #include <cstdlib>   // std::exit, setenv
 #include <filesystem>  // std::filesystem
 #include <fstream>   // std::ofstream
 #include <iostream>  // std::cout, std::cerr
+#include <optional>  // std::optional
 #include <string>    // std::string
 #include <thread>    // std::this_thread::sleep_for
+#include <utility>   // std::pair
+#include <vector>    // std::vector
 
 namespace {
 
@@ -194,6 +198,60 @@ void test_throttle_power_only_category(const std::filesystem::path &root) {
     check(num_samples > 0 && num_samples < 20, "throttling still applies when only sample_category::power is enabled");
 }
 
+// pure-logic checks for the accel[i] <-> AMD GPU PCI bus ID correlation guess (see
+// hws::system_hardware_sampler::device_correlation_hints_as_yaml_string(), the only caller in the actual library)
+// - no ROCm SMI/HIP or real GPU required, since these only deal with plain strings/ints.
+void test_accel_correlation_guess() {
+    std::cout << "test_accel_correlation_guess\n";
+
+    check(hws::detail::accel_index_from_counter_key("accel0_energy") == std::optional<int>{ 0 }, "'accel0_energy' -> accel index 0");
+    check(hws::detail::accel_index_from_counter_key("accel3_power") == std::optional<int>{ 3 }, "'accel3_power' -> accel index 3");
+    check(hws::detail::accel_index_from_counter_key("accel12_energy") == std::optional<int>{ 12 }, "multi-digit accel index parsed correctly");
+    check(!hws::detail::accel_index_from_counter_key("energy").has_value(), "plain 'energy' (node-wide) has no accel index");
+    check(!hws::detail::accel_index_from_counter_key("accel0_power_cap").has_value(), "'accel0_power_cap' has no accel index (not energy/power telemetry)");
+    check(!hws::detail::accel_index_from_counter_key("accelerator0_energy").has_value(), "'accelerator0_energy' doesn't match the 'accel<N>_energy' pattern");
+
+    const std::vector<int> indices = hws::detail::accel_indices_from_counter_keys({ "energy", "accel1_energy", "accel0_energy", "accel1_power", "accel3_energy", "capped_energy" });
+    check((indices == std::vector<int>{ 0, 1, 3 }), "accel indices extracted, sorted, and deduplicated across energy+power keys");
+
+    const std::vector<std::string> physical{ "0000:0c:00.0", "0000:22:00.0", "0000:c1:00.0", "0000:e2:00.0" };
+    const std::vector<int> accel{ 0, 1, 2, 3 };
+
+    check(hws::detail::guess_accel_index("0000:0c:00.0", physical, accel) == std::optional<int>{ 0 }, "lowest PCI bus id guessed as accel index 0");
+    check(hws::detail::guess_accel_index("0000:e2:00.0", physical, accel) == std::optional<int>{ 3 }, "highest PCI bus id guessed as accel index 3");
+    check(!hws::detail::guess_accel_index("0000:ff:00.0", physical, accel).has_value(), "unknown PCI bus id yields no guess");
+
+    // topology count mismatch (e.g. cgroup-isolated partial-node allocation exposing fewer GPUs than pm_counters
+    // reports accel[i] for) must degrade to "no guess", not a wrong one
+    const std::vector<std::string> partial_physical{ "0000:0c:00.0", "0000:22:00.0" };
+    check(!hws::detail::guess_accel_index("0000:0c:00.0", partial_physical, accel).has_value(), "topology count mismatch yields no guess, even for a bus id that IS present");
+    check(!hws::detail::guess_accel_index("anything", {}, {}).has_value(), "empty physical topology yields no guess");
+}
+
+// vendor-agnostic YAML formatting for the correlation hints (used for both AMD and NVIDIA, see
+// hws::system_hardware_sampler::device_correlation_hints_as_yaml_string()) - also no GPU hardware required.
+void test_accel_correlation_yaml_block() {
+    std::cout << "test_accel_correlation_yaml_block\n";
+
+    const std::vector<int> accel{ 0, 1 };
+    const std::vector<std::string> physical{ "0000:0c:00.0", "0000:22:00.0" };
+    const std::vector<std::pair<std::size_t, std::string>> visible{ { 0, "0000:22:00.0" } };
+
+    const std::string block = hws::detail::accel_correlation_yaml_block("amd", visible, physical, accel);
+    check(block.rfind("    amd:\n", 0) == 0, "block starts with the vendor key at 4-space indent");
+    check(block.find("topology_count_mismatch: false") != std::string::npos, "matching topology reports no mismatch");
+    check(block.find("physical_pci_bus_ids: [\"0000:0c:00.0\", \"0000:22:00.0\"]") != std::string::npos, "physical PCI bus ids listed in sorted order");
+    check(block.find("local_index: 0") != std::string::npos, "visible device's local index present");
+    check(block.find("pci_bus_id: \"0000:22:00.0\"") != std::string::npos, "visible device's PCI bus id present");
+    check(block.find("guessed_accel_index: 1") != std::string::npos, "higher (2nd) physical bus id guessed as accel index 1");
+
+    // topology count mismatch (e.g. no physical GPUs discovered at all) must degrade to "no guess"
+    const std::string mismatch_block = hws::detail::accel_correlation_yaml_block("nvidia", visible, {}, accel);
+    check(mismatch_block.rfind("    nvidia:\n", 0) == 0, "vendor key reflects the passed-in vendor name");
+    check(mismatch_block.find("topology_count_mismatch: true") != std::string::npos, "empty physical topology reports a mismatch");
+    check(mismatch_block.find("guessed_accel_index: null") != std::string::npos, "no guess made under a topology mismatch");
+}
+
 }  // namespace
 
 int main() {
@@ -206,6 +264,8 @@ int main() {
     test_nested_path(root);
     test_throttle(root);
     test_throttle_power_only_category(root);
+    test_accel_correlation_guess();
+    test_accel_correlation_yaml_block();
 
     std::filesystem::remove_all(root);
 

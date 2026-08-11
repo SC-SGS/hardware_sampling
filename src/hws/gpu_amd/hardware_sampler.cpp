@@ -681,6 +681,21 @@ std::string gpu_amd_hardware_sampler::device_identification() const {
     return fmt::format("gpu_amd_device_{}", device_id_);
 }
 
+std::string gpu_amd_hardware_sampler::pci_bus_id() const {
+    std::uint64_t bdfid{};
+    HWS_ROCM_SMI_ERROR_CHECK(rsmi_dev_pci_id_get(device_id_, &bdfid))
+
+    // BDFID = (DOMAIN << 32) | (PARTITION << 28) | (BUS << 8) | (DEVICE << 3) | FUNCTION (see ROCm SMI's
+    // rsmi_dev_pci_id_get documentation). On MI-series partitioned devices the function bits are repurposed for
+    // the partition ID instead of a real PCI function - but the OS/sysfs-visible PCI address for the device
+    // itself always has function 0, so the function is intentionally not extracted here; see
+    // hws::detail::format_pci_bus_id().
+    const auto domain = static_cast<std::uint32_t>((bdfid >> 32) & 0xffffffffull);
+    const auto bus = static_cast<std::uint32_t>((bdfid >> 8) & 0xffull);
+    const auto device = static_cast<std::uint32_t>((bdfid >> 3) & 0x1full);
+    return detail::format_pci_bus_id(domain, bus, device);
+}
+
 std::string gpu_amd_hardware_sampler::samples_only_as_yaml_string() const {
     // check whether it's safe to generate the YAML entry
     if (this->is_sampling()) {

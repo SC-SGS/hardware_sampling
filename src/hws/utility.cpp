@@ -7,8 +7,11 @@
 
 #include "hws/utility.hpp"
 
+#include "fmt/format.h"  // fmt::format
+
 #include <algorithm>    // std::min, std::transform, std::all_of
 #include <cctype>       // std::tolower, std::isdigit
+#include <cstdint>      // std::uint32_t
 #include <sstream>      // std::stringstream
 #include <string>       // std::string
 #include <string_view>  // std::string_view
@@ -75,6 +78,10 @@ std::string indent_lines(const std::string &text, const std::string_view prefix)
     }
 
     return out;
+}
+
+std::string format_pci_bus_id(const std::uint32_t domain, const std::uint32_t bus, const std::uint32_t device) {
+    return fmt::format("{:04x}:{:02x}:{:02x}.0", domain, bus, device);
 }
 
 }  // namespace hws::detail

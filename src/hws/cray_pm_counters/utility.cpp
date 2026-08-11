@@ -9,6 +9,11 @@
 
 #include "hws/utility.hpp"  // hws::detail::{trim, to_lower_case, split, is_integer, convert_to}
 
+#include "fmt/format.h"  // fmt::format
+#include "fmt/ranges.h"  // fmt::join
+
+#include <algorithm>    // std::sort, std::unique
+#include <cstddef>      // std::size_t
 #include <cstdint>      // std::uint64_t
 #include <cstdlib>      // std::getenv
 #include <filesystem>   // std::filesystem::{path, directory_entry, exists, is_directory, recursive_directory_iterator, relative}
@@ -18,6 +23,7 @@
 #include <string>       // std::string
 #include <string_view>  // std::string_view
 #include <system_error> // std::error_code
+#include <utility>      // std::pair
 #include <vector>       // std::vector
 
 namespace hws::detail {
@@ -145,6 +151,89 @@ bool is_energy_counter_key(const std::string &key) {
 bool is_power_counter_key(const std::string &key) {
     const std::string lower_case_key = detail::to_lower_case(key);
     return last_component_is(lower_case_key, "power") && !is_excluded_from_telemetry(lower_case_key);
+}
+
+std::optional<int> accel_index_from_counter_key(const std::string &key) {
+    const std::string lower_case_key = detail::to_lower_case(key);
+    constexpr std::string_view prefix = "accel";
+    constexpr std::string_view suffixes[] = { "_energy", "_power" };
+
+    if (lower_case_key.compare(0, prefix.size(), prefix) != 0) {
+        return std::nullopt;
+    }
+
+    for (const std::string_view suffix : suffixes) {
+        if (lower_case_key.size() <= prefix.size() + suffix.size()) {
+            continue;
+        }
+        if (lower_case_key.compare(lower_case_key.size() - suffix.size(), suffix.size(), suffix) != 0) {
+            continue;
+        }
+        const std::string digits = lower_case_key.substr(prefix.size(), lower_case_key.size() - prefix.size() - suffix.size());
+        if (!digits.empty() && detail::is_integer(digits)) {
+            try {
+                return detail::convert_to<int>(digits);
+            } catch (const std::exception &) {
+                return std::nullopt;
+            }
+        }
+    }
+    return std::nullopt;
+}
+
+std::vector<int> accel_indices_from_counter_keys(const std::vector<std::string> &counter_keys) {
+    std::vector<int> indices{};
+    for (const std::string &key : counter_keys) {
+        if (const std::optional<int> idx = accel_index_from_counter_key(key); idx.has_value()) {
+            indices.push_back(*idx);
+        }
+    }
+    std::sort(indices.begin(), indices.end());
+    indices.erase(std::unique(indices.begin(), indices.end()), indices.end());
+    return indices;
+}
+
+std::optional<int> guess_accel_index(const std::string &pci_bus_id,
+                                      const std::vector<std::string> &physical_pci_bus_ids_sorted,
+                                      const std::vector<int> &accel_indices_sorted) {
+    if (physical_pci_bus_ids_sorted.empty() || physical_pci_bus_ids_sorted.size() != accel_indices_sorted.size()) {
+        return std::nullopt;
+    }
+    const auto it = std::find(physical_pci_bus_ids_sorted.cbegin(), physical_pci_bus_ids_sorted.cend(), pci_bus_id);
+    if (it == physical_pci_bus_ids_sorted.cend()) {
+        return std::nullopt;
+    }
+    const auto position = static_cast<std::size_t>(std::distance(physical_pci_bus_ids_sorted.cbegin(), it));
+    return accel_indices_sorted[position];
+}
+
+std::string accel_correlation_yaml_block(const std::string &vendor,
+                                          const std::vector<std::pair<std::size_t, std::string>> &visible_devices,
+                                          const std::vector<std::string> &physical_pci_bus_ids_sorted,
+                                          const std::vector<int> &accel_indices_sorted) {
+    const bool topology_matches = !physical_pci_bus_ids_sorted.empty() && physical_pci_bus_ids_sorted.size() == accel_indices_sorted.size();
+
+    std::vector<std::string> visible_entries{};
+    for (const auto &[local_index, pci_bus_id] : visible_devices) {
+        const std::optional<int> guessed = guess_accel_index(pci_bus_id, physical_pci_bus_ids_sorted, accel_indices_sorted);
+        const std::string guessed_str = guessed.has_value() ? std::to_string(*guessed) : "null";
+        visible_entries.push_back(fmt::format("        - local_index: {}\n"
+                                              "          pci_bus_id: \"{}\"\n"
+                                              "          guessed_accel_index: {}",
+                                              local_index, pci_bus_id, guessed_str));
+    }
+
+    std::vector<std::string> quoted_physical_ids{};
+    for (const std::string &id : physical_pci_bus_ids_sorted) {
+        quoted_physical_ids.push_back(fmt::format("\"{}\"", id));
+    }
+
+    return fmt::format("    {}:\n"
+                       "      topology_count_mismatch: {}\n"
+                       "      physical_pci_bus_ids: [{}]\n"
+                       "      visible_gpus:\n"
+                       "{}\n",
+                       vendor, !topology_matches, fmt::join(quoted_physical_ids, ", "), fmt::join(visible_entries, "\n"));
 }
 
 }  // namespace hws::detail

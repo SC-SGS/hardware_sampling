@@ -35,6 +35,7 @@
 #endif
 
 #include "fmt/format.h"  // fmt::format
+#include "fmt/ranges.h"  // fmt::join
 
 #include <algorithm>  // std::for_each, std::all_of
 #include <chrono>     // std::chrono::milliseconds
@@ -42,7 +43,10 @@
 #include <cstdint>    // std::uint32_t
 #include <memory>     // std::unique_ptr, std::make_unique
 #include <numeric>    // std::accumulate
+#include <optional>   // std::optional
 #include <stdexcept>  // std::out_of_range
+#include <string>     // std::string, std::to_string
+#include <utility>    // std::pair
 #include <vector>     // std::vector
 
 #if defined(HWS_MPI_SUPPORT_ENABLED)
@@ -283,12 +287,94 @@ void system_hardware_sampler::dump_yaml_global(const std::filesystem::path &file
 #endif
 
 std::string system_hardware_sampler::as_yaml_string() const {
-    return std::accumulate(samplers_.cbegin(), samplers_.cend(), std::string{}, [](const std::string str, const auto &ptr) { return str + ptr->as_yaml_string(); });
+    return std::accumulate(samplers_.cbegin(), samplers_.cend(), std::string{}, [](const std::string str, const auto &ptr) { return str + ptr->as_yaml_string(); })
+           + this->device_correlation_hints_as_yaml_string();
 }
 
 std::string system_hardware_sampler::samples_only_as_yaml_string() const {
     return std::accumulate(samplers_.cbegin(), samplers_.cend(), std::string{}, [](const std::string str, const auto &ptr) { return str + ptr->samples_only_as_yaml_string(); });
 }
+
+#if defined(HWS_FOR_CRAY_PM_COUNTERS_ENABLED) && (defined(HWS_FOR_AMD_GPUS_ENABLED) || defined(HWS_FOR_NVIDIA_GPUS_ENABLED))
+std::string system_hardware_sampler::device_correlation_hints_as_yaml_string() const {
+    const cray_pm_counters_hardware_sampler *pm_sampler = nullptr;
+    #if defined(HWS_FOR_AMD_GPUS_ENABLED)
+    std::vector<std::pair<std::size_t, std::string>> amd_devices{};
+    #endif
+    #if defined(HWS_FOR_NVIDIA_GPUS_ENABLED)
+    std::vector<std::pair<std::size_t, std::string>> nvidia_devices{};
+    #endif
+    for (const std::unique_ptr<hardware_sampler> &ptr : samplers_) {
+        if (const auto *pm = dynamic_cast<const cray_pm_counters_hardware_sampler *>(ptr.get()); pm != nullptr) {
+            pm_sampler = pm;
+            continue;
+        }
+    #if defined(HWS_FOR_AMD_GPUS_ENABLED)
+        if (const auto *amd = dynamic_cast<const gpu_amd_hardware_sampler *>(ptr.get()); amd != nullptr) {
+            // pci_bus_id() (ROCm SMI, the same API family used for all of this sampler's actual measurements) is
+            // used here rather than HIP's own hipDeviceGetPCIBusId(), since ROCm SMI's and HIP's device
+            // enumerations can diverge under HIP_VISIBLE_DEVICES/ROCR_VISIBLE_DEVICES - using a different API
+            // family than the one the sampler measures with could silently attribute the wrong PCI bus ID.
+            amd_devices.emplace_back(amd->device_id(), amd->pci_bus_id());
+            continue;
+        }
+    #endif
+    #if defined(HWS_FOR_NVIDIA_GPUS_ENABLED)
+        if (const auto *nvidia = dynamic_cast<const gpu_nvidia_hardware_sampler *>(ptr.get()); nvidia != nullptr) {
+            // pci_bus_id() (NVML, the same API family used for all of this sampler's actual measurements) is used
+            // here rather than CUDA's own cudaDeviceGetPCIBusId(), since NVML's device enumeration isn't affected
+            // by CUDA_VISIBLE_DEVICES while the CUDA runtime's is - using a different API family than the one the
+            // sampler measures with could silently attribute the wrong PCI bus ID.
+            nvidia_devices.emplace_back(nvidia->device_id(), nvidia->pci_bus_id());
+            continue;
+        }
+    #endif
+    }
+
+    const bool any_visible_gpus =
+    #if defined(HWS_FOR_AMD_GPUS_ENABLED)
+        !amd_devices.empty()
+    #else
+        false
+    #endif
+    #if defined(HWS_FOR_NVIDIA_GPUS_ENABLED)
+        || !nvidia_devices.empty()
+    #endif
+        ;
+    if (pm_sampler == nullptr || !any_visible_gpus) {
+        return "";
+    }
+
+    // ground truth, no guessing involved: which accel[i] counters pm_counters exposed on this node
+    const std::vector<int> accel_indices = pm_sampler->discovered_accel_indices();
+
+    std::string vendor_blocks{};
+    #if defined(HWS_FOR_AMD_GPUS_ENABLED)
+    if (!amd_devices.empty()) {
+        vendor_blocks += detail::accel_correlation_yaml_block("amd", amd_devices, detail::enumerate_all_amd_gpu_pci_bus_ids(), accel_indices);
+    }
+    #endif
+    #if defined(HWS_FOR_NVIDIA_GPUS_ENABLED)
+    if (!nvidia_devices.empty()) {
+        vendor_blocks += detail::accel_correlation_yaml_block("nvidia", nvidia_devices, detail::enumerate_all_nvidia_gpu_pci_bus_ids(), accel_indices);
+    }
+    #endif
+
+    return fmt::format("device_correlation_hints:\n"
+                       "  note: \"UNVERIFIED heuristic: assumes Cray pm_counters numbers accel[i] in ascending PCI bus address order among all physically present GPUs of a given vendor; this is not confirmed by any HPE documentation. Confirm empirically (e.g. drive load on a single visible GPU and observe which accel[i]_power reacts) before relying on this for analysis.\"\n"
+                       "  verified: false\n"
+                       "  accel_indices_discovered: [{}]\n"
+                       "  gpu_vendors:\n"
+                       "{}"
+                       "\n",
+                       fmt::join(accel_indices, ", "),
+                       vendor_blocks);
+}
+#else
+std::string system_hardware_sampler::device_correlation_hints_as_yaml_string() const {
+    return "";
+}
+#endif
 
 void system_hardware_sampler::create_local_samplers(std::chrono::milliseconds sampling_interval, sample_category category) {
 #if defined(HWS_FOR_CPUS_ENABLED)

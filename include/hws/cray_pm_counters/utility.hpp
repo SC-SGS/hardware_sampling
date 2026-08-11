@@ -12,11 +12,13 @@
 #define HWS_CRAY_PM_COUNTERS_UTILITY_HPP_
 #pragma once
 
+#include <cstddef>      // std::size_t
 #include <cstdint>      // std::uint64_t
 #include <filesystem>   // std::filesystem::path
 #include <optional>     // std::optional
 #include <string>       // std::string
 #include <string_view>  // std::string_view
+#include <utility>      // std::pair
 #include <vector>       // std::vector
 
 namespace hws::detail {
@@ -96,6 +98,63 @@ struct pm_counter_reading {
  * @return `true` if @p key looks like a measured power counter, otherwise `false` (`[[nodiscard]]`)
  */
 [[nodiscard]] bool is_power_counter_key(const std::string &key);
+
+/**
+ * @brief Extract the accelerator index from an energy or power counter map key, e.g. `"accel2_energy"` -> `2`.
+ * @param[in] key the map key to check, as returned by `pm_counter_key`
+ * @return the accelerator index, or `std::nullopt` if @p key isn't of the form `accel<N>_energy`/`accel<N>_power`
+ *         (`[[nodiscard]]`)
+ */
+[[nodiscard]] std::optional<int> accel_index_from_counter_key(const std::string &key);
+
+/**
+ * @brief Extract the sorted, deduplicated set of accelerator indices referenced by @p counter_keys.
+ * @details Intended to be called with the keys of an already-sampled `cray_pm_counters_power_samples`'s
+ *          `energy_counters`/`power_counters` map, to answer "how many `accel[i]` counters did pm_counters
+ *          actually expose on this node" without re-scanning the filesystem.
+ * @param[in] counter_keys the energy or power counter map keys to scan, as returned by `pm_counter_key`
+ * @return the sorted accelerator indices found (`[[nodiscard]]`)
+ */
+[[nodiscard]] std::vector<int> accel_indices_from_counter_keys(const std::vector<std::string> &counter_keys);
+
+/**
+ * @brief Guess which pm_counters `accel[i]` a given AMD GPU (identified by its PCI bus ID) corresponds to.
+ * @details UNVERIFIED heuristic: assumes `accel[i]` numbers accelerators in ascending PCI bus address order among
+ *          all physically present AMD GPUs - no HPE documentation defines this correspondence, so this should be
+ *          confirmed empirically (e.g. drive load on a single visible GPU and observe which `accel[i]_power`
+ *          reacts) before being relied on for analysis. See `hws::system_hardware_sampler::device_correlation_hints_as_yaml_string()`,
+ *          the only caller, for how this is surfaced to users.
+ * @param[in] pci_bus_id the PCI bus ID of the AMD GPU to guess an accel index for
+ * @param[in] physical_pci_bus_ids_sorted every physically present AMD GPU's PCI bus ID, sorted ascending (as
+ *            returned by `hws::detail::enumerate_all_amd_gpu_pci_bus_ids()`)
+ * @param[in] accel_indices_sorted the accelerator indices pm_counters exposed, sorted ascending (as returned by
+ *            `cray_pm_counters_hardware_sampler::discovered_accel_indices()`)
+ * @return the guessed accel index, or `std::nullopt` if @p pci_bus_id isn't found in @p physical_pci_bus_ids_sorted
+ *         or the two lists don't have the same size (a topology count mismatch means the guess isn't safe to make,
+ *         e.g. under a cgroup-isolated partial-node allocation) (`[[nodiscard]]`)
+ */
+[[nodiscard]] std::optional<int> guess_accel_index(const std::string &pci_bus_id,
+                                                    const std::vector<std::string> &physical_pci_bus_ids_sorted,
+                                                    const std::vector<int> &accel_indices_sorted);
+
+/**
+ * @brief Build the YAML sub-block (under a `gpu_vendors:` mapping) describing one GPU vendor's accel[i]
+ *        correlation guesses, e.g. for `"amd"` or `"nvidia"`.
+ * @details Vendor-agnostic: the caller is responsible for gathering @p visible_devices and
+ *          @p physical_pci_bus_ids_sorted using the right backend (`hws::detail::amd_device_pci_bus_id()`/
+ *          `enumerate_all_amd_gpu_pci_bus_ids()` or their `nvidia_*` counterparts). Every entry in
+ *          @p physical_pci_bus_ids_sorted and @p accel_indices_sorted is assumed to belong to @p vendor alone -
+ *          don't call this with a mixed-vendor physical topology.
+ * @param[in] vendor the vendor name to use as the YAML mapping key (e.g. `"amd"`, `"nvidia"`)
+ * @param[in] visible_devices every visible GPU sampler of this vendor, as (local device index, PCI bus ID) pairs
+ * @param[in] physical_pci_bus_ids_sorted every physically present GPU of this vendor's PCI bus ID, sorted ascending
+ * @param[in] accel_indices_sorted the accelerator indices pm_counters exposed, sorted ascending
+ * @return the YAML sub-block, indented to sit directly under a `  gpu_vendors:\n` key (`[[nodiscard]]`)
+ */
+[[nodiscard]] std::string accel_correlation_yaml_block(const std::string &vendor,
+                                                        const std::vector<std::pair<std::size_t, std::string>> &visible_devices,
+                                                        const std::vector<std::string> &physical_pci_bus_ids_sorted,
+                                                        const std::vector<int> &accel_indices_sorted);
 
 }  // namespace hws::detail
 

@@ -117,6 +117,28 @@ class gpu_amd_hardware_sampler : public hardware_sampler {
     [[nodiscard]] const rocm_smi_temperature_samples &temperature_samples() const noexcept { return temperature_samples_; }
 
     /**
+     * @brief Return the ROCm SMI device index this hardware sampler was constructed with and uses for all of its
+     *        `rsmi_dev_*` calls.
+     * @details Purely local/informational - since `HIP_VISIBLE_DEVICES`/`ROCR_VISIBLE_DEVICES` can affect which
+     *          physical device ends up at a given index, don't assume this index is stable across processes or
+     *          reruns; use `pci_bus_id()` to identify the actual physical device.
+     * @return the ROCm SMI device index (`[[nodiscard]]`)
+     */
+    [[nodiscard]] std::uint32_t device_id() const noexcept { return device_id_; }
+
+    /**
+     * @brief Return the PCI bus ID (e.g. `"0000:c1:00.0"`) of the physical device this hardware sampler actually
+     *        measures.
+     * @details Queried via `rsmi_dev_pci_id_get()` using the same `device_id()` index this sampler already uses
+     *          for every other `rsmi_dev_*` call, so - unlike combining `device_id()` with a different API family
+     *          (e.g. HIP's `hipDeviceGetPCIBusId()`) - this is guaranteed to identify the exact physical device
+     *          being sampled, even if `HIP_VISIBLE_DEVICES`/`ROCR_VISIBLE_DEVICES` causes ROCm SMI's and HIP's
+     *          device enumerations to diverge. Matches the format used by `enumerate_all_amd_gpu_pci_bus_ids()`.
+     * @return the PCI bus ID (`[[nodiscard]]`)
+     */
+    [[nodiscard]] std::string pci_bus_id() const;
+
+    /**
      * @copydoc hws::hardware_sampler::device_identification
      */
     [[nodiscard]] std::string device_identification() const final;

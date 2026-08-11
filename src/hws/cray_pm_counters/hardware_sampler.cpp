@@ -8,7 +8,7 @@
 #include "hws/cray_pm_counters/hardware_sampler.hpp"
 
 #include "hws/cray_pm_counters/pm_counters_samples.hpp"  // hws::{cray_pm_counters_general_samples, cray_pm_counters_power_samples}
-#include "hws/cray_pm_counters/utility.hpp"               // hws::detail::{pm_counters_available, list_pm_counter_files, pm_counter_key, read_pm_counter_raw, read_pm_counter_reading, pm_counter_reading, is_energy_counter_key, is_power_counter_key}
+#include "hws/cray_pm_counters/utility.hpp"               // hws::detail::{pm_counters_available, list_pm_counter_files, pm_counter_key, read_pm_counter_raw, read_pm_counter_reading, pm_counter_reading, is_energy_counter_key, is_power_counter_key, accel_indices_from_counter_keys}
 #include "hws/hardware_sampler.hpp"                       // hws::hardware_sampler
 #include "hws/sample_category.hpp"                        // hws::sample_category
 #include "hws/utility.hpp"                                // hws::detail::time_points_to_epoch
@@ -28,6 +28,7 @@
 #include <stdexcept>   // std::runtime_error
 #include <string>      // std::string
 #include <thread>      // std::this_thread
+#include <vector>      // std::vector
 
 namespace hws {
 
@@ -169,6 +170,17 @@ void cray_pm_counters_hardware_sampler::sampling_loop() {
 
 std::string cray_pm_counters_hardware_sampler::device_identification() const {
     return "cray_pm_counters_device";
+}
+
+std::vector<int> cray_pm_counters_hardware_sampler::discovered_accel_indices() const {
+    if (!power_samples_.get_energy_counters().has_value()) {
+        return {};
+    }
+    std::vector<std::string> keys{};
+    for (const auto &entry : power_samples_.get_energy_counters().value()) {
+        keys.push_back(entry.first);
+    }
+    return detail::accel_indices_from_counter_keys(keys);
 }
 
 std::string cray_pm_counters_hardware_sampler::samples_only_as_yaml_string() const {

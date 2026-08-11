@@ -24,6 +24,7 @@
 #include <iosfwd>         // std::ostream forward declaration
 #include <optional>       // std::optional
 #include <unordered_map>  // std::unordered_map
+#include <vector>         // std::vector
 
 namespace hws {
 
@@ -85,6 +86,15 @@ class cray_pm_counters_hardware_sampler : public hardware_sampler {
      * @return the power related pm_counters samples (`[[nodiscard]]`)
      */
     [[nodiscard]] const cray_pm_counters_power_samples &power_samples() const noexcept { return power_samples_; }
+
+    /**
+     * @brief The accelerator indices pm_counters actually exposed on this node (e.g. `{0, 1, 2, 3}` for a 4-APU
+     *        node), derived from the already-sampled `accel<N>_energy` counter keys.
+     * @details Only meaningful after at least one sample has been taken (i.e. during or after sampling); returns
+     *          an empty vector beforehand.
+     * @return the sorted accelerator indices (`[[nodiscard]]`)
+     */
+    [[nodiscard]] std::vector<int> discovered_accel_indices() const;
 
     /**
      * @copydoc hws::hardware_sampler::device_identification
