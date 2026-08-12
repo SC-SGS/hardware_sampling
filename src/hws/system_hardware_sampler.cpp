@@ -326,11 +326,12 @@ std::string system_hardware_sampler::device_correlation_hints_as_yaml_string() c
         }
     #if defined(HWS_FOR_AMD_GPUS_ENABLED)
         if (const auto *amd = dynamic_cast<const gpu_amd_hardware_sampler *>(ptr.get()); amd != nullptr) {
-            // pci_bus_id() (ROCm SMI, the same API family used for all of this sampler's actual measurements) is
-            // used here rather than HIP's own hipDeviceGetPCIBusId(), since ROCm SMI's and HIP's device
-            // enumerations can diverge under HIP_VISIBLE_DEVICES/ROCR_VISIBLE_DEVICES - using a different API
-            // family than the one the sampler measures with could silently attribute the wrong PCI bus ID.
-            amd_devices.emplace_back(amd->device_id(), amd->pci_bus_id());
+            // hip_device_id() (the "Nth GPU visible to this process/rank") for local_index, but pci_bus_id()
+            // (ROCm SMI, the same API family used for all of this sampler's actual measurements) for the PCI bus
+            // ID - not hip_device_id()'s own HIP-space bus id, since ROCm SMI's and HIP's device enumerations can
+            // diverge under HIP_VISIBLE_DEVICES/ROCR_VISIBLE_DEVICES and using a different API family than the
+            // one the sampler measures with could silently attribute the wrong PCI bus ID.
+            amd_devices.emplace_back(amd->hip_device_id(), amd->pci_bus_id());
             continue;
         }
     #endif
