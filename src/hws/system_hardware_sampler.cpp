@@ -41,6 +41,7 @@
 #include <chrono>     // std::chrono::milliseconds
 #include <cstddef>    // std::size_t
 #include <cstdint>    // std::uint32_t
+#include <fstream>    // std::ofstream
 #include <memory>     // std::unique_ptr, std::make_unique
 #include <numeric>    // std::accumulate
 #include <optional>   // std::optional
@@ -234,14 +235,24 @@ const std::unique_ptr<hardware_sampler> &system_hardware_sampler::sampler(const 
 
 void system_hardware_sampler::dump_yaml(const char *filename) const {
     std::for_each(samplers_.cbegin(), samplers_.cend(), [&filename](const auto &ptr) { ptr->dump_yaml(filename); });
+
+    // each individual sampler already wrote its own "---"-separated YAML document above; the correlation hints
+    // aren't tied to any single sampler, so they get one more such document of their own, if there's anything to
+    // report (see device_correlation_hints_as_yaml_string()).
+    const std::string hints = this->device_correlation_hints_as_yaml_string();
+    if (!hints.empty()) {
+        std::ofstream file{ filename, std::ios_base::app };
+        file << "---\n\n"
+             << hints;
+    }
 }
 
 void system_hardware_sampler::dump_yaml(const std::string &filename) const {
-    std::for_each(samplers_.cbegin(), samplers_.cend(), [&filename](const auto &ptr) { ptr->dump_yaml(filename); });
+    this->dump_yaml(filename.c_str());
 }
 
 void system_hardware_sampler::dump_yaml(const std::filesystem::path &filename) const {
-    std::for_each(samplers_.cbegin(), samplers_.cend(), [&filename](const auto &ptr) { ptr->dump_yaml(filename); });
+    this->dump_yaml(filename.string().c_str());
 }
 
 #if defined(HWS_MPI_SUPPORT_ENABLED)
@@ -268,6 +279,10 @@ void system_hardware_sampler::dump_yaml_global(const char *filename, MPI_Comm co
         rank_yaml_output += "sampler_" + std::to_string(sampler_idx++) + ":\n";
         rank_yaml_output += detail::indent_lines(ptr->as_yaml_string(), "  ");
     });
+
+    // not tied to any single sampler, so appended directly rather than under a "sampler_N:" key; empty if there's
+    // nothing to report (see device_correlation_hints_as_yaml_string())
+    rank_yaml_output += this->device_correlation_hints_as_yaml_string();
 
     const std::string global_yaml_output = detail::gather_yaml_strings_mpi(rank_yaml_output, communicator);
 
