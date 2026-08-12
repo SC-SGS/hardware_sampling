@@ -39,7 +39,22 @@ cpu_hardware_sampler::cpu_hardware_sampler(const sample_category category) :
     cpu_hardware_sampler{ HWS_SAMPLING_INTERVAL, category } { }
 
 cpu_hardware_sampler::cpu_hardware_sampler(const std::chrono::milliseconds sampling_interval, const sample_category category) :
-    hardware_sampler{ sampling_interval, category } { }
+    hardware_sampler{ sampling_interval, category } {
+#if defined(HWS_VIA_TURBOSTAT_ENABLED)
+    // turbostat itself blocks for HWS_TURBOSTAT_INTERVAL seconds per invocation -> if that's
+    // longer than the requested sampling interval, the turbostat backend will dominate and the
+    // achieved cadence will be closer to HWS_TURBOSTAT_INTERVAL than to sampling_interval
+    const double turbostat_interval_seconds = std::stod(HWS_TURBOSTAT_INTERVAL);
+    if (std::chrono::duration<double>(sampling_interval).count() < turbostat_interval_seconds) {
+        std::cerr << fmt::format(
+                "Warning: the requested CPU sampling interval ({}) is shorter than turbostat's own "
+                "measurement interval ({}s, set via HWS_TURBOSTAT_INTERVAL) -> the effective sampling "
+                "cadence while the turbostat backend is active will be closer to {}s per sample.\n",
+                sampling_interval, turbostat_interval_seconds, turbostat_interval_seconds)
+                  << std::endl;
+    }
+#endif
+}
 
 cpu_hardware_sampler::~cpu_hardware_sampler() {
     try {
@@ -159,21 +174,28 @@ void cpu_hardware_sampler::sampling_loop() {
     // get header information
     #if defined(HWS_VIA_TURBOSTAT_ROOT)
     // run with sudo
-    const std::string_view turbostat_command_line = "sudo turbostat -n 1 -i 0.001 -S -q";
+    const std::string turbostat_command_line = fmt::format("sudo turbostat -n 1 -i {} -S -q", HWS_TURBOSTAT_INTERVAL);
     #else
     // run without sudo
-    const std::string_view turbostat_command_line = "turbostat -n 1 -i 0.001 -S -q";
+    const std::string turbostat_command_line = fmt::format("turbostat -n 1 -i {} -S -q", HWS_TURBOSTAT_INTERVAL);
     #endif
 
-    {
+    // turbostat feeds all of the following sample categories -> only pay its (potentially multi-
+    // second, see HWS_TURBOSTAT_INTERVAL) cost per invocation if at least one of them was requested
+    const bool turbostat_needed = this->sample_category_enabled(sample_category::general | sample_category::clock | sample_category::power | sample_category::temperature | sample_category::gfx | sample_category::idle_state);
+
+    if (turbostat_needed) {
         // run turbostat
         const std::string turbostat_output = detail::run_subprocess(turbostat_command_line);
 
-        // retrieve the turbostat data
+        // retrieve the turbostat data; turbostat may prepend diagnostic messages (e.g. "Disabling
+        // Low Power Idle CPU output") on stderr before its actual header/value lines, and stdout
+        // and stderr are read through the same combined handle -> the header/value pair is always
+        // the *last* two lines, never necessarily the first two
         const std::vector<std::string_view> data = detail::split(detail::trim(turbostat_output), '\n');
         assert((data.size() >= 2) && "Must read at least two lines!");
-        const std::vector<std::string_view> header = detail::split(data[0], '\t');
-        const std::vector<std::string_view> values = detail::split(data[1], '\t');
+        const std::vector<std::string_view> header = detail::split(data[data.size() - 2], '\t');
+        const std::vector<std::string_view> values = detail::split(data[data.size() - 1], '\t');
 
         for (std::size_t i = 0; i < header.size(); ++i) {
             // general samples
@@ -387,6 +409,12 @@ void cpu_hardware_sampler::sampling_loop() {
     //
 
     while (!this->has_sampling_stopped()) {
+        // reference point for this tick's deadline; captured before any of the (potentially slow,
+        // e.g. turbostat blocking for HWS_TURBOSTAT_INTERVAL seconds) sampling work below so that
+        // sleep_until() only waits out whatever time is left of the requested interval instead of
+        // unconditionally adding another full sampling_interval() on top
+        const auto tick_start = std::chrono::steady_clock::now();
+
         // only sample values if the sampler currently isn't paused
         if (this->is_sampling()) {
             // add current time point
@@ -413,15 +441,16 @@ void cpu_hardware_sampler::sampling_loop() {
 #endif
 
 #if defined(HWS_VIA_TURBOSTAT_ENABLED)
-            {
+            if (turbostat_needed) {
                 // run turbostat
                 const std::string turbostat_output = detail::run_subprocess(turbostat_command_line);
 
-                // retrieve the turbostat data
+                // retrieve the turbostat data; see the comment at the initial turbostat call above
+                // for why the header/value pair must be taken from the *last* two lines
                 const std::vector<std::string_view> data = detail::split(detail::trim(turbostat_output), '\n');
                 assert((data.size() >= 2) && "Must read at least two lines!");
-                const std::vector<std::string_view> header = detail::split(data[0], '\t');
-                const std::vector<std::string_view> values = detail::split(data[1], '\t');
+                const std::vector<std::string_view> header = detail::split(data[data.size() - 2], '\t');
+                const std::vector<std::string_view> values = detail::split(data[data.size() - 1], '\t');
 
                 // add values to the respective sample entries
                 for (std::size_t i = 0; i < header.size(); ++i) {
@@ -630,8 +659,11 @@ void cpu_hardware_sampler::sampling_loop() {
 #endif
         }
 
-        // wait for the sampling interval to pass to retrieve the next sample
-        std::this_thread::sleep_for(this->sampling_interval());
+        // wait until this tick's deadline to retrieve the next sample; if the sampling work above
+        // already took longer than sampling_interval() (e.g. because the turbostat backend blocked
+        // for HWS_TURBOSTAT_INTERVAL seconds), the deadline is already in the past and this returns
+        // immediately instead of unconditionally adding another full sampling_interval() of delay
+        std::this_thread::sleep_until(tick_start + this->sampling_interval());
     }
 }
 

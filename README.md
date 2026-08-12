@@ -35,14 +35,14 @@ To download the hardware sampling use:
 
 ```bash
 git clone git@github.com:SC-SGS/hardware_sampling.git
-cd hardware_sampling 
+cd hardware_sampling
 ```
 
 Building the library can be done using the normal CMake approach:
 
 ```bash
-mkdir build && cd build 
-cmake -DCMAKE_BUILD_TYPE=Release [optional_options] .. 
+mkdir build && cd build
+cmake -DCMAKE_BUILD_TYPE=Release [optional_options] ..
 cmake --build . -j
 ```
 
@@ -73,6 +73,18 @@ The `[optional_options]` can be one or multiple of:
 - `HWS_ENABLE_ERROR_CHECKS=ON|OFF` (default: `OFF`): enable sanity checks during hardware sampling, may be problematic
   with smaller sample intervals
 - `HWS_SAMPLING_INTERVAL=100ms` (default: `100ms`): set the sampling interval in milliseconds
+
+- `HWS_TURBOSTAT_INTERVAL=1` (default: `0.001`, kept for backwards compatibility): set the interval in
+  seconds (`"sec.subsec"`) that `turbostat` itself measures over for a single CPU power/frequency sample
+  (passed directly to `turbostat`'s own `-i` flag).
+  **Important:** very short values have been observed to produce
+  physically implausible readings (multi-kW package power, multi-GHz core clocks) on heavily loaded,
+  many-core machines, especially with older `turbostat` builds.
+  **Note:** if this value is larger than `HWS_SAMPLING_INTERVAL`, the `turbostat` backend dominates and
+  the achieved CPU sampling cadence will be closer to `HWS_TURBOSTAT_INTERVAL` than to
+  `HWS_SAMPLING_INTERVAL` -- a warning is printed at runtime (once per `cpu_hardware_sampler` instance)
+  if this is the case.
+
 - `HWS_ENABLE_PYTHON_BINDINGS=ON|OFF` (default: `ON`): enable Python bindings
 
 - `HWS_ENABLE_MPI_SUPPORT=ON|OFF|AUTO` (default: `AUTO`):
@@ -227,7 +239,7 @@ current clock frequencies, temperatures, or memory consumption.
 | sample                  | sample type | CPUs | NVIDIA GPUs | AMD GPUs | Intel GPUs |
 |:------------------------|:-----------:|:----:|:-----------:|:--------:|:----------:|
 | num_fans                |    fixed    |  -   |     int     |   int    |    int     |
-| fan_speed_min           |    fixed    |  -   |      %      |    -     |     -      | 
+| fan_speed_min           |    fixed    |  -   |      %      |    -     |     -      |
 | fan_speed_max           |    fixed    |  -   |      %      |   RPM    |    RPM     |
 | temperature_min         |    fixed    |  -   |      -      |    °C    |     -      |
 | temperature_max         |    fixed    |  -   |     °C      |    °C    |     °C     |
