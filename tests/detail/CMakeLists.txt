@@ -9,7 +9,4 @@
 add_executable(hws_test_detail test.cpp)
 target_link_libraries(hws_test_detail PRIVATE ${HWS_LIBRARY_NAME} doctest::doctest_with_main)
 add_test(NAME detail COMMAND hws_test_detail)
-# generously long on top of the usual 30s: the first real Windows CI run hit the 30s timeout with zero captured
-# output at all (not even doctest's own startup banner) - raised to tell a genuine hang apart from a slow start
-# (e.g. DLL loading) before investigating further
-set_tests_properties(detail PROPERTIES TIMEOUT 120)
+set_tests_properties(detail PROPERTIES TIMEOUT 30)

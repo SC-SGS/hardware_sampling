@@ -18,7 +18,6 @@
 
 #include "doctest/doctest.h"
 
-#include <iostream>     // std::cerr
 #include <map>          // std::map
 #include <optional>     // std::optional, std::nullopt
 #include <stdexcept>    // std::runtime_error, std::invalid_argument
@@ -26,21 +25,7 @@
 #include <string_view>  // std::string_view
 #include <vector>       // std::vector
 
-// TEMPORARY: diagnosing a Windows CI hang (ctest times out with zero captured output, even at 120s). std::cerr is
-// unbuffered by default (unlike std::cout, which can become fully buffered once redirected to a pipe), so these
-// markers should survive even if ctest force-kills the process after a timeout - narrows down whether the hang is
-// before main() even runs (loader lock / static init), in a specific TEST_CASE, or genuinely nowhere in this file.
-// Remove once the root cause is found.
-namespace {
-struct DiagStartupMarker {
-    DiagStartupMarker() {
-        std::cerr << "[diag] static initialization running (before main)" << std::endl;
-    }
-} diag_startup_marker;
-}  // namespace
-
 TEST_CASE("starts_with") {
-    std::cerr << "[diag] entering TEST_CASE starts_with" << std::endl;
     CHECK(hws::detail::starts_with("Architecture: x86_64", "Architecture"));
     CHECK_FALSE(hws::detail::starts_with("Architecture: x86_64", "architecture"));  // case-sensitive
     CHECK_FALSE(hws::detail::starts_with("ab", "abc"));                             // start longer than the full string
@@ -49,7 +34,6 @@ TEST_CASE("starts_with") {
 }
 
 TEST_CASE("trim") {
-    std::cerr << "[diag] entering TEST_CASE trim" << std::endl;
     SUBCASE("leading and trailing whitespace") {
         CHECK_EQ(hws::detail::trim("  value  "), "value");
         CHECK_EQ(hws::detail::trim("\t\v\r\n\f value \t\v\r\n\f"), "value");
@@ -69,14 +53,12 @@ TEST_CASE("trim") {
 }
 
 TEST_CASE("to_lower_case") {
-    std::cerr << "[diag] entering TEST_CASE to_lower_case" << std::endl;
     CHECK_EQ(hws::detail::to_lower_case("MiXeD Case"), "mixed case");
     CHECK_EQ(hws::detail::to_lower_case("already lower"), "already lower");
     CHECK_EQ(hws::detail::to_lower_case(""), "");
 }
 
 TEST_CASE("split") {
-    std::cerr << "[diag] entering TEST_CASE split" << std::endl;
     SUBCASE("default delimiter") {
         const std::vector<std::string_view> tokens = hws::detail::split("a b c");
         REQUIRE_EQ(tokens.size(), 3);
@@ -114,7 +96,6 @@ TEST_CASE("split") {
 }
 
 TEST_CASE("is_integer") {
-    std::cerr << "[diag] entering TEST_CASE is_integer" << std::endl;
     CHECK(hws::detail::is_integer("12345"));
     CHECK_FALSE(hws::detail::is_integer("12.345"));
     CHECK_FALSE(hws::detail::is_integer("-5"));    // the sign character is not a digit
@@ -124,7 +105,6 @@ TEST_CASE("is_integer") {
 }
 
 TEST_CASE("convert_to<T>") {
-    std::cerr << "[diag] entering TEST_CASE convert_to<T>" << std::endl;
     SUBCASE("to std::string trims the value") {
         CHECK_EQ(hws::detail::convert_to<std::string>("  value  "), "value");
     }
@@ -166,7 +146,6 @@ TEST_CASE("convert_to<T>") {
 }
 
 TEST_CASE("split_as<T>") {
-    std::cerr << "[diag] entering TEST_CASE split_as<T>" << std::endl;
     SUBCASE("splits and converts every token") {
         const std::vector<int> values = hws::detail::split_as<int>("1 2 3");
         CHECK_EQ(values, std::vector<int>{ 1, 2, 3 });
@@ -184,7 +163,6 @@ TEST_CASE("split_as<T>") {
 }
 
 TEST_CASE("map_entry_to_string<MapType>") {
-    std::cerr << "[diag] entering TEST_CASE map_entry_to_string<MapType>" << std::endl;
     SUBCASE("nullopt formats as an empty string") {
         CHECK_EQ(hws::detail::map_entry_to_string(std::optional<std::map<std::string, int>>{ std::nullopt }), "");
     }
@@ -202,7 +180,6 @@ TEST_CASE("map_entry_to_string<MapType>") {
 }
 
 TEST_CASE("quote<T>") {
-    std::cerr << "[diag] entering TEST_CASE quote<T>" << std::endl;
     SUBCASE("quotes every value") {
         const std::vector<std::string> quoted = hws::detail::quote(std::vector<int>{ 1, 2, 3 });
         CHECK_EQ(quoted, std::vector<std::string>{ "\"1\"", "\"2\"", "\"3\"" });
