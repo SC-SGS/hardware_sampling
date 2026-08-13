@@ -22,6 +22,7 @@
 #include <algorithm>  // std::min_element, std::sort, std::transform
 #include <chrono>     // std::chrono::{steady_clock, duration_cast, milliseconds}
 #include <cstddef>    // std::size_t
+#include <cstdint>    // std::uint32_t
 #include <exception>  // std::exception, std::terminate
 #include <ios>        // std::ios_base
 #include <iostream>   // std::cerr, std::endl
@@ -35,6 +36,51 @@
 
 namespace hws {
 
+namespace {
+
+/**
+ * @brief Resolve the NVML device index that corresponds to the physical device CUDA considers index
+ *        @p cuda_device_id, by matching PCI bus IDs.
+ * @details Necessary because NVML enumerates every physical NVIDIA GPU on the node unconditionally, while CUDA's
+ *          enumeration is filtered/reordered by `CUDA_VISIBLE_DEVICES` - the same index number in both APIs can
+ *          refer to different physical devices. Requires `nvmlInit()` to have already been called.
+ * @throws std::runtime_error if NVML's device count can't be queried, if none of its devices' PCI bus IDs match
+ *         @p cuda_device_id's, or if more than one does. Note: NVIDIA MIG instances are *not* caught by the
+ *         "more than one" check below - `nvmlDeviceGetCount_v2()`/`nvmlDeviceGetHandleByIndex_v2()` enumerate
+ *         physical parent GPUs only (MIG device handles are a separate, unrelated API surface,
+ *         `nvmlDeviceGetMigDeviceHandleByIndex()`, not used anywhere in this codebase), so a CUDA-visible MIG
+ *         instance matches exactly one parent's PCI bus ID and resolves to that whole parent GPU instead of
+ *         throwing. MIG is not supported/disambiguated by this function.
+ */
+[[nodiscard]] unsigned int resolve_nvml_device_id(const std::size_t cuda_device_id) {
+    unsigned int nvml_count{};
+    if (nvmlDeviceGetCount_v2(&nvml_count) != NVML_SUCCESS) {
+        throw std::runtime_error{ "gpu_nvidia_hardware_sampler: couldn't query the number of NVML devices while resolving the physical device for CUDA index " + std::to_string(cuda_device_id) + "!" };
+    }
+
+    const std::string cuda_bus_id = detail::nvidia_device_pci_bus_id(static_cast<int>(cuda_device_id));
+    std::optional<unsigned int> resolved{};
+    for (unsigned int nvml_idx = 0; nvml_idx < nvml_count; ++nvml_idx) {
+        nvmlDevice_t device{};
+        nvmlPciInfo_st pcie_info{};
+        if (nvmlDeviceGetHandleByIndex_v2(nvml_idx, &device) == NVML_SUCCESS && nvmlDeviceGetPciInfo_v3(device, &pcie_info) == NVML_SUCCESS) {
+            const std::string nvml_bus_id = detail::format_pci_bus_id(static_cast<std::uint32_t>(pcie_info.domain), static_cast<std::uint32_t>(pcie_info.bus), static_cast<std::uint32_t>(pcie_info.device));
+            if (nvml_bus_id == cuda_bus_id) {
+                if (resolved.has_value()) {
+                    throw std::runtime_error{ "gpu_nvidia_hardware_sampler: found more than one NVML device reporting PCI bus ID " + cuda_bus_id + " (CUDA index " + std::to_string(cuda_device_id) + ")!" };
+                }
+                resolved = nvml_idx;
+            }
+        }
+    }
+    if (!resolved.has_value()) {
+        throw std::runtime_error{ "gpu_nvidia_hardware_sampler: couldn't find an NVML device with PCI bus ID " + cuda_bus_id + " (CUDA index " + std::to_string(cuda_device_id) + ")!" };
+    }
+    return resolved.value();
+}
+
+}  // namespace
+
 gpu_nvidia_hardware_sampler::gpu_nvidia_hardware_sampler(const sample_category category) :
     gpu_nvidia_hardware_sampler{ 0, HWS_SAMPLING_INTERVAL, category } { }
 
@@ -46,18 +92,36 @@ gpu_nvidia_hardware_sampler::gpu_nvidia_hardware_sampler(const std::chrono::mill
 
 gpu_nvidia_hardware_sampler::gpu_nvidia_hardware_sampler(const std::size_t device_id, const std::chrono::milliseconds sampling_interval, const sample_category category) :
     hardware_sampler{ sampling_interval, category } {
-    // make sure that nvmlInit is only called once for all instances
-    if (instances_++ == 0) {
-        HWS_NVML_ERROR_CHECK(nvmlInit())
-        // notify that initialization has been finished
-        init_finished_ = true;
-    } else {
-        // wait until init has been finished!
-        while (!init_finished_) { }
-    }
+    // make sure that nvmlInit is only called once for all instances; nvmlInit() itself is inside the try so that a
+    // failing first instance is rolled back the exact same way as a failing resolve_nvml_device_id() below,
+    // instead of leaking instances_/init_finished_ through an early, uncaught throw
+    const bool is_first_instance = (instances_++ == 0);
+    try {
+        if (is_first_instance) {
+            HWS_NVML_ERROR_CHECK(nvmlInit())
+            // notify that initialization has been finished
+            init_finished_ = true;
+        } else {
+            // wait until init has been finished!
+            while (!init_finished_) { }
+        }
 
-    // initialize samples -> can't be done beforehand since the device handle can only be initialized after a call to nvmlInit
-    device_ = detail::nvml_device_handle{ device_id };
+        // initialize samples -> can't be done beforehand since the device handle can only be initialized after a
+        // call to nvmlInit; resolve the CUDA-relative device_id to the matching NVML index first (see
+        // resolve_nvml_device_id()) since NVML's own enumeration isn't affected by CUDA_VISIBLE_DEVICES
+        device_ = detail::nvml_device_handle{ resolve_nvml_device_id(device_id) };
+    } catch (...) {
+        // mirror the destructor's "last instance out shuts NVML down" logic (keyed off instances_ reaching zero,
+        // not off is_first_instance) - by the time this runs, another constructor may already have passed the
+        // init_finished_ gate and be actively using NVML, so only the instance that brings the shared count back
+        // to zero may touch its lifetime, and only if it was actually initialized (init_finished_) - otherwise
+        // nvmlInit() itself is what failed and there is nothing to shut down
+        if (--instances_ == 0 && init_finished_) {
+            init_finished_ = false;
+            nvmlShutdown();
+        }
+        throw;
+    }
 }
 
 gpu_nvidia_hardware_sampler::~gpu_nvidia_hardware_sampler() {

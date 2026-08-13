@@ -60,6 +60,12 @@ std::string throttle_event_reason_to_string(const unsigned long long clocks_even
 
 #endif
 
+std::string nvidia_device_pci_bus_id(const int local_index) {
+    char bus_id[64] = {};
+    HWS_CUDA_ERROR_CHECK(cudaDeviceGetPCIBusId(bus_id, sizeof(bus_id), local_index));
+    return std::string{ bus_id };
+}
+
 #if defined(HWS_MPI_SUPPORT_ENABLED) && defined(HWS_FOR_NVIDIA_GPUS_ENABLED)
 
 namespace {
@@ -72,9 +78,7 @@ namespace {
  * @return the physical ID of the NVIDIA GPU device
  */
 [[nodiscard]] std::string nvidia_physical_id(const int local_index) {
-    char bus_id[64] = {};
-    HWS_CUDA_ERROR_CHECK(cudaDeviceGetPCIBusId(bus_id, sizeof(bus_id), local_index));
-    return std::string{ "nvidia:" } + bus_id;
+    return std::string{ "nvidia:" } + nvidia_device_pci_bus_id(local_index);
 }
 
 }  // namespace
