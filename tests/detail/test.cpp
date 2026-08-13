@@ -9,6 +9,11 @@
  *          hardware backends are enabled - no hardware, subprocess, or vendor SDK required.
  */
 
+// MSVC's <string_view> defines basic_string_view's operator<< assuming <ostream>'s basic_ostream is already a
+// complete type; without this include first, doctest's CHECK_EQ diagnostics (which stream std::string_view
+// values) fail to compile on MSVC with an unrelated-looking cascade of errors inside __msvc_string_view.hpp
+#include <ostream>  // std::basic_ostream
+
 #include "hws/utility.hpp"  // hws::detail::{starts_with, trim, to_lower_case, split, is_integer, convert_to, split_as, map_entry_to_string, quote}
 
 #include "doctest/doctest.h"
