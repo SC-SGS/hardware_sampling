@@ -9,13 +9,14 @@
 
 #include "rocm_smi/rocm_smi.h"  // ROCm SMI runtime functions
 
+#include "hip/hip_runtime_api.h"  // hipGetDeviceCount, hipDeviceGetPCIBusId
+
 #include <string>  // std::string
-#include <vector>  // std::vector
 
 #if defined(HWS_MPI_SUPPORT_ENABLED) && defined(HWS_FOR_AMD_GPUS_ENABLED)
     #include "hws/visible_gpu_device.hpp"  // hws::detail::visible_gpu_device, hws::detail::device_backend_kind
 
-    #include "hip/hip_runtime_api.h"  // hipGetDeviceCount, hipDeviceGetPCIBusId
+    #include <vector>  // std::vector
 #endif
 
 namespace hws::detail {
@@ -46,6 +47,12 @@ std::string performance_level_to_string(const rsmi_dev_perf_level_t perf_level) 
     }
 }
 
+std::string amd_device_pci_bus_id(const int local_index) {
+    char bus_id[64] = {};
+    HWS_HIP_ERROR_CHECK(hipDeviceGetPCIBusId(bus_id, sizeof(bus_id), local_index));
+    return std::string{ bus_id };
+}
+
 #if defined(HWS_MPI_SUPPORT_ENABLED) && defined(HWS_FOR_AMD_GPUS_ENABLED)
 
 namespace {
@@ -58,9 +65,7 @@ namespace {
  * @return the physical ID of the AMD GPU device
  */
 [[nodiscard]] std::string amd_physical_id(const int local_index) {
-    char bus_id[64] = {};
-    HWS_HIP_ERROR_CHECK(hipDeviceGetPCIBusId(bus_id, sizeof(bus_id), local_index));
-    return std::string{ "amd:" } + bus_id;
+    return std::string{ "amd:" } + amd_device_pci_bus_id(local_index);
 }
 
 }  // namespace

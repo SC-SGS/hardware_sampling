@@ -17,11 +17,10 @@
 
 #include <stdexcept>  // std::runtime_error
 #include <string>     // std::string
+#include <vector>     // std::vector
 
 #if defined(HWS_MPI_SUPPORT_ENABLED)
     #include "hws/visible_gpu_device.hpp"  // hws::detail::visible_gpu_device
-
-    #include <vector>  // std::vector
 #endif
 
 namespace hws::detail {
@@ -74,6 +73,12 @@ namespace hws::detail {
  */
 [[nodiscard]] std::string performance_level_to_string(rsmi_dev_perf_level_t perf_level);
 
+/**
+ * @brief Return the PCI bus ID (e.g. `"0000:c1:00.0"`) of the AMD GPU device with the given HIP @p local_index.
+ * @param[in] local_index the local HIP device index
+ * @return the PCI bus ID (`[[nodiscard]]`)
+ */
+[[nodiscard]] std::string amd_device_pci_bus_id(int local_index);
 
 #if defined(HWS_MPI_SUPPORT_ENABLED)
 

@@ -35,6 +35,62 @@
 
 namespace hws {
 
+namespace {
+
+/**
+ * @brief Convert a ROCm SMI BDFID (as returned by `rsmi_dev_pci_id_get()`) to a sysfs-style PCI bus ID string.
+ * @details BDFID = (DOMAIN << 32) | (PARTITION << 28) | (BUS << 8) | (DEVICE << 3) | FUNCTION (see ROCm SMI's
+ *          `rsmi_dev_pci_id_get` documentation). On MI-series partitioned devices the function bits are
+ *          repurposed for the partition ID instead of a real PCI function - but the OS/sysfs-visible PCI address
+ *          for the device itself always has function 0, so the function is intentionally not extracted here; see
+ *          `hws::detail::format_pci_bus_id()`.
+ */
+[[nodiscard]] std::string bdfid_to_pci_bus_id(const std::uint64_t bdfid) {
+    const auto domain = static_cast<std::uint32_t>((bdfid >> 32) & 0xffffffffull);
+    const auto bus = static_cast<std::uint32_t>((bdfid >> 8) & 0xffull);
+    const auto device = static_cast<std::uint32_t>((bdfid >> 3) & 0x1full);
+    return detail::format_pci_bus_id(domain, bus, device);
+}
+
+/**
+ * @brief Resolve the ROCm SMI device index that corresponds to the physical device HIP considers index
+ *        @p hip_device_id, by matching PCI bus IDs.
+ * @details Necessary because ROCm SMI enumerates every physical AMD GPU on the node unconditionally, while HIP's
+ *          enumeration is filtered/reordered by `HIP_VISIBLE_DEVICES`/`ROCR_VISIBLE_DEVICES` - the same index
+ *          number in both APIs can refer to different physical devices. Requires `rsmi_init()` to have already
+ *          been called.
+ * @throws std::runtime_error if ROCm SMI's device count can't be queried, if none of its devices' PCI bus IDs
+ *         match @p hip_device_id's, or if more than one does - `bdfid_to_pci_bus_id()` deliberately drops the
+ *         BDFID's partition bits (see its docs), so on a partitioned MI-series accelerator several ROCm SMI
+ *         entries can share one normalized bus ID; silently returning the first match there would be exactly the
+ *         HIP-index-used-as-RSMI-index bug this function exists to avoid, just triggered by partition mode
+ *         instead of a visibility mask.
+ */
+[[nodiscard]] std::uint32_t resolve_rsmi_device_id(const std::uint32_t hip_device_id) {
+    std::uint32_t rsmi_count{};
+    if (rsmi_num_monitor_devices(&rsmi_count) != RSMI_STATUS_SUCCESS) {
+        throw std::runtime_error{ "gpu_amd_hardware_sampler: couldn't query the number of ROCm SMI devices while resolving the physical device for HIP index " + std::to_string(hip_device_id) + "!" };
+    }
+
+    const std::string hip_bus_id = detail::amd_device_pci_bus_id(static_cast<int>(hip_device_id));
+    std::optional<std::uint32_t> resolved{};
+    for (std::uint32_t rsmi_idx = 0; rsmi_idx < rsmi_count; ++rsmi_idx) {
+        std::uint64_t bdfid{};
+        if (rsmi_dev_pci_id_get(rsmi_idx, &bdfid) == RSMI_STATUS_SUCCESS && bdfid_to_pci_bus_id(bdfid) == hip_bus_id) {
+            if (resolved.has_value()) {
+                throw std::runtime_error{ "gpu_amd_hardware_sampler: found more than one ROCm SMI device with PCI bus ID " + hip_bus_id + " (HIP index " + std::to_string(hip_device_id) + ") - likely a partitioned accelerator, which isn't supported yet!" };
+            }
+            resolved = rsmi_idx;
+        }
+    }
+    if (!resolved.has_value()) {
+        throw std::runtime_error{ "gpu_amd_hardware_sampler: couldn't find a ROCm SMI device with PCI bus ID " + hip_bus_id + " (HIP index " + std::to_string(hip_device_id) + ")!" };
+    }
+    return resolved.value();
+}
+
+}  // namespace
+
 gpu_amd_hardware_sampler::gpu_amd_hardware_sampler(const sample_category category) :
     gpu_amd_hardware_sampler{ 0, HWS_SAMPLING_INTERVAL, category } { }
 
@@ -46,15 +102,29 @@ gpu_amd_hardware_sampler::gpu_amd_hardware_sampler(const std::chrono::millisecon
 
 gpu_amd_hardware_sampler::gpu_amd_hardware_sampler(const std::size_t device_id, const std::chrono::milliseconds sampling_interval, const sample_category category) :
     hardware_sampler{ sampling_interval, category },
-    device_id_{ static_cast<std::uint32_t>(device_id) } {
-    // make sure that rsmi_init is only called once for all instances
-    if (instances_++ == 0) {
-        HWS_ROCM_SMI_ERROR_CHECK(rsmi_init(std::uint64_t{ 0 }))
-        // notify that initialization has been finished
-        init_finished_ = true;
-    } else {
-        // wait until init has been finished!
-        while (!init_finished_) { }
+    hip_device_id_{ static_cast<std::uint32_t>(device_id) } {
+    // make sure that rsmi_init is only called once for all instances; holding lifecycle_mutex_ for the whole
+    // "am I first?" decision plus the rsmi_init() call itself serializes it against every other constructor and
+    // destructor, so a failing rsmi_init() can never strand a waiter the way a busy-wait on a flag could - the
+    // next constructor to acquire the mutex simply sees instances_ still 0 and retries rsmi_init() itself
+    {
+        const std::lock_guard<std::mutex> lock{ lifecycle_mutex_ };
+        if (instances_ == 0) {
+            HWS_ROCM_SMI_ERROR_CHECK(rsmi_init(std::uint64_t{ 0 }))
+        }
+        ++instances_;
+    }
+
+    // resolve device_id_ only after rsmi_init() has definitely run (by this instance or a previous one, guaranteed
+    // since we're now a counted instance); if resolution throws, roll the count back under the same mutex
+    try {
+        device_id_ = resolve_rsmi_device_id(hip_device_id_);
+    } catch (...) {
+        const std::lock_guard<std::mutex> lock{ lifecycle_mutex_ };
+        if (--instances_ == 0) {
+            rsmi_shut_down();
+        }
+        throw;
     }
 }
 
@@ -65,12 +135,11 @@ gpu_amd_hardware_sampler::~gpu_amd_hardware_sampler() {
             this->stop_sampling();
         }
 
-        // the last instance must shut down the ROCm SMI runtime
-        // make sure that rsmi_shut_down is only called once
+        // the last instance must shut down the ROCm SMI runtime; guarded by the same mutex as the constructor so
+        // this can't race a concurrent constructor's "am I first?" check
+        const std::lock_guard<std::mutex> lock{ lifecycle_mutex_ };
         if (--instances_ == 0) {
             HWS_ROCM_SMI_ERROR_CHECK(rsmi_shut_down())
-            // reset init_finished flag
-            init_finished_ = false;
         }
     } catch (const std::exception &e) {
         std::cerr << e.what() << std::endl;
@@ -94,7 +163,7 @@ void gpu_amd_hardware_sampler::sampling_loop() {
         general_samples_.byte_order_ = "Little Endian";
 
         hipDeviceProp_t prop{};
-        if (hipGetDeviceProperties(&prop, static_cast<int>(device_id_)) == hipSuccess) {
+        if (hipGetDeviceProperties(&prop, static_cast<int>(hip_device_id_)) == hipSuccess) {
             const std::string architecture{ prop.gcnArchName };
             general_samples_.architecture_ = architecture.substr(0, architecture.find_first_of('\0'));
         }

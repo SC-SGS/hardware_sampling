@@ -18,11 +18,11 @@
 
 #include "fmt/ostream.h"  // fmt::formatter, fmt::ostream_formatter
 
-#include <atomic>   // std::atomic
 #include <chrono>   // std::chrono::milliseconds, std::chrono_literals namespace
 #include <cstddef>  // std::size_t
 #include <cstdint>  // std::uint32_t
 #include <iosfwd>   // std::ostream forward declaration
+#include <mutex>    // std::mutex
 
 namespace hws {
 
@@ -132,8 +132,12 @@ class gpu_amd_hardware_sampler : public hardware_sampler {
      */
     void sampling_loop() final;
 
-    /// The ID of the device to sample.
+    /// The ROCm SMI device index to sample, resolved from hip_device_id_ via a PCI bus ID match (ROCm SMI's own
+    /// device enumeration isn't affected by HIP_VISIBLE_DEVICES/ROCR_VISIBLE_DEVICES, unlike HIP's).
     std::uint32_t device_id_{};
+    /// The HIP-relative device index this hardware sampler was constructed with; only used for the one HIP call
+    /// (hipGetDeviceProperties) that needs a HIP-space rather than a ROCm-SMI-space index.
+    std::uint32_t hip_device_id_{};
 
     /// The general AMD GPU samples.
     rocm_smi_general_samples general_samples_{};
@@ -146,10 +150,14 @@ class gpu_amd_hardware_sampler : public hardware_sampler {
     /// The temperature related AMD GPU samples.
     rocm_smi_temperature_samples temperature_samples_{};
 
-    /// The total number of currently active AMD GPU hardware samplers.
-    inline static std::atomic<int> instances_{ 0 };
-    /// True if the ROCm SMI environment has been successfully initialized (only done by a single hardware sampler).
-    inline static std::atomic<bool> init_finished_{ false };
+    /// Guards `instances_` and every `rsmi_init()`/`rsmi_shut_down()` call, so that the "first instance
+    /// initializes, last instance shuts down" decision and the actual init/shutdown call happen as one atomic
+    /// step - a busy-wait on a plain flag can't do this: a failing first `rsmi_init()` never sets it, permanently
+    /// stranding every waiter, and nothing prevents a shutdown from racing a concurrent init.
+    inline static std::mutex lifecycle_mutex_{};
+    /// The total number of currently active AMD GPU hardware samplers; only ever read/written while holding
+    /// `lifecycle_mutex_`.
+    inline static int instances_{ 0 };
 };
 
 /**

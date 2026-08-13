@@ -22,6 +22,7 @@
 #include <algorithm>  // std::min_element, std::sort, std::transform
 #include <chrono>     // std::chrono::{steady_clock, duration_cast, milliseconds}
 #include <cstddef>    // std::size_t
+#include <cstdint>    // std::uint32_t
 #include <exception>  // std::exception, std::terminate
 #include <ios>        // std::ios_base
 #include <iostream>   // std::cerr, std::endl
@@ -35,6 +36,51 @@
 
 namespace hws {
 
+namespace {
+
+/**
+ * @brief Resolve the NVML device index that corresponds to the physical device CUDA considers index
+ *        @p cuda_device_id, by matching PCI bus IDs.
+ * @details Necessary because NVML enumerates every physical NVIDIA GPU on the node unconditionally, while CUDA's
+ *          enumeration is filtered/reordered by `CUDA_VISIBLE_DEVICES` - the same index number in both APIs can
+ *          refer to different physical devices. Requires `nvmlInit()` to have already been called.
+ * @throws std::runtime_error if NVML's device count can't be queried, if none of its devices' PCI bus IDs match
+ *         @p cuda_device_id's, or if more than one does. Note: NVIDIA MIG instances are *not* caught by the
+ *         "more than one" check below - `nvmlDeviceGetCount_v2()`/`nvmlDeviceGetHandleByIndex_v2()` enumerate
+ *         physical parent GPUs only (MIG device handles are a separate, unrelated API surface,
+ *         `nvmlDeviceGetMigDeviceHandleByIndex()`, not used anywhere in this codebase), so a CUDA-visible MIG
+ *         instance matches exactly one parent's PCI bus ID and resolves to that whole parent GPU instead of
+ *         throwing. MIG is not supported/disambiguated by this function.
+ */
+[[nodiscard]] unsigned int resolve_nvml_device_id(const std::size_t cuda_device_id) {
+    unsigned int nvml_count{};
+    if (nvmlDeviceGetCount_v2(&nvml_count) != NVML_SUCCESS) {
+        throw std::runtime_error{ "gpu_nvidia_hardware_sampler: couldn't query the number of NVML devices while resolving the physical device for CUDA index " + std::to_string(cuda_device_id) + "!" };
+    }
+
+    const std::string cuda_bus_id = detail::nvidia_device_pci_bus_id(static_cast<int>(cuda_device_id));
+    std::optional<unsigned int> resolved{};
+    for (unsigned int nvml_idx = 0; nvml_idx < nvml_count; ++nvml_idx) {
+        nvmlDevice_t device{};
+        nvmlPciInfo_st pcie_info{};
+        if (nvmlDeviceGetHandleByIndex_v2(nvml_idx, &device) == NVML_SUCCESS && nvmlDeviceGetPciInfo_v3(device, &pcie_info) == NVML_SUCCESS) {
+            const std::string nvml_bus_id = detail::format_pci_bus_id(static_cast<std::uint32_t>(pcie_info.domain), static_cast<std::uint32_t>(pcie_info.bus), static_cast<std::uint32_t>(pcie_info.device));
+            if (nvml_bus_id == cuda_bus_id) {
+                if (resolved.has_value()) {
+                    throw std::runtime_error{ "gpu_nvidia_hardware_sampler: found more than one NVML device reporting PCI bus ID " + cuda_bus_id + " (CUDA index " + std::to_string(cuda_device_id) + ")!" };
+                }
+                resolved = nvml_idx;
+            }
+        }
+    }
+    if (!resolved.has_value()) {
+        throw std::runtime_error{ "gpu_nvidia_hardware_sampler: couldn't find an NVML device with PCI bus ID " + cuda_bus_id + " (CUDA index " + std::to_string(cuda_device_id) + ")!" };
+    }
+    return resolved.value();
+}
+
+}  // namespace
+
 gpu_nvidia_hardware_sampler::gpu_nvidia_hardware_sampler(const sample_category category) :
     gpu_nvidia_hardware_sampler{ 0, HWS_SAMPLING_INTERVAL, category } { }
 
@@ -46,18 +92,31 @@ gpu_nvidia_hardware_sampler::gpu_nvidia_hardware_sampler(const std::chrono::mill
 
 gpu_nvidia_hardware_sampler::gpu_nvidia_hardware_sampler(const std::size_t device_id, const std::chrono::milliseconds sampling_interval, const sample_category category) :
     hardware_sampler{ sampling_interval, category } {
-    // make sure that nvmlInit is only called once for all instances
-    if (instances_++ == 0) {
-        HWS_NVML_ERROR_CHECK(nvmlInit())
-        // notify that initialization has been finished
-        init_finished_ = true;
-    } else {
-        // wait until init has been finished!
-        while (!init_finished_) { }
+    // make sure that nvmlInit is only called once for all instances; holding lifecycle_mutex_ for the whole
+    // "am I first?" decision plus the nvmlInit() call itself serializes it against every other constructor and
+    // destructor, so a failing nvmlInit() can never strand a waiter the way a busy-wait on a flag could - the
+    // next constructor to acquire the mutex simply sees instances_ still 0 and retries nvmlInit() itself
+    {
+        const std::lock_guard<std::mutex> lock{ lifecycle_mutex_ };
+        if (instances_ == 0) {
+            HWS_NVML_ERROR_CHECK(nvmlInit())
+        }
+        ++instances_;
     }
 
-    // initialize samples -> can't be done beforehand since the device handle can only be initialized after a call to nvmlInit
-    device_ = detail::nvml_device_handle{ device_id };
+    // initialize samples -> can't be done beforehand since the device handle can only be initialized after a call
+    // to nvmlInit (guaranteed to have already run, since we're now a counted instance); resolve the CUDA-relative
+    // device_id to the matching NVML index first (see resolve_nvml_device_id()) since NVML's own enumeration
+    // isn't affected by CUDA_VISIBLE_DEVICES; if resolution throws, roll the count back under the same mutex
+    try {
+        device_ = detail::nvml_device_handle{ resolve_nvml_device_id(device_id) };
+    } catch (...) {
+        const std::lock_guard<std::mutex> lock{ lifecycle_mutex_ };
+        if (--instances_ == 0) {
+            nvmlShutdown();
+        }
+        throw;
+    }
 }
 
 gpu_nvidia_hardware_sampler::~gpu_nvidia_hardware_sampler() {
@@ -67,12 +126,11 @@ gpu_nvidia_hardware_sampler::~gpu_nvidia_hardware_sampler() {
             this->stop_sampling();
         }
 
-        // the last instance must shut down the NVML runtime
-        // make sure that nvmlShutdown is only called once
+        // the last instance must shut down the NVML runtime; guarded by the same mutex as the constructor so this
+        // can't race a concurrent constructor's "am I first?" check
+        const std::lock_guard<std::mutex> lock{ lifecycle_mutex_ };
         if (--instances_ == 0) {
             HWS_NVML_ERROR_CHECK(nvmlShutdown())
-            // reset init_finished flag
-            init_finished_ = false;
         }
     } catch (const std::exception &e) {
         std::cerr << e.what() << std::endl;
