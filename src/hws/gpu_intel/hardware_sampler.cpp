@@ -44,17 +44,19 @@ gpu_intel_hardware_sampler::gpu_intel_hardware_sampler(const std::chrono::millis
 
 gpu_intel_hardware_sampler::gpu_intel_hardware_sampler(const std::size_t device_id, const std::chrono::milliseconds sampling_interval, const sample_category category) :
     hardware_sampler{ sampling_interval, category } {
-    // make sure that zeInit is only called once for all instances
-    if (instances_++ == 0) {
-        HWS_LEVEL_ZERO_ERROR_CHECK(zeInit(ZE_INIT_FLAG_GPU_ONLY))
-        // notify that initialization has been finished
-        init_finished_ = true;
-    } else {
-        // wait until init has been finished!
-        while (!init_finished_) { }
+    // make sure that zeInit is only called once for all instances; holding lifecycle_mutex_ for the whole
+    // "already initialized?" check plus the zeInit() call itself serializes it against every other constructor,
+    // so a failing zeInit() can never strand a waiter the way a busy-wait on a flag could - the next constructor
+    // to acquire the mutex simply sees initialized_ still false and retries zeInit() itself
+    {
+        const std::lock_guard<std::mutex> lock{ lifecycle_mutex_ };
+        if (!initialized_) {
+            HWS_LEVEL_ZERO_ERROR_CHECK(zeInit(ZE_INIT_FLAG_GPU_ONLY))
+            initialized_ = true;
+        }
     }
 
-    // initialize samples -> can't be done beforehand since the device handle can only be initialized after a call to nvmlInit
+    // initialize samples -> can't be done beforehand since the device handle can only be initialized after a call to zeInit
     device_ = detail::level_zero_device_handle{ device_id };
 }
 

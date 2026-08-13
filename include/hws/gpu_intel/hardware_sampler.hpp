@@ -19,10 +19,10 @@
 
 #include "fmt/format.h"  // fmt::formatter, fmt::ostream_formatter
 
-#include <atomic>   // std::atomic
 #include <chrono>   // std::chrono::milliseconds, std::chrono_literals namespace
 #include <cstddef>  // std::size_t
 #include <iosfwd>   // std::ostream forward declaration
+#include <mutex>    // std::mutex
 #include <string>   // std::string
 
 namespace hws {
@@ -146,10 +146,14 @@ class gpu_intel_hardware_sampler : public hardware_sampler {
     /// The temperature related Intel GPU samples.
     level_zero_temperature_samples temperature_samples_{};
 
-    /// The total number of currently active Intel GPU hardware samplers.
-    inline static std::atomic<int> instances_{ 0 };
-    /// True if the Level Zero environment has been successfully initialized (only done by a single hardware sampler).
-    inline static std::atomic<bool> init_finished_{ false };
+    /// Guards `initialized_` and the `zeInit()` call, so that the "has anyone already initialized?" check and the
+    /// actual `zeInit()` call happen as one atomic step - a busy-wait on a plain flag can't do this: a failing
+    /// first `zeInit()` never sets it, permanently stranding every waiter. There is no matching shut down call
+    /// (Level Zero has none), so unlike the AMD/NVIDIA backends this only ever needs to run `zeInit()` once
+    /// successfully, never again for the lifetime of the process.
+    inline static std::mutex lifecycle_mutex_{};
+    /// True once `zeInit()` has completed successfully; only ever read/written while holding `lifecycle_mutex_`.
+    inline static bool initialized_{ false };
 };
 
 /**

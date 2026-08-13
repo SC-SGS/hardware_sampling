@@ -92,32 +92,27 @@ gpu_nvidia_hardware_sampler::gpu_nvidia_hardware_sampler(const std::chrono::mill
 
 gpu_nvidia_hardware_sampler::gpu_nvidia_hardware_sampler(const std::size_t device_id, const std::chrono::milliseconds sampling_interval, const sample_category category) :
     hardware_sampler{ sampling_interval, category } {
-    // make sure that nvmlInit is only called once for all instances; nvmlInit() itself is inside the try so that a
-    // failing first instance is rolled back the exact same way as a failing resolve_nvml_device_id() below,
-    // instead of leaking instances_/init_finished_ through an early, uncaught throw
-    const bool is_first_instance = (instances_++ == 0);
-    try {
-        if (is_first_instance) {
+    // make sure that nvmlInit is only called once for all instances; holding lifecycle_mutex_ for the whole
+    // "am I first?" decision plus the nvmlInit() call itself serializes it against every other constructor and
+    // destructor, so a failing nvmlInit() can never strand a waiter the way a busy-wait on a flag could - the
+    // next constructor to acquire the mutex simply sees instances_ still 0 and retries nvmlInit() itself
+    {
+        const std::lock_guard<std::mutex> lock{ lifecycle_mutex_ };
+        if (instances_ == 0) {
             HWS_NVML_ERROR_CHECK(nvmlInit())
-            // notify that initialization has been finished
-            init_finished_ = true;
-        } else {
-            // wait until init has been finished!
-            while (!init_finished_) { }
         }
+        ++instances_;
+    }
 
-        // initialize samples -> can't be done beforehand since the device handle can only be initialized after a
-        // call to nvmlInit; resolve the CUDA-relative device_id to the matching NVML index first (see
-        // resolve_nvml_device_id()) since NVML's own enumeration isn't affected by CUDA_VISIBLE_DEVICES
+    // initialize samples -> can't be done beforehand since the device handle can only be initialized after a call
+    // to nvmlInit (guaranteed to have already run, since we're now a counted instance); resolve the CUDA-relative
+    // device_id to the matching NVML index first (see resolve_nvml_device_id()) since NVML's own enumeration
+    // isn't affected by CUDA_VISIBLE_DEVICES; if resolution throws, roll the count back under the same mutex
+    try {
         device_ = detail::nvml_device_handle{ resolve_nvml_device_id(device_id) };
     } catch (...) {
-        // mirror the destructor's "last instance out shuts NVML down" logic (keyed off instances_ reaching zero,
-        // not off is_first_instance) - by the time this runs, another constructor may already have passed the
-        // init_finished_ gate and be actively using NVML, so only the instance that brings the shared count back
-        // to zero may touch its lifetime, and only if it was actually initialized (init_finished_) - otherwise
-        // nvmlInit() itself is what failed and there is nothing to shut down
-        if (--instances_ == 0 && init_finished_) {
-            init_finished_ = false;
+        const std::lock_guard<std::mutex> lock{ lifecycle_mutex_ };
+        if (--instances_ == 0) {
             nvmlShutdown();
         }
         throw;
@@ -131,12 +126,11 @@ gpu_nvidia_hardware_sampler::~gpu_nvidia_hardware_sampler() {
             this->stop_sampling();
         }
 
-        // the last instance must shut down the NVML runtime
-        // make sure that nvmlShutdown is only called once
+        // the last instance must shut down the NVML runtime; guarded by the same mutex as the constructor so this
+        // can't race a concurrent constructor's "am I first?" check
+        const std::lock_guard<std::mutex> lock{ lifecycle_mutex_ };
         if (--instances_ == 0) {
             HWS_NVML_ERROR_CHECK(nvmlShutdown())
-            // reset init_finished flag
-            init_finished_ = false;
         }
     } catch (const std::exception &e) {
         std::cerr << e.what() << std::endl;

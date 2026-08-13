@@ -103,30 +103,25 @@ gpu_amd_hardware_sampler::gpu_amd_hardware_sampler(const std::chrono::millisecon
 gpu_amd_hardware_sampler::gpu_amd_hardware_sampler(const std::size_t device_id, const std::chrono::milliseconds sampling_interval, const sample_category category) :
     hardware_sampler{ sampling_interval, category },
     hip_device_id_{ static_cast<std::uint32_t>(device_id) } {
-    // make sure that rsmi_init is only called once for all instances; rsmi_init() itself is inside the try so that
-    // a failing first instance is rolled back the exact same way as a failing resolve_rsmi_device_id() below,
-    // instead of leaking instances_/init_finished_ through an early, uncaught throw
-    const bool is_first_instance = (instances_++ == 0);
-    try {
-        if (is_first_instance) {
+    // make sure that rsmi_init is only called once for all instances; holding lifecycle_mutex_ for the whole
+    // "am I first?" decision plus the rsmi_init() call itself serializes it against every other constructor and
+    // destructor, so a failing rsmi_init() can never strand a waiter the way a busy-wait on a flag could - the
+    // next constructor to acquire the mutex simply sees instances_ still 0 and retries rsmi_init() itself
+    {
+        const std::lock_guard<std::mutex> lock{ lifecycle_mutex_ };
+        if (instances_ == 0) {
             HWS_ROCM_SMI_ERROR_CHECK(rsmi_init(std::uint64_t{ 0 }))
-            // notify that initialization has been finished
-            init_finished_ = true;
-        } else {
-            // wait until init has been finished!
-            while (!init_finished_) { }
         }
+        ++instances_;
+    }
 
-        // resolve device_id_ only after rsmi_init() has definitely run (by this instance or a previous one)
+    // resolve device_id_ only after rsmi_init() has definitely run (by this instance or a previous one, guaranteed
+    // since we're now a counted instance); if resolution throws, roll the count back under the same mutex
+    try {
         device_id_ = resolve_rsmi_device_id(hip_device_id_);
     } catch (...) {
-        // mirror the destructor's "last instance out shuts ROCm SMI down" logic (keyed off instances_ reaching
-        // zero, not off is_first_instance) - by the time this runs, another constructor may already have passed
-        // the init_finished_ gate and be actively using ROCm SMI, so only the instance that brings the shared
-        // count back to zero may touch its lifetime, and only if it was actually initialized (init_finished_) -
-        // otherwise rsmi_init() itself is what failed and there is nothing to shut down
-        if (--instances_ == 0 && init_finished_) {
-            init_finished_ = false;
+        const std::lock_guard<std::mutex> lock{ lifecycle_mutex_ };
+        if (--instances_ == 0) {
             rsmi_shut_down();
         }
         throw;
@@ -140,12 +135,11 @@ gpu_amd_hardware_sampler::~gpu_amd_hardware_sampler() {
             this->stop_sampling();
         }
 
-        // the last instance must shut down the ROCm SMI runtime
-        // make sure that rsmi_shut_down is only called once
+        // the last instance must shut down the ROCm SMI runtime; guarded by the same mutex as the constructor so
+        // this can't race a concurrent constructor's "am I first?" check
+        const std::lock_guard<std::mutex> lock{ lifecycle_mutex_ };
         if (--instances_ == 0) {
             HWS_ROCM_SMI_ERROR_CHECK(rsmi_shut_down())
-            // reset init_finished flag
-            init_finished_ = false;
         }
     } catch (const std::exception &e) {
         std::cerr << e.what() << std::endl;
