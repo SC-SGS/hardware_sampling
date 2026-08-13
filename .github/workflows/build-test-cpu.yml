@@ -96,6 +96,12 @@ jobs:
 
   build-test-windows:
     runs-on: windows-latest
+    env:
+      # vctip.exe (the MSVC telemetry uploader, spawned by cl.exe/link.exe) can outlive the process that spawned
+      # it while still holding its inherited stdout/stderr handles open; ctest then blocks forever waiting for
+      # those pipes to reach EOF, well past the point where the actual test binary has already finished and
+      # printed its output. Disabling telemetry submission stops vctip.exe from being spawned in the first place.
+      VSCMD_SKIP_SENDTELEMETRY: "1"
     steps:
       - name: Checkout hws
         uses: actions/checkout@v4.2.0
