@@ -29,10 +29,6 @@ jobs:
             python3-pip \
             libfmt-dev
 
-      - name: Install pytest
-        run: |
-          python3 -m pip install pytest numpy matplotlib
-
       - name: Configure CMake
         run: |
           mkdir build
@@ -44,6 +40,7 @@ jobs:
                 -DHWS_ENABLE_GPU_INTEL_SAMPLING=OFF \
                 -DHWS_ENABLE_PYTHON_BINDINGS=ON \
                 -DHWS_ENABLE_ERROR_CHECKS=OFF \
+                -DHWS_ENABLE_TESTING=ON \
                 ..
 
       - name: Build
@@ -51,16 +48,15 @@ jobs:
           cd build
           cmake --build .
 
-      - name: Run Python tests
+      - name: Run Python bindings smoke check
         run: |
           cd build
-          python3 -m pytest ../bindings/tests/ 2>/dev/null || echo "No tests found"
-          python3 -c "import sys; sys.path.insert(0, '.'); import HardwareSampling" || echo "Python bindings test skipped"
+          python3 -c "import sys; sys.path.insert(0, '.'); import HardwareSampling"
 
-      - name: Run example
+      - name: Run tests
         run: |
           cd build
-          ctest -R example_cpp --output-on-failure
+          ctest --output-on-failure --no-tests=error
 
 
   build-test-macos:
@@ -73,21 +69,18 @@ jobs:
         run: |
           brew install fmt pybind11 python
 
-      - name: Install pytest
-        run: |
-          python3 -m pip install pytest numpy matplotlib
-
       - name: Configure CMake
         run: |
           mkdir build
           cd build
           cmake -DCMAKE_BUILD_TYPE=Debug \
-                -DHWS_ENABLE_CPU_SAMPLING=ON \
+                -DHWS_ENABLE_CPU_SAMPLING=AUTO \
                 -DHWS_ENABLE_GPU_NVIDIA_SAMPLING=OFF \
                 -DHWS_ENABLE_GPU_AMD_SAMPLING=OFF \
                 -DHWS_ENABLE_GPU_INTEL_SAMPLING=OFF \
                 -DHWS_ENABLE_PYTHON_BINDINGS=ON \
                 -DHWS_ENABLE_ERROR_CHECKS=OFF \
+                -DHWS_ENABLE_TESTING=ON \
                 ..
 
       - name: Build
@@ -95,10 +88,10 @@ jobs:
           cd build
           cmake --build .
 
-      - name: Run example
+      - name: Run tests
         run: |
           cd build
-          ctest -R example_cpp --output-on-failure
+          ctest --output-on-failure --no-tests=error
 
 
   build-test-windows:
@@ -117,10 +110,6 @@ jobs:
           python -m pip install cmake
           choco install fmt -y
 
-      - name: Install pytest
-        run: |
-          python -m pip install pytest numpy matplotlib
-
       - name: Configure CMake
         run: |
           mkdir build
@@ -132,6 +121,7 @@ jobs:
                 -DHWS_ENABLE_GPU_INTEL_SAMPLING=OFF `
                 -DHWS_ENABLE_PYTHON_BINDINGS=ON `
                 -DHWS_ENABLE_ERROR_CHECKS=OFF `
+                -DHWS_ENABLE_TESTING=ON `
                 ..
 
       - name: Build
@@ -139,7 +129,7 @@ jobs:
           cd build
           cmake --build . --config Debug
 
-      - name: Run example
+      - name: Run tests
         run: |
           cd build
-          ctest -R example_cpp --output-on-failure --build-config Debug
+          ctest --output-on-failure --no-tests=error --build-config Debug

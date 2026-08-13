@@ -40,7 +40,8 @@ jobs:
                 -DHWS_ENABLE_GPU_INTEL_SAMPLING=OFF \
                 -DHWS_ENABLE_PYTHON_BINDINGS=ON \
                 -DHWS_ENABLE_ERROR_CHECKS=OFF \
-                -DHWS_SAMPLING_INTERVAL=100ms \
+                -DHWS_SAMPLING_INTERVAL=100 \
+                -DHWS_ENABLE_TESTING=ON \
                 ..
 
       - name: Build
@@ -48,12 +49,7 @@ jobs:
           cd build
           cmake --build .
 
-      - name: Test build
+      - name: Run tests
         run: |
           cd build
-          ctest -j$(nproc) --output-on-failure || true
-
-      - name: Run example
-        run: |
-          cd build
-          ctest -R example_cpp --output-on-failure || true
+          ctest -j$(nproc) --output-on-failure --no-tests=error

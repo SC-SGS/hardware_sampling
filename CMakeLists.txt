@@ -23,6 +23,9 @@ set(HWS_SOURCES
 set(HWS_LIBRARY_NAME hws)
 add_library(${HWS_LIBRARY_NAME} SHARED ${HWS_SOURCES})
 add_library(hws::hws ALIAS ${HWS_LIBRARY_NAME})
+# a SHARED library exports no symbols by default on MSVC (unlike Linux/macOS); needed so test executables can link
+# against hws::detail:: free functions (e.g. trim, split) that aren't reached through the public sampler classes
+set_target_properties(${HWS_LIBRARY_NAME} PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 # set install target
 set(HWS_TARGETS_TO_INSTALL )
@@ -144,6 +147,16 @@ if (HWS_ENABLE_GPU_INTEL_SAMPLING MATCHES "AUTO" OR HWS_ENABLE_GPU_INTEL_SAMPLIN
     add_subdirectory(src/hws/gpu_intel)
 else ()
     message(STATUS "Hardware sampling for Intel GPUs disabled!")
+endif ()
+
+
+####################################################################################################################
+##                                                    add tests                                                   ##
+####################################################################################################################
+option(HWS_ENABLE_TESTING "Build simple regression tests (run via 'ctest')." OFF)
+if (HWS_ENABLE_TESTING)
+    enable_testing()
+    add_subdirectory(tests)
 endif ()
 
 
