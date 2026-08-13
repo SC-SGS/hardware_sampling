@@ -118,6 +118,29 @@ class gpu_nvidia_hardware_sampler : public hardware_sampler {
     [[nodiscard]] const nvml_temperature_samples &temperature_samples() const noexcept { return temperature_samples_; }
 
     /**
+     * @brief Return the CUDA device index this hardware sampler was constructed with.
+     * @details Purely local/informational: this index is only used once, at construction, to resolve the NVML
+     *          device handle this sampler actually operates on (see `nvmlDeviceGetHandleByIndex`) - since
+     *          `CUDA_VISIBLE_DEVICES` isn't respected by NVML's own device enumeration, this CUDA-relative index
+     *          is **not** guaranteed to identify the same physical device as `hws::detail::nvidia_device_pci_bus_id(device_id())`
+     *          would. Use `pci_bus_id()` to identify the actual physical device this sampler measures.
+     * @return the CUDA device index (`[[nodiscard]]`)
+     */
+    [[nodiscard]] std::size_t device_id() const noexcept { return device_id_; }
+
+    /**
+     * @brief Return the PCI bus ID (e.g. `"0000:c1:00.0"`) of the physical device this hardware sampler actually
+     *        measures.
+     * @details Queried via `nvmlDeviceGetPciInfo_v3()` on this sampler's already-resolved NVML device handle, so -
+     *          unlike combining `device_id()` with a different API family (e.g. CUDA's `cudaDeviceGetPCIBusId()`)
+     *          - this is guaranteed to identify the exact physical device being sampled, even though
+     *          `CUDA_VISIBLE_DEVICES` and NVML's device enumeration can otherwise diverge. Matches the format
+     *          used by `enumerate_all_nvidia_gpu_pci_bus_ids()`.
+     * @return the PCI bus ID (`[[nodiscard]]`)
+     */
+    [[nodiscard]] std::string pci_bus_id() const;
+
+    /**
      * @copydoc hws::hardware_sampler::device_identification
      */
     [[nodiscard]] std::string device_identification() const final;
@@ -135,6 +158,8 @@ class gpu_nvidia_hardware_sampler : public hardware_sampler {
 
     /// The device handle for the device to sample.
     detail::nvml_device_handle device_{};
+    /// The CUDA device index this hardware sampler was constructed with.
+    std::size_t device_id_{};
 
     /// The general NVIDIA GPU samples.
     nvml_general_samples general_samples_{};

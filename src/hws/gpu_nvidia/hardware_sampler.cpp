@@ -45,7 +45,7 @@ gpu_nvidia_hardware_sampler::gpu_nvidia_hardware_sampler(const std::chrono::mill
     gpu_nvidia_hardware_sampler{ 0, sampling_interval, category } { }
 
 gpu_nvidia_hardware_sampler::gpu_nvidia_hardware_sampler(const std::size_t device_id, const std::chrono::milliseconds sampling_interval, const sample_category category) :
-    hardware_sampler{ sampling_interval, category } {
+    hardware_sampler{ sampling_interval, category }, device_id_{ device_id } {
     // make sure that nvmlInit is only called once for all instances
     if (instances_++ == 0) {
         HWS_NVML_ERROR_CHECK(nvmlInit())
@@ -566,6 +566,15 @@ std::string gpu_nvidia_hardware_sampler::device_identification() const {
     nvmlPciInfo_st pcie_info{};
     HWS_NVML_ERROR_CHECK(nvmlDeviceGetPciInfo_v3(device_.get_impl().device, &pcie_info))
     return fmt::format("gpu_nvidia_device_{}_{}", pcie_info.device, pcie_info.bus);
+}
+
+std::string gpu_nvidia_hardware_sampler::pci_bus_id() const {
+    nvmlPciInfo_st pcie_info{};
+    HWS_NVML_ERROR_CHECK(nvmlDeviceGetPciInfo_v3(device_.get_impl().device, &pcie_info))
+    // deliberately formatted from the numeric domain/bus/device fields, not pcie_info.busId - NVML's own busId
+    // string uses an extended 8-digit domain (e.g. "00000000:C1:00.0") that doesn't match the 4-digit lowercase
+    // sysfs convention used by enumerate_all_nvidia_gpu_pci_bus_ids(); see hws::detail::format_pci_bus_id().
+    return detail::format_pci_bus_id(pcie_info.domain, pcie_info.bus, pcie_info.device);
 }
 
 std::string gpu_nvidia_hardware_sampler::samples_only_as_yaml_string() const {

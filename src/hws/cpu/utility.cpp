@@ -23,8 +23,11 @@
 namespace hws::detail {
 
 std::string run_subprocess(const std::string_view cmd_line) {
-    // search PATH for executable
-    constexpr int options = subprocess_option_e::subprocess_option_search_user_path;
+    // search PATH for executable; combine stdout and stderr into a single handle since we only
+    // ever read via subprocess_stdout() below -> without this flag, subprocess_create() opens an
+    // unread pipe for stderr that can fill up and block the child (and therefore also
+    // subprocess_join() below) forever if the child ever writes a warning/error to stderr
+    constexpr int options = subprocess_option_e::subprocess_option_search_user_path | subprocess_option_e::subprocess_option_combined_stdout_stderr;
     constexpr static std::string::size_type buffer_size = 4096;
 
     // extract the separate command line arguments

@@ -1,0 +1,201 @@
+#!/bin/bash
+#PBS -N hwmon_probe
+#PBS -l select=1:node_type=mi300a:mpiprocs=1
+#PBS -l walltime=00:15:00
+#PBS -j oe
+#PBS -q test
+
+# Site-specific: written for and tested on HLRS's "Hunter" system (HPE Cray EX, PBS Pro scheduler). The
+# #PBS directives above (queue name "test", node_type selector "mi300a") are specific to that system and
+# will need adapting - or replacing with the equivalent directives for your own scheduler - before use
+# elsewhere. Dumps hwmon (amd_energy, amdgpu, cpufreq) and, if present, /sys/cray/pm_counters diagnostics
+# for a single compute node.
+
+set -x
+
+echo "==================================================================="
+echo " Job:      $PBS_JOBID"
+echo " Host:     $(hostname -f)"
+echo " Node:     $(cat $PBS_NODEFILE 2>/dev/null)"
+echo " Date:     $(date)"
+echo "==================================================================="
+
+# ---------------------------------------------------------------------------
+# Helper: dump every readable *_input / *_label / *_alarm file below a hwmon
+# directory, without ever failing the job on a permission error.
+# ---------------------------------------------------------------------------
+dump_hwmon_dir() {
+    local hw="$1"
+    for f in "$hw"/*_input "$hw"/*_label "$hw"/*_average "$hw"/*_max "$hw"/*_crit; do
+        [ -e "$f" ] || continue
+        local val
+        val=$(cat "$f" 2>/dev/null)
+        if [ -n "$val" ]; then
+            printf "    %-28s = %s\n" "$(basename "$f")" "$val"
+        else
+            printf "    %-28s = <not readable>\n" "$(basename "$f")"
+        fi
+    done
+}
+
+echo
+echo "### --- Alle hwmon-Devices und deren Rohwerte -----------------------"
+for hw in /sys/class/hwmon/hwmon*; do
+    [ -d "$hw" ] || continue
+    name=$(cat "$hw/name" 2>/dev/null)
+    echo
+    echo "-- $hw  (name: $name) --"
+    dump_hwmon_dir "$hw"
+done
+
+echo
+echo "### --- /sys/cray/pm_counters: komplettes Layout + Rohwerte ---------"
+if [ -d /sys/cray/pm_counters ]; then
+    echo "-- Verzeichnisstruktur (find) --"
+    find /sys/cray/pm_counters -mindepth 1 2>/dev/null
+
+    echo
+    echo "-- Inhalt aller regulaeren Dateien --"
+    for f in $(find /sys/cray/pm_counters -mindepth 1 -type f 2>/dev/null | sort); do
+        val=$(cat "$f" 2>/dev/null)
+        if [ -n "$val" ]; then
+            printf "  %-50s = %s\n" "$f" "$val"
+        else
+            printf "  %-50s = <not readable>\n" "$f"
+        fi
+    done
+
+    echo
+    echo "-- zwei Messpunkte fuer alle numerischen (vermutlich Energie-)Zaehler --"
+    # Falls ein Wert wie "123456 J" oder "110 W" statt reiner Zahl geliefert wird, wird nur die
+    # fuehrende Zahl fuer den Test/die Arithmetik verwendet (Einheit wird zusaetzlich mitgeloggt).
+    declare -A pm_t0
+    declare -A pm_t0_raw
+    pm_files=$(find /sys/cray/pm_counters -mindepth 1 -type f 2>/dev/null | sort)
+    t0=$(date +%s.%N)
+    for f in $pm_files; do
+        val_raw=$(cat "$f" 2>/dev/null)
+        val="${val_raw%% *}"
+        [[ "$val" =~ ^[0-9]+$ ]] || continue
+        pm_t0[$f]=$val
+        pm_t0_raw[$f]=$val_raw
+    done
+
+    sleep_interval=1
+    sleep "$sleep_interval"
+
+    t1=$(date +%s.%N)
+    dt=$(python3 -c "print($t1-$t0)")
+    for f in "${!pm_t0[@]}"; do
+        v1_raw=$(cat "$f" 2>/dev/null)
+        v1="${v1_raw%% *}"
+        [[ "$v1" =~ ^[0-9]+$ ]] || continue
+        delta=$((v1 - ${pm_t0[$f]}))
+        echo "  $f: t0=${pm_t0_raw[$f]}  t1=${v1_raw}  delta=${delta}  dt=${dt}s"
+    done
+else
+    echo "kein /sys/cray/pm_counters vorhanden"
+fi
+
+echo
+echo "### --- amd_energy: zwei Messpunkte fuer Delta/Power-Berechnung -----"
+energy_hw=""
+for hw in /sys/class/hwmon/hwmon*; do
+    [ -d "$hw" ] || continue
+    if [ "$(cat "$hw/name" 2>/dev/null)" = "amd_energy" ]; then
+        energy_hw="$hw"
+        break
+    fi
+done
+
+if [ -n "$energy_hw" ]; then
+    echo "amd_energy gefunden unter: $energy_hw"
+    echo
+    echo "-- verfuegbare Energie-Kanaele --"
+    for lbl in "$energy_hw"/energy*_label; do
+        [ -e "$lbl" ] || continue
+        idx=$(basename "$lbl" | sed -E 's/energy([0-9]+)_label/\1/')
+        echo "  energy${idx}: $(cat "$lbl" 2>/dev/null)  (input file: energy${idx}_input, Einheit: uJ, monoton steigend)"
+    done
+
+    echo
+    echo "-- Messung 1 (t0) --"
+    declare -A e_t0
+    t0=$(date +%s.%N)
+    for inp in "$energy_hw"/energy*_input; do
+        [ -e "$inp" ] || continue
+        idx=$(basename "$inp" | sed -E 's/energy([0-9]+)_input/\1/')
+        e_t0[$idx]=$(cat "$inp" 2>/dev/null)
+        echo "  energy${idx}_input = ${e_t0[$idx]} uJ"
+    done
+
+    sleep_interval=1
+    echo
+    echo "-- warte ${sleep_interval}s --"
+    sleep "$sleep_interval"
+
+    echo
+    echo "-- Messung 2 (t1) --"
+    t1=$(date +%s.%N)
+    dt=$(echo "$t1 - $t0" | bc -l 2>/dev/null || python3 -c "print($t1-$t0)")
+    for inp in "$energy_hw"/energy*_input; do
+        [ -e "$inp" ] || continue
+        idx=$(basename "$inp" | sed -E 's/energy([0-9]+)_input/\1/')
+        e_t1=$(cat "$inp" 2>/dev/null)
+        delta_uj=$((e_t1 - ${e_t0[$idx]}))
+        # Power[W] = delta_energy[uJ] / 1e6 / delta_t[s]
+        power_w=$(python3 -c "print(f'{${delta_uj} / 1000000.0 / ${dt}:.3f}')" 2>/dev/null)
+        echo "  energy${idx}_input = ${e_t1} uJ   delta = ${delta_uj} uJ   dt = ${dt}s   -> Power = ${power_w} W"
+    done
+else
+    echo "kein amd_energy hwmon gefunden"
+fi
+
+echo
+echo "### --- amdgpu hwmon: Temperaturen / Power (falls vorhanden) --------"
+for hw in /sys/class/hwmon/hwmon*; do
+    [ -d "$hw" ] || continue
+    if [ "$(cat "$hw/name" 2>/dev/null)" = "amdgpu" ]; then
+        echo
+        echo "-- $hw --"
+        dump_hwmon_dir "$hw"
+    fi
+done
+
+echo
+echo "### --- cpufreq: aktueller Takt pro Online-CPU -----------------------"
+governor_seen=""
+for cpu in /sys/devices/system/cpu/cpu[0-9]*; do
+    [ -d "$cpu/cpufreq" ] || continue
+    cpuid=$(basename "$cpu")
+    cur=$(cat "$cpu/cpufreq/scaling_cur_freq" 2>/dev/null)
+    gov=$(cat "$cpu/cpufreq/scaling_governor" 2>/dev/null)
+    drv=$(cat "$cpu/cpufreq/scaling_driver" 2>/dev/null)
+    [ -z "$governor_seen" ] && governor_seen="driver=$drv governor=$gov"
+    echo "  $cpuid: scaling_cur_freq=${cur:-<n/a>} kHz"
+done
+echo
+echo "  (Treiber/Governor, erster gefundener Core: $governor_seen)"
+
+echo
+echo "-- Mittelwert ueber alle Online-CPUs (kHz -> MHz) --"
+python3 - <<'EOF'
+import glob
+vals = []
+for p in glob.glob("/sys/devices/system/cpu/cpu[0-9]*/cpufreq/scaling_cur_freq"):
+    try:
+        with open(p) as f:
+            vals.append(int(f.read().strip()))
+    except Exception:
+        pass
+if vals:
+    avg_khz = sum(vals) / len(vals)
+    print(f"  n_cores={len(vals)}  avg={avg_khz/1000.0:.1f} MHz  min={min(vals)/1000.0:.1f} MHz  max={max(vals)/1000.0:.1f} MHz")
+else:
+    print("  keine scaling_cur_freq Werte lesbar")
+EOF
+
+echo
+echo "==================================================================="
+echo " Fertig: $(date)"
+echo "==================================================================="

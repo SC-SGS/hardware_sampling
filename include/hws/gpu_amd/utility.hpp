@@ -17,11 +17,10 @@
 
 #include <stdexcept>  // std::runtime_error
 #include <string>     // std::string
+#include <vector>     // std::vector
 
 #if defined(HWS_MPI_SUPPORT_ENABLED)
     #include "hws/visible_gpu_device.hpp"  // hws::detail::visible_gpu_device
-
-    #include <vector>  // std::vector
 #endif
 
 namespace hws::detail {
@@ -74,6 +73,28 @@ namespace hws::detail {
  */
 [[nodiscard]] std::string performance_level_to_string(rsmi_dev_perf_level_t perf_level);
 
+/**
+ * @brief Return the PCI bus ID (e.g. `"0000:c1:00.0"`) of the AMD GPU device with the given HIP @p local_index.
+ * @details This is the same, stable identifier used by `enumerate_all_amd_gpu_pci_bus_ids()`, so the two can be
+ *          matched against each other to locate a HIP-visible device within the full physical GPU topology.
+ * @param[in] local_index the local HIP device index
+ * @return the PCI bus ID (`[[nodiscard]]`)
+ */
+[[nodiscard]] std::string amd_device_pci_bus_id(int local_index);
+
+/**
+ * @brief Enumerate the PCI bus IDs of every AMD GPU physically present on the node, independent of any
+ *        process-level device visibility filtering (e.g. `HIP_VISIBLE_DEVICES`/`ROCR_VISIBLE_DEVICES`).
+ * @details Reads the kernel's view of devices bound to the `amdgpu` driver directly from
+ *          `/sys/bus/pci/drivers/amdgpu/`, since that sysfs directory - unlike the HIP runtime's device
+ *          enumeration - isn't affected by per-process visible-device environment variables. It *can* still be
+ *          restricted below the true physical device count in a batch job with kernel-level (cgroup) device
+ *          isolation for a partial-node allocation, so callers must treat an unexpectedly low count as "topology
+ *          unknown", not as ground truth.
+ * @return the sorted PCI bus IDs of all `amdgpu`-bound devices, or an empty vector if the directory doesn't exist
+ *         or isn't readable (`[[nodiscard]]`)
+ */
+[[nodiscard]] std::vector<std::string> enumerate_all_amd_gpu_pci_bus_ids();
 
 #if defined(HWS_MPI_SUPPORT_ENABLED)
 

@@ -148,6 +148,18 @@ endif ()
 
 
 ####################################################################################################################
+##                                  Cray/HPE node power sampling via pm_counters                                  ##
+####################################################################################################################
+set(HWS_ENABLE_CRAY_PM_COUNTERS_SAMPLING AUTO CACHE STRING "Enable sampling of node power/energy via Cray's /sys/cray/pm_counters interface.")
+set_property(CACHE HWS_ENABLE_CRAY_PM_COUNTERS_SAMPLING PROPERTY STRINGS AUTO ON OFF)
+if (HWS_ENABLE_CRAY_PM_COUNTERS_SAMPLING MATCHES "AUTO" OR HWS_ENABLE_CRAY_PM_COUNTERS_SAMPLING)
+    add_subdirectory(src/hws/cray_pm_counters)
+else ()
+    message(STATUS "Hardware sampling via Cray pm_counters disabled!")
+endif ()
+
+
+####################################################################################################################
 ##                                               enable MPI support                                               ##
 ####################################################################################################################
 set(HWS_ENABLE_MPI_SUPPORT AUTO CACHE STRING "Enable MPI support.")
@@ -198,6 +210,16 @@ endif ()
 option(HWS_ENABLE_DOCUMENTATION "Add documentation using Doxygen." OFF)
 if (HWS_ENABLE_DOCUMENTATION)
     add_subdirectory(docs)
+endif ()
+
+
+########################################################################################################################
+##                                                    add tests                                                      ##
+########################################################################################################################
+option(HWS_ENABLE_TESTING "Build simple regression tests (run via 'ctest')." OFF)
+if (HWS_ENABLE_TESTING)
+    enable_testing()
+    add_subdirectory(tests)
 endif ()
 
 
