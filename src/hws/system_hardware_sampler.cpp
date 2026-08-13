@@ -43,6 +43,8 @@
 
 namespace hws {
 
+using namespace std::chrono_literals;
+
 system_hardware_sampler::system_hardware_sampler(const sample_category category) :
     system_hardware_sampler{ HWS_SAMPLING_INTERVAL, category } { }
 

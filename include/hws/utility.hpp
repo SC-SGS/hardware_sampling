@@ -157,13 +157,22 @@ template <typename T>
         }
         return trimmed.front();
     } else if constexpr (std::is_floating_point_v<detail::remove_cvref_t<T>>) {
+        // std::stof/std::stod/std::stold silently ignore trailing characters after a valid numeric prefix (e.g.
+        // "3.5x" -> 3.5); track how many characters were actually consumed and reject anything left over
+        const std::string trimmed_str{ trim(str) };
+        std::size_t pos{ 0 };
+        T val{};
         if constexpr (std::is_same_v<detail::remove_cvref_t<T>, float>) {
-            return std::stof(std::string{ str });
+            val = std::stof(trimmed_str, &pos);
         } else if constexpr (std::is_same_v<detail::remove_cvref_t<T>, double>) {
-            return std::stod(std::string{ str });
+            val = std::stod(trimmed_str, &pos);
         } else {
-            return std::stold(std::string{ str });
+            val = std::stold(trimmed_str, &pos);
         }
+        if (pos != trimmed_str.size()) {
+            throw std::runtime_error{ fmt::format("Can't convert '{}' to a value of type T!", str) };
+        }
+        return val;
     } else {
         // remove leading whitespaces
         const std::string_view trimmed_str = trim(str);
@@ -171,7 +180,9 @@ template <typename T>
         // convert string to value fo type T
         T val;
         auto res = std::from_chars(trimmed_str.data(), trimmed_str.data() + trimmed_str.size(), val);
-        if (res.ec != std::errc{}) {
+        // std::from_chars also silently ignores trailing characters after a valid prefix (e.g. "42x" -> 42);
+        // reject unless the entire (trimmed) string was consumed
+        if (res.ec != std::errc{} || res.ptr != trimmed_str.data() + trimmed_str.size()) {
             throw std::runtime_error{ fmt::format("Can't convert '{}' to a value of type T!", str) };
         }
         return val;
@@ -187,7 +198,7 @@ template <typename T>
  */
 template <typename T>
 [[nodiscard]] inline std::vector<T> split_as(const std::string_view str, const char delim = ' ') {
-    std::vector<std::string> split_str;
+    std::vector<T> split_str;
 
     // if the input str is empty, return an empty vector
     if (str.empty()) {
