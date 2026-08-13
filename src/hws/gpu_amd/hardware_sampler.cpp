@@ -59,9 +59,11 @@ namespace {
  *          enumeration is filtered/reordered by `HIP_VISIBLE_DEVICES`/`ROCR_VISIBLE_DEVICES` - the same index
  *          number in both APIs can refer to different physical devices. Requires `rsmi_init()` to have already
  *          been called.
- * @throws std::runtime_error if ROCm SMI's device count can't be queried, or if none of its devices' PCI bus IDs
- *         match @p hip_device_id's - silently falling back to @p hip_device_id here would be exactly the
- *         HIP-index-used-as-RSMI-index bug this function exists to avoid, just triggered by a query failure
+ * @throws std::runtime_error if ROCm SMI's device count can't be queried, if none of its devices' PCI bus IDs
+ *         match @p hip_device_id's, or if more than one does - `bdfid_to_pci_bus_id()` deliberately drops the
+ *         BDFID's partition bits (see its docs), so on a partitioned MI-series accelerator several ROCm SMI
+ *         entries can share one normalized bus ID; silently returning the first match there would be exactly the
+ *         HIP-index-used-as-RSMI-index bug this function exists to avoid, just triggered by partition mode
  *         instead of a visibility mask.
  */
 [[nodiscard]] std::uint32_t resolve_rsmi_device_id(const std::uint32_t hip_device_id) {
@@ -71,13 +73,20 @@ namespace {
     }
 
     const std::string hip_bus_id = detail::amd_device_pci_bus_id(static_cast<int>(hip_device_id));
+    std::optional<std::uint32_t> resolved{};
     for (std::uint32_t rsmi_idx = 0; rsmi_idx < rsmi_count; ++rsmi_idx) {
         std::uint64_t bdfid{};
         if (rsmi_dev_pci_id_get(rsmi_idx, &bdfid) == RSMI_STATUS_SUCCESS && bdfid_to_pci_bus_id(bdfid) == hip_bus_id) {
-            return rsmi_idx;
+            if (resolved.has_value()) {
+                throw std::runtime_error{ "gpu_amd_hardware_sampler: found more than one ROCm SMI device with PCI bus ID " + hip_bus_id + " (HIP index " + std::to_string(hip_device_id) + ") - likely a partitioned accelerator, which isn't supported yet!" };
+            }
+            resolved = rsmi_idx;
         }
     }
-    throw std::runtime_error{ "gpu_amd_hardware_sampler: couldn't find a ROCm SMI device with PCI bus ID " + hip_bus_id + " (HIP index " + std::to_string(hip_device_id) + ")!" };
+    if (!resolved.has_value()) {
+        throw std::runtime_error{ "gpu_amd_hardware_sampler: couldn't find a ROCm SMI device with PCI bus ID " + hip_bus_id + " (HIP index " + std::to_string(hip_device_id) + ")!" };
+    }
+    return resolved.value();
 }
 
 }  // namespace
@@ -94,26 +103,29 @@ gpu_amd_hardware_sampler::gpu_amd_hardware_sampler(const std::chrono::millisecon
 gpu_amd_hardware_sampler::gpu_amd_hardware_sampler(const std::size_t device_id, const std::chrono::milliseconds sampling_interval, const sample_category category) :
     hardware_sampler{ sampling_interval, category },
     hip_device_id_{ static_cast<std::uint32_t>(device_id) } {
-    // make sure that rsmi_init is only called once for all instances
+    // make sure that rsmi_init is only called once for all instances; rsmi_init() itself is inside the try so that
+    // a failing first instance is rolled back the exact same way as a failing resolve_rsmi_device_id() below,
+    // instead of leaking instances_/init_finished_ through an early, uncaught throw
     const bool is_first_instance = (instances_++ == 0);
-    if (is_first_instance) {
-        HWS_ROCM_SMI_ERROR_CHECK(rsmi_init(std::uint64_t{ 0 }))
-        // notify that initialization has been finished
-        init_finished_ = true;
-    } else {
-        // wait until init has been finished!
-        while (!init_finished_) { }
-    }
-
-    // resolve device_id_ only after rsmi_init() has definitely run (by this instance or a previous one); if
-    // resolution throws, this instance never finishes construction and its destructor never runs, so
-    // instances_/init_finished_ (and, if we were the one that just initialized ROCm SMI, the ROCm SMI runtime
-    // itself) must be rolled back manually here instead of leaking
     try {
+        if (is_first_instance) {
+            HWS_ROCM_SMI_ERROR_CHECK(rsmi_init(std::uint64_t{ 0 }))
+            // notify that initialization has been finished
+            init_finished_ = true;
+        } else {
+            // wait until init has been finished!
+            while (!init_finished_) { }
+        }
+
+        // resolve device_id_ only after rsmi_init() has definitely run (by this instance or a previous one)
         device_id_ = resolve_rsmi_device_id(hip_device_id_);
     } catch (...) {
-        --instances_;
-        if (is_first_instance) {
+        // mirror the destructor's "last instance out shuts ROCm SMI down" logic (keyed off instances_ reaching
+        // zero, not off is_first_instance) - by the time this runs, another constructor may already have passed
+        // the init_finished_ gate and be actively using ROCm SMI, so only the instance that brings the shared
+        // count back to zero may touch its lifetime, and only if it was actually initialized (init_finished_) -
+        // otherwise rsmi_init() itself is what failed and there is nothing to shut down
+        if (--instances_ == 0 && init_finished_) {
             init_finished_ = false;
             rsmi_shut_down();
         }
@@ -742,12 +754,6 @@ void gpu_amd_hardware_sampler::sampling_loop() {
 
 std::string gpu_amd_hardware_sampler::device_identification() const {
     return fmt::format("gpu_amd_device_{}", device_id_);
-}
-
-std::string gpu_amd_hardware_sampler::pci_bus_id() const {
-    std::uint64_t bdfid{};
-    HWS_ROCM_SMI_ERROR_CHECK(rsmi_dev_pci_id_get(device_id_, &bdfid))
-    return bdfid_to_pci_bus_id(bdfid);
 }
 
 std::string gpu_amd_hardware_sampler::samples_only_as_yaml_string() const {

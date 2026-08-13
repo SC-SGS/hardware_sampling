@@ -11,14 +11,12 @@
 
 #include "hip/hip_runtime_api.h"  // hipGetDeviceCount, hipDeviceGetPCIBusId
 
-#include <algorithm>   // std::sort
-#include <filesystem>  // std::filesystem::{directory_iterator, exists, directory_options}
-#include <string>      // std::string
-#include <system_error>  // std::error_code
-#include <vector>      // std::vector
+#include <string>  // std::string
 
 #if defined(HWS_MPI_SUPPORT_ENABLED) && defined(HWS_FOR_AMD_GPUS_ENABLED)
     #include "hws/visible_gpu_device.hpp"  // hws::detail::visible_gpu_device, hws::detail::device_backend_kind
+
+    #include <vector>  // std::vector
 #endif
 
 namespace hws::detail {
@@ -53,34 +51,6 @@ std::string amd_device_pci_bus_id(const int local_index) {
     char bus_id[64] = {};
     HWS_HIP_ERROR_CHECK(hipDeviceGetPCIBusId(bus_id, sizeof(bus_id), local_index));
     return std::string{ bus_id };
-}
-
-std::vector<std::string> enumerate_all_amd_gpu_pci_bus_ids() {
-    std::vector<std::string> bus_ids{};
-
-    const std::filesystem::path amdgpu_driver_dir{ "/sys/bus/pci/drivers/amdgpu" };
-    std::error_code ec{};
-    if (!std::filesystem::exists(amdgpu_driver_dir, ec) || ec) {
-        return bus_ids;
-    }
-
-    for (const std::filesystem::directory_entry &entry : std::filesystem::directory_iterator(amdgpu_driver_dir, std::filesystem::directory_options::skip_permission_denied, ec)) {
-        if (ec) {
-            break;
-        }
-        // every PCI device bound to the amdgpu driver shows up here as a symlink named after its PCI bus ID,
-        // e.g. "0000:c1:00.0" -> ../../../devices/.../0000:c1:00.0
-        if (!entry.is_symlink(ec)) {
-            continue;
-        }
-        const std::string name = entry.path().filename().string();
-        if (name.find(':') != std::string::npos && name.find('.') != std::string::npos) {
-            bus_ids.push_back(name);
-        }
-    }
-
-    std::sort(bus_ids.begin(), bus_ids.end());
-    return bus_ids;
 }
 
 #if defined(HWS_MPI_SUPPORT_ENABLED) && defined(HWS_FOR_AMD_GPUS_ENABLED)
