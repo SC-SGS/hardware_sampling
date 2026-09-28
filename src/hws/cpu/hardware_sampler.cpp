@@ -44,7 +44,7 @@ cpu_hardware_sampler::cpu_hardware_sampler(const std::chrono::milliseconds sampl
     // turbostat itself blocks for HWS_TURBOSTAT_INTERVAL seconds per invocation -> if that's
     // longer than the requested sampling interval, the turbostat backend will dominate and the
     // achieved cadence will be closer to HWS_TURBOSTAT_INTERVAL than to sampling_interval
-    const double turbostat_interval_seconds = std::stod(HWS_TURBOSTAT_INTERVAL);
+    const double turbostat_interval_seconds = HWS_TURBOSTAT_INTERVAL;
     if (std::chrono::duration<double>(sampling_interval).count() < turbostat_interval_seconds) {
         std::cerr << fmt::format(
                 "Warning: the requested CPU sampling interval ({}) is shorter than turbostat's own "

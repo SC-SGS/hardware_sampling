@@ -82,7 +82,9 @@ if (HWS_TURBOSTAT_FOUND)
     endif ()
 
     if (HWS_TURBOSTAT_EXECUTION_TYPE)
-        target_compile_definitions(${HWS_LIBRARY_NAME} PUBLIC HWS_TURBOSTAT_INTERVAL="${HWS_TURBOSTAT_INTERVAL}")
+        # passed as an unquoted numeric literal (not a string) - the regex check above already guarantees it's a
+        # valid floating-point constant, so no runtime string -> double conversion is needed on the C++ side
+        target_compile_definitions(${HWS_LIBRARY_NAME} PUBLIC HWS_TURBOSTAT_INTERVAL=${HWS_TURBOSTAT_INTERVAL})
     endif ()
 endif ()
 

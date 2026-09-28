@@ -8,8 +8,8 @@
  * @details Uses the HWS_PM_COUNTERS_PATH environment variable override to point the backend at synthetic
  *          directories instead of the real (Cray-only) /sys/cray/pm_counters, so these checks run on any Linux
  *          machine. The synthetic content mirrors a real dump gathered on an HLRS "Hunter" node (HPE Cray EX255a,
- *          PM counters version 3, see scripts/hwmon_probe.pbs). Not a general-purpose test framework - just enough to
- *          catch a regression in the specific bugs found (and fixed) during code review.
+ *          PM counters version 3). Not a general-purpose test framework - just enough to catch a regression in the
+ *          specific bugs found (and fixed) during code review.
  */
 
 #include "hws/core.hpp"

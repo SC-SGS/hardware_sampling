@@ -2,7 +2,8 @@
 
 The Hardware Sampling (hws) library can be used to track hardware performance like clock frequency, memory usage,
 temperatures, or power draw.
-It currently supports CPUs as well as GPUs from NVIDIA, AMD, and Intel.
+It currently supports CPUs as well as GPUs from NVIDIA, AMD, and Intel, and, on Cray/HPE systems, whole-node
+power/energy via the `/sys/cray/pm_counters` sysfs interface.
 
 ## Getting Started
 
@@ -28,6 +29,9 @@ Dependencies based on the hardware to sample:
   `rocm_smi_lib`](https://rocm.docs.amd.com/projects/rocm_smi_lib/en/latest/doxygen/html/modules.html)
 - if an Intel GPU should be targeted: Intel's [
   `Level Zero library`](https://spec.oneapi.io/level-zero/latest/core/INTRO.html)
+- if whole-node power/energy should be sampled via Cray/HPE's `pm_counters`: no additional library - only a Linux
+  system exposing `/sys/cray/pm_counters` (checked at runtime, so the build host and target host may differ, e.g.
+  when cross-compiling on a login node for execution on a compute node)
 
 ### Building hws
 
@@ -290,6 +294,26 @@ current clock frequencies, temperatures, or memory consumption.
 | low_power_idle_state_percent         |   sampled   |       %       |
 | system_low_power_idle_state_percent  |   sampled   |       %       |
 | package_low_power_idle_state_percent |   sampled   |       %       |
+
+### Cray/HPE `pm_counters` samples
+
+Cray/HPE's `/sys/cray/pm_counters` sysfs interface exposes a *measured* (not modeled) whole-node power/energy ground
+truth, e.g. to validate hws's other, software-based samples against real hardware readings. Unlike the per-vendor
+tables above, `pm_counters` doesn't expose a fixed, well-known set of sample names: the counter files present differ
+across PM counter versions and node generations, so they are discovered and classified at runtime instead. Each
+discovered file is classified into one of:
+
+| YAML section | sample type | description                                                                                                                                              |
+|:-------------|:-----------:|:----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| general      |    fixed    | everything else, e.g. configured caps (`power_cap`), derived/event counters (`overshoot`), and protocol metadata (`freshness`, `generation`, `version`)   |
+| power        |   sampled   | measured power counters, in W (instantaneous), e.g. `power` (whole node) or `accel[i]_power` (per accelerator)                                            |
+| power        |   sampled   | measured energy counters, in J (cumulative), e.g. `energy` (whole node) or `accel[i]_energy` (per accelerator)                                            |
+
+On a node with accelerators visible to hws (NVIDIA or AMD GPUs), `system_hardware_sampler` additionally emits a
+best-effort, **UNVERIFIED** `device_correlation_hints` YAML block that guesses which `accel[i]` counter corresponds
+to which visible GPU device, based on ascending PCI bus address order - see
+[`system_hardware_sampler::device_correlation_hints_as_yaml_string()`](include/hws/system_hardware_sampler.hpp) for
+the exact caveats.
 
 ## Example Python usage
 

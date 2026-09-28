@@ -253,17 +253,19 @@ class system_hardware_sampler {
     void create_local_samplers(std::chrono::milliseconds sampling_interval, hws::sample_category category);
 
     /**
-     * @brief Generate a best-effort, UNVERIFIED YAML hint correlating each visible AMD GPU device with a Cray
+     * @brief Generate a best-effort YAML hint correlating each visible AMD/NVIDIA GPU device with a Cray
      *        pm_counters `accel[i]` index, if `samplers_` holds both a `cray_pm_counters_hardware_sampler` and at
-     *        least one `gpu_amd_hardware_sampler`.
-     * @details The generated YAML's own `note`/`verified` fields carry the caveat: this is an ordinal guess
-     *          (`accel[i]` is assumed to number accelerators in ascending PCI bus address order among all
-     *          physically present AMD GPUs), not a vendor-confirmed mapping - no HPE documentation defines this
-     *          correspondence. Degrades gracefully (marks `topology_count_mismatch: true`, omits the guesses but
-     *          still reports the raw PCI bus IDs) if the discovered `accel` count doesn't match the physical AMD
-     *          GPU count, e.g. under a cgroup-isolated partial-node allocation.
+     *        least one `gpu_amd_hardware_sampler`/`gpu_nvidia_hardware_sampler`.
+     * @details Marked UNVERIFIED because this is an ordinal *guess*, not a vendor-confirmed mapping: `accel[i]` is
+     *          assumed to number accelerators in ascending PCI bus address order among all physically present GPUs
+     *          of a given vendor - no HPE documentation defines this correspondence, so it must be confirmed
+     *          empirically (e.g. drive load on a single visible GPU and observe which `accel[i]_power` reacts)
+     *          before being relied upon for analysis; the generated YAML's own `note`/`verified` fields repeat this
+     *          caveat. Degrades gracefully (marks `topology_count_mismatch: true`, omits the guesses but still
+     *          reports the raw PCI bus IDs) if the discovered `accel` count doesn't match the physical GPU count for
+     *          that vendor, e.g. under a cgroup-isolated partial-node allocation.
      * @return the YAML string, or an empty string if the prerequisites aren't met (backend(s) not compiled in, or
-     *         no pm_counters/AMD GPU sampler present) (`[[nodiscard]]`)
+     *         no pm_counters/AMD/NVIDIA GPU sampler present) (`[[nodiscard]]`)
      */
     [[nodiscard]] std::string device_correlation_hints_as_yaml_string() const;
 };

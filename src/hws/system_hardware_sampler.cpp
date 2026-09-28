@@ -310,71 +310,98 @@ std::string system_hardware_sampler::samples_only_as_yaml_string() const {
     return std::accumulate(samplers_.cbegin(), samplers_.cend(), std::string{}, [](const std::string str, const auto &ptr) { return str + ptr->samples_only_as_yaml_string(); });
 }
 
+// Intel GPUs are intentionally not covered here: unlike gpu_amd_hardware_sampler/gpu_nvidia_hardware_sampler,
+// gpu_intel_hardware_sampler doesn't expose a public PCI bus ID accessor (only pcie link stats, not the device's
+// own bus address), so there's currently no reliable way to correlate it with a pm_counters accel[i] index.
 #if defined(HWS_FOR_CRAY_PM_COUNTERS_ENABLED) && (defined(HWS_FOR_AMD_GPUS_ENABLED) || defined(HWS_FOR_NVIDIA_GPUS_ENABLED))
-std::string system_hardware_sampler::device_correlation_hints_as_yaml_string() const {
-    const cray_pm_counters_hardware_sampler *pm_sampler = nullptr;
-    #if defined(HWS_FOR_AMD_GPUS_ENABLED)
-    std::vector<std::pair<std::size_t, std::string>> amd_devices{};
-    #endif
-    #if defined(HWS_FOR_NVIDIA_GPUS_ENABLED)
-    std::vector<std::pair<std::size_t, std::string>> nvidia_devices{};
-    #endif
-    for (const std::unique_ptr<hardware_sampler> &ptr : samplers_) {
-        if (const auto *pm = dynamic_cast<const cray_pm_counters_hardware_sampler *>(ptr.get()); pm != nullptr) {
-            pm_sampler = pm;
-            continue;
-        }
-    #if defined(HWS_FOR_AMD_GPUS_ENABLED)
+
+namespace {
+
+// one pair of functions per vendor, each with a single #if/#else covering its whole body - keeps
+// device_correlation_hints_as_yaml_string() itself free of scattered inline #ifdefs, since the vendor sampler
+// types (and detail::enumerate_all_*_gpu_pci_bus_ids()) simply don't exist as symbols when that backend isn't
+// compiled in, so unconditionally referencing them isn't an option
+
+using vendor_device_list = std::vector<std::pair<std::size_t, std::string>>;
+
+#if defined(HWS_FOR_AMD_GPUS_ENABLED)
+vendor_device_list collect_amd_devices(const std::vector<std::unique_ptr<hardware_sampler>> &samplers) {
+    vendor_device_list devices{};
+    for (const std::unique_ptr<hardware_sampler> &ptr : samplers) {
         if (const auto *amd = dynamic_cast<const gpu_amd_hardware_sampler *>(ptr.get()); amd != nullptr) {
             // hip_device_id() (the "Nth GPU visible to this process/rank") for local_index, but pci_bus_id()
             // (ROCm SMI, the same API family used for all of this sampler's actual measurements) for the PCI bus
             // ID - not hip_device_id()'s own HIP-space bus id, since ROCm SMI's and HIP's device enumerations can
             // diverge under HIP_VISIBLE_DEVICES/ROCR_VISIBLE_DEVICES and using a different API family than the
             // one the sampler measures with could silently attribute the wrong PCI bus ID.
-            amd_devices.emplace_back(amd->hip_device_id(), amd->pci_bus_id());
-            continue;
+            devices.emplace_back(amd->hip_device_id(), amd->pci_bus_id());
         }
-    #endif
-    #if defined(HWS_FOR_NVIDIA_GPUS_ENABLED)
+    }
+    return devices;
+}
+
+std::string amd_correlation_yaml_block(const vendor_device_list &devices, const std::vector<int> &accel_indices) {
+    return devices.empty() ? std::string{} : detail::accel_correlation_yaml_block("amd", devices, detail::enumerate_all_amd_gpu_pci_bus_ids(), accel_indices);
+}
+#else
+vendor_device_list collect_amd_devices(const std::vector<std::unique_ptr<hardware_sampler>> &) {
+    return {};
+}
+
+std::string amd_correlation_yaml_block(const vendor_device_list &, const std::vector<int> &) {
+    return {};
+}
+#endif
+
+#if defined(HWS_FOR_NVIDIA_GPUS_ENABLED)
+vendor_device_list collect_nvidia_devices(const std::vector<std::unique_ptr<hardware_sampler>> &samplers) {
+    vendor_device_list devices{};
+    for (const std::unique_ptr<hardware_sampler> &ptr : samplers) {
         if (const auto *nvidia = dynamic_cast<const gpu_nvidia_hardware_sampler *>(ptr.get()); nvidia != nullptr) {
             // pci_bus_id() (NVML, the same API family used for all of this sampler's actual measurements) is used
             // here rather than CUDA's own cudaDeviceGetPCIBusId(), since NVML's device enumeration isn't affected
             // by CUDA_VISIBLE_DEVICES while the CUDA runtime's is - using a different API family than the one the
             // sampler measures with could silently attribute the wrong PCI bus ID.
-            nvidia_devices.emplace_back(nvidia->device_id(), nvidia->pci_bus_id());
-            continue;
+            devices.emplace_back(nvidia->device_id(), nvidia->pci_bus_id());
         }
-    #endif
+    }
+    return devices;
+}
+
+std::string nvidia_correlation_yaml_block(const vendor_device_list &devices, const std::vector<int> &accel_indices) {
+    return devices.empty() ? std::string{} : detail::accel_correlation_yaml_block("nvidia", devices, detail::enumerate_all_nvidia_gpu_pci_bus_ids(), accel_indices);
+}
+#else
+vendor_device_list collect_nvidia_devices(const std::vector<std::unique_ptr<hardware_sampler>> &) {
+    return {};
+}
+
+std::string nvidia_correlation_yaml_block(const vendor_device_list &, const std::vector<int> &) {
+    return {};
+}
+#endif
+
+}  // namespace
+
+std::string system_hardware_sampler::device_correlation_hints_as_yaml_string() const {
+    const cray_pm_counters_hardware_sampler *pm_sampler = nullptr;
+    for (const std::unique_ptr<hardware_sampler> &ptr : samplers_) {
+        if (const auto *pm = dynamic_cast<const cray_pm_counters_hardware_sampler *>(ptr.get()); pm != nullptr) {
+            pm_sampler = pm;
+            break;
+        }
     }
 
-    const bool any_visible_gpus =
-    #if defined(HWS_FOR_AMD_GPUS_ENABLED)
-        !amd_devices.empty()
-    #else
-        false
-    #endif
-    #if defined(HWS_FOR_NVIDIA_GPUS_ENABLED)
-        || !nvidia_devices.empty()
-    #endif
-        ;
-    if (pm_sampler == nullptr || !any_visible_gpus) {
+    const vendor_device_list amd_devices = collect_amd_devices(samplers_);
+    const vendor_device_list nvidia_devices = collect_nvidia_devices(samplers_);
+    if (pm_sampler == nullptr || (amd_devices.empty() && nvidia_devices.empty())) {
         return "";
     }
 
     // ground truth, no guessing involved: which accel[i] counters pm_counters exposed on this node
     const std::vector<int> accel_indices = pm_sampler->discovered_accel_indices();
 
-    std::string vendor_blocks{};
-    #if defined(HWS_FOR_AMD_GPUS_ENABLED)
-    if (!amd_devices.empty()) {
-        vendor_blocks += detail::accel_correlation_yaml_block("amd", amd_devices, detail::enumerate_all_amd_gpu_pci_bus_ids(), accel_indices);
-    }
-    #endif
-    #if defined(HWS_FOR_NVIDIA_GPUS_ENABLED)
-    if (!nvidia_devices.empty()) {
-        vendor_blocks += detail::accel_correlation_yaml_block("nvidia", nvidia_devices, detail::enumerate_all_nvidia_gpu_pci_bus_ids(), accel_indices);
-    }
-    #endif
+    const std::string vendor_blocks = amd_correlation_yaml_block(amd_devices, accel_indices) + nvidia_correlation_yaml_block(nvidia_devices, accel_indices);
 
     return fmt::format("device_correlation_hints:\n"
                        "  note: \"UNVERIFIED heuristic: assumes Cray pm_counters numbers accel[i] in ascending PCI bus address order among all physically present GPUs of a given vendor; this is not confirmed by any HPE documentation. Confirm empirically (e.g. drive load on a single visible GPU and observe which accel[i]_power reacts) before relying on this for analysis.\"\n"
