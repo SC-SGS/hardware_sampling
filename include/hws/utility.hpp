@@ -19,6 +19,7 @@
 #include <chrono>         // std::chrono::duration
 #include <cmath>          // std::trunc
 #include <cstddef>        // std::size_t
+#include <cstdint>        // std::uint32_t
 #include <optional>       // std::optional
 #include <stdexcept>      // std::runtime_error
 #include <string>         // std::string, std::stof, std::stod, std::stold
@@ -254,6 +255,22 @@ template <typename T>
  * @return the indented string
  */
 [[nodiscard]] std::string indent_lines(const std::string &text, std::string_view prefix);
+
+/**
+ * @brief Format a PCI domain/bus/device triplet as the canonical Linux sysfs PCI bus ID string
+ *        `"<domain>:<bus>:<device>.0"` (e.g. `"0000:c1:00.0"`), lowercase hex, 4/2/2 digits.
+ * @details The function is fixed to `0`: on multi-die/multi-partition accelerators (e.g. AMD MI300-series
+ *          "partitions") the PCI function field is repurposed by the vendor's management library for
+ *          partition/die identification, but the function seen by the OS/sysfs for the *device* itself is
+ *          always `0` - so vendor-provided domain/bus/device values should be combined with a hardcoded `0`
+ *          function here rather than a vendor-reported function value, to stay comparable with sysfs PCI bus IDs
+ *          (see e.g. `hws::detail::enumerate_all_amd_gpu_pci_bus_ids()`/`enumerate_all_nvidia_gpu_pci_bus_ids()`).
+ * @param[in] domain the PCI domain
+ * @param[in] bus the PCI bus number
+ * @param[in] device the PCI device (slot) number
+ * @return the formatted PCI bus ID string (`[[nodiscard]]`)
+ */
+[[nodiscard]] std::string format_pci_bus_id(std::uint32_t domain, std::uint32_t bus, std::uint32_t device);
 
 /*****************************************************************************************************/
 /**                                      other free functions                                       **/

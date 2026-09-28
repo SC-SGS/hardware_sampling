@@ -7,12 +7,16 @@
 
 #include "hws/gpu_nvidia/utility.hpp"
 
-#include "fmt/format.h"  // fmt::format
-#include "fmt/ranges.h"  // fmt::join
-#include "nvml.h"        // NVML runtime functions
+#include "cuda_runtime_api.h"  // cudaGetDeviceCount, cudaDeviceGetPCIBusId
+#include "fmt/format.h"        // fmt::format
+#include "fmt/ranges.h"        // fmt::join
+#include "nvml.h"              // NVML runtime functions
 
-#include <string>  // std::string
-#include <vector>  // std::vector
+#include <algorithm>     // std::sort
+#include <filesystem>    // std::filesystem::{directory_iterator, exists, directory_options}
+#include <string>        // std::string
+#include <system_error>  // std::error_code
+#include <vector>        // std::vector
 
 #if defined(HWS_MPI_SUPPORT_ENABLED) && defined(HWS_FOR_NVIDIA_GPUS_ENABLED)
     #include "hws/visible_gpu_device.hpp"  // hws::detail::visible_gpu_device, hws::detail::device_backend_kind
@@ -60,6 +64,40 @@ std::string throttle_event_reason_to_string(const unsigned long long clocks_even
 
 #endif
 
+std::string nvidia_device_pci_bus_id(const int local_index) {
+    char bus_id[64] = {};
+    HWS_CUDA_ERROR_CHECK(cudaDeviceGetPCIBusId(bus_id, sizeof(bus_id), local_index));
+    return std::string{ bus_id };
+}
+
+std::vector<std::string> enumerate_all_nvidia_gpu_pci_bus_ids() {
+    std::vector<std::string> bus_ids{};
+
+    const std::filesystem::path nvidia_driver_dir{ "/sys/bus/pci/drivers/nvidia" };
+    std::error_code ec{};
+    if (!std::filesystem::exists(nvidia_driver_dir, ec) || ec) {
+        return bus_ids;
+    }
+
+    for (const std::filesystem::directory_entry &entry : std::filesystem::directory_iterator(nvidia_driver_dir, std::filesystem::directory_options::skip_permission_denied, ec)) {
+        if (ec) {
+            break;
+        }
+        // every PCI device bound to the nvidia driver shows up here as a symlink named after its PCI bus ID,
+        // e.g. "0000:c1:00.0" -> ../../../devices/.../0000:c1:00.0
+        if (!entry.is_symlink(ec)) {
+            continue;
+        }
+        const std::string name = entry.path().filename().string();
+        if (name.find(':') != std::string::npos && name.find('.') != std::string::npos) {
+            bus_ids.push_back(name);
+        }
+    }
+
+    std::sort(bus_ids.begin(), bus_ids.end());
+    return bus_ids;
+}
+
 #if defined(HWS_MPI_SUPPORT_ENABLED) && defined(HWS_FOR_NVIDIA_GPUS_ENABLED)
 
 namespace {
@@ -72,9 +110,7 @@ namespace {
  * @return the physical ID of the NVIDIA GPU device
  */
 [[nodiscard]] std::string nvidia_physical_id(const int local_index) {
-    char bus_id[64] = {};
-    HWS_CUDA_ERROR_CHECK(cudaDeviceGetPCIBusId(bus_id, sizeof(bus_id), local_index));
-    return std::string{ "nvidia:" } + bus_id;
+    return std::string{ "nvidia:" } + nvidia_device_pci_bus_id(local_index);
 }
 
 }  // namespace

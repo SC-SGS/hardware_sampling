@@ -54,6 +54,9 @@ endif ()
 if ("HWS_FOR_INTEL_GPUS_ENABLED" IN_LIST HWS_COMPILE_DEFINITIONS)
     list(APPEND HWS_PYTHON_BINDINGS_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/gpu_intel_hardware_sampler.cpp)
 endif ()
+if ("HWS_FOR_CRAY_PM_COUNTERS_ENABLED" IN_LIST HWS_COMPILE_DEFINITIONS)
+    list(APPEND HWS_PYTHON_BINDINGS_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/cray_pm_counters_hardware_sampler.cpp)
+endif ()
 
 # create pybind11 module
 set(HWS_PYTHON_BINDINGS_LIBRARY_NAME HardwareSampling)
