@@ -69,6 +69,14 @@ namespace hws::detail {
 
 #endif
 
+/**
+ * @brief Return the PCI bus ID (e.g. `"0000:c1:00.0"`) of the NVIDIA GPU device with the given CUDA @p local_index.
+ * @param[in] local_index the local CUDA device index
+ * @throws std::runtime_error if the PCI bus ID can't be queried (always checked, regardless of `HWS_ERROR_CHECKS_ENABLED`)
+ * @return the PCI bus ID in lower case (`[[nodiscard]]`)
+ */
+[[nodiscard]] std::string nvidia_device_pci_bus_id(int local_index);
+
 #if defined(HWS_MPI_SUPPORT_ENABLED)
 
 /**

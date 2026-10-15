@@ -7,15 +7,20 @@
 
 #include "hws/gpu_amd/utility.hpp"
 
+#include "hws/utility.hpp"  // hws::detail::to_lower_case
+
+#include "fmt/format.h"         // fmt::format
 #include "rocm_smi/rocm_smi.h"  // ROCm SMI runtime functions
 
-#include <string>  // std::string
-#include <vector>  // std::vector
+#include "hip/hip_runtime_api.h"  // hipGetDeviceCount, hipDeviceGetPCIBusId, hipGetErrorString
+
+#include <stdexcept>  // std::runtime_error
+#include <string>     // std::string
 
 #if defined(HWS_MPI_SUPPORT_ENABLED) && defined(HWS_FOR_AMD_GPUS_ENABLED)
     #include "hws/visible_gpu_device.hpp"  // hws::detail::visible_gpu_device, hws::detail::device_backend_kind
 
-    #include "hip/hip_runtime_api.h"  // hipGetDeviceCount, hipDeviceGetPCIBusId
+    #include <vector>  // std::vector
 #endif
 
 namespace hws::detail {
@@ -46,6 +51,17 @@ std::string performance_level_to_string(const rsmi_dev_perf_level_t perf_level) 
     }
 }
 
+std::string amd_device_pci_bus_id(const int local_index) {
+    // always check for errors (regardless of HWS_ERROR_CHECKS_ENABLED), since the PCI bus ID is used to select the device to sample
+    char bus_id[64] = {};
+    const hipError_t errc = hipDeviceGetPCIBusId(bus_id, sizeof(bus_id), local_index);
+    if (errc != hipSuccess) {
+        throw std::runtime_error{ fmt::format("Error in HIP function call \"hipDeviceGetPCIBusId\" for HIP device {}: {}", local_index, hipGetErrorString(errc)) };
+    }
+    // normalize to lower case to be comparable to hws::detail::format_pci_bus_id
+    return to_lower_case(bus_id);
+}
+
 #if defined(HWS_MPI_SUPPORT_ENABLED) && defined(HWS_FOR_AMD_GPUS_ENABLED)
 
 namespace {
@@ -58,9 +74,7 @@ namespace {
  * @return the physical ID of the AMD GPU device
  */
 [[nodiscard]] std::string amd_physical_id(const int local_index) {
-    char bus_id[64] = {};
-    HWS_HIP_ERROR_CHECK(hipDeviceGetPCIBusId(bus_id, sizeof(bus_id), local_index));
-    return std::string{ "amd:" } + bus_id;
+    return fmt::format("amd:{}", amd_device_pci_bus_id(local_index));
 }
 
 }  // namespace

@@ -112,6 +112,15 @@ if (HWS_HAS_CPU_SUPPORT)
     endif ()
 endif ()
 
+# check whether MPI support is enabled
+string_contains("${HWS_COMPILE_DEFINITIONS}" "HWS_MPI_SUPPORT_ENABLED" HWS_HAS_MPI_SUPPORT)
+if (HWS_HAS_MPI_SUPPORT)
+    find_dependency(MPI COMPONENTS CXX)
+    if (NOT hws_FIND_QUIETLY)
+        message(STATUS "Enabled MPI support via hws.")
+    endif ()
+endif ()
+
 # check whether NVIDIA GPUs are supported
 string_contains("${HWS_COMPILE_DEFINITIONS}" "HWS_FOR_NVIDIA_GPUS_ENABLED" HWS_HAS_GPU_NVIDIA_SUPPORT)
 if (HWS_HAS_GPU_NVIDIA_SUPPORT)

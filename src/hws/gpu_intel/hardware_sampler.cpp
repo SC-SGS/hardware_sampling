@@ -9,7 +9,7 @@
 
 #include "hws/gpu_intel/level_zero_device_handle_impl.hpp"  // hws::level_zero_device_handle implementation
 #include "hws/gpu_intel/level_zero_samples.hpp"             // hws::{level_zero_general_samples, level_zero_clock_samples, level_zero_power_samples, level_zero_memory_samples, level_zero_temperature_samples}
-#include "hws/gpu_intel/utility.hpp"                        // HWS_LEVEL_ZERO_ERROR_CHECK
+#include "hws/gpu_intel/utility.hpp"                        // HWS_LEVEL_ZERO_ERROR_CHECK, hws::detail::to_result_string
 #include "hws/hardware_sampler.hpp"                         // hws::hardware_sampler
 #include "hws/sample_category.hpp"                          // hws::sample_category
 #include "hws/utility.hpp"                                  // hws::{durations_from_reference_time, join}
@@ -44,17 +44,24 @@ gpu_intel_hardware_sampler::gpu_intel_hardware_sampler(const std::chrono::millis
 
 gpu_intel_hardware_sampler::gpu_intel_hardware_sampler(const std::size_t device_id, const std::chrono::milliseconds sampling_interval, const sample_category category) :
     hardware_sampler{ sampling_interval, category } {
-    // make sure that zeInit is only called once for all instances
-    if (instances_++ == 0) {
-        HWS_LEVEL_ZERO_ERROR_CHECK(zeInit(ZE_INIT_FLAG_GPU_ONLY))
-        // notify that initialization has been finished
-        init_finished_ = true;
-    } else {
-        // wait until init has been finished!
-        while (!init_finished_) { }
+    // make sure that zeInit is only called once for all instances; holding lifecycle_mutex_ for the whole
+    // "already initialized?" check plus the zeInit() call itself serializes it against every other constructor,
+    // so a failing zeInit() can never strand a waiter the way a busy-wait on a flag could - the next constructor
+    // to acquire the mutex simply sees initialized_ still false and retries zeInit() itself
+    {
+        const std::lock_guard<std::mutex> lock{ lifecycle_mutex_ };
+        if (!initialized_) {
+            // always check for errors (regardless of HWS_ERROR_CHECKS_ENABLED): otherwise a failed zeInit() would
+            // still be marked as a successful initialization and never be retried
+            const ze_result_t errc = zeInit(ZE_INIT_FLAG_GPU_ONLY);
+            if (errc != ZE_RESULT_SUCCESS) {
+                throw std::runtime_error{ fmt::format("Error in Level Zero function call \"zeInit\": {}", detail::to_result_string(errc)) };
+            }
+            initialized_ = true;
+        }
     }
 
-    // initialize samples -> can't be done beforehand since the device handle can only be initialized after a call to nvmlInit
+    // initialize samples -> can't be done beforehand since the device handle can only be initialized after a call to zeInit
     device_ = detail::level_zero_device_handle{ device_id };
 }
 
