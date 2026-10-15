@@ -46,9 +46,17 @@ namespace {
  *          `hws::detail::format_pci_bus_id()`.
  */
 [[nodiscard]] std::string bdfid_to_pci_bus_id(const std::uint64_t bdfid) {
-    const auto domain = static_cast<std::uint32_t>((bdfid >> 32) & 0xffffffffull);
-    const auto bus = static_cast<std::uint32_t>((bdfid >> 8) & 0xffull);
-    const auto device = static_cast<std::uint32_t>((bdfid >> 3) & 0x1full);
+    // bit layout of the BDFID fields
+    constexpr std::uint64_t bdfid_domain_shift = 32;
+    constexpr std::uint64_t bdfid_domain_mask = 0xffffffffull;
+    constexpr std::uint64_t bdfid_bus_shift = 8;
+    constexpr std::uint64_t bdfid_bus_mask = 0xffull;
+    constexpr std::uint64_t bdfid_device_shift = 3;
+    constexpr std::uint64_t bdfid_device_mask = 0x1full;
+
+    const auto domain = static_cast<std::uint32_t>((bdfid >> bdfid_domain_shift) & bdfid_domain_mask);
+    const auto bus = static_cast<std::uint32_t>((bdfid >> bdfid_bus_shift) & bdfid_bus_mask);
+    const auto device = static_cast<std::uint32_t>((bdfid >> bdfid_device_shift) & bdfid_device_mask);
     return detail::format_pci_bus_id(domain, bus, device);
 }
 
@@ -59,25 +67,34 @@ namespace {
  *          enumeration is filtered/reordered by `HIP_VISIBLE_DEVICES`/`ROCR_VISIBLE_DEVICES` - the same index
  *          number in both APIs can refer to different physical devices. Requires `rsmi_init()` to have already
  *          been called.
- * @throws std::runtime_error if ROCm SMI's device count can't be queried, or if none of its devices' PCI bus IDs
- *         match @p hip_device_id's - silently falling back to @p hip_device_id here would be exactly the
- *         HIP-index-used-as-RSMI-index bug this function exists to avoid, just triggered by a query failure
+ * @throws std::runtime_error if ROCm SMI's device count can't be queried, if none of its devices' PCI bus IDs
+ *         match @p hip_device_id's, or if more than one does - `bdfid_to_pci_bus_id()` deliberately drops the
+ *         BDFID's partition bits (see its docs), so on a partitioned MI-series accelerator several ROCm SMI
+ *         entries can share one normalized bus ID; silently returning the first match there would be exactly the
+ *         HIP-index-used-as-RSMI-index bug this function exists to avoid, just triggered by partition mode
  *         instead of a visibility mask.
  */
 [[nodiscard]] std::uint32_t resolve_rsmi_device_id(const std::uint32_t hip_device_id) {
     std::uint32_t rsmi_count{};
     if (rsmi_num_monitor_devices(&rsmi_count) != RSMI_STATUS_SUCCESS) {
-        throw std::runtime_error{ "gpu_amd_hardware_sampler: couldn't query the number of ROCm SMI devices while resolving the physical device for HIP index " + std::to_string(hip_device_id) + "!" };
+        throw std::runtime_error{ fmt::format("gpu_amd_hardware_sampler: couldn't query the number of ROCm SMI devices while resolving the physical device for HIP index {}!", hip_device_id) };
     }
 
     const std::string hip_bus_id = detail::amd_device_pci_bus_id(static_cast<int>(hip_device_id));
+    std::optional<std::uint32_t> resolved{};
     for (std::uint32_t rsmi_idx = 0; rsmi_idx < rsmi_count; ++rsmi_idx) {
         std::uint64_t bdfid{};
         if (rsmi_dev_pci_id_get(rsmi_idx, &bdfid) == RSMI_STATUS_SUCCESS && bdfid_to_pci_bus_id(bdfid) == hip_bus_id) {
-            return rsmi_idx;
+            if (resolved.has_value()) {
+                throw std::runtime_error{ fmt::format("gpu_amd_hardware_sampler: found more than one ROCm SMI device with PCI bus ID {} (HIP index {}) - likely a partitioned accelerator, which isn't supported yet!", hip_bus_id, hip_device_id) };
+            }
+            resolved = rsmi_idx;
         }
     }
-    throw std::runtime_error{ "gpu_amd_hardware_sampler: couldn't find a ROCm SMI device with PCI bus ID " + hip_bus_id + " (HIP index " + std::to_string(hip_device_id) + ")!" };
+    if (!resolved.has_value()) {
+        throw std::runtime_error{ fmt::format("gpu_amd_hardware_sampler: couldn't find a ROCm SMI device with PCI bus ID {} (HIP index {})!", hip_bus_id, hip_device_id) };
+    }
+    return resolved.value();
 }
 
 }  // namespace
@@ -94,15 +111,37 @@ gpu_amd_hardware_sampler::gpu_amd_hardware_sampler(const std::chrono::millisecon
 gpu_amd_hardware_sampler::gpu_amd_hardware_sampler(const std::size_t device_id, const std::chrono::milliseconds sampling_interval, const sample_category category) :
     hardware_sampler{ sampling_interval, category },
     hip_device_id_{ static_cast<std::uint32_t>(device_id) } {
-    // make sure that rsmi_init is only called once for all instances
-    const bool is_first_instance = (instances_++ == 0);
-    if (is_first_instance) {
-        HWS_ROCM_SMI_ERROR_CHECK(rsmi_init(std::uint64_t{ 0 }))
-        // notify that initialization has been finished
-        init_finished_ = true;
-    } else {
-        // wait until init has been finished!
-        while (!init_finished_) { }
+    // make sure that rsmi_init is only called once for all instances; holding lifecycle_mutex_ for the whole
+    // "am I first?" decision plus the rsmi_init() call itself serializes it against every other constructor and
+    // destructor, so a failing rsmi_init() can never strand a waiter the way a busy-wait on a flag could - the
+    // next constructor to acquire the mutex simply sees instances_ still 0 and retries rsmi_init() itself
+    {
+        const std::lock_guard<std::mutex> lock{ lifecycle_mutex_ };
+        if (instances_ == 0) {
+            // always check for errors (regardless of HWS_ERROR_CHECKS_ENABLED): otherwise a failed rsmi_init() would
+            // still be counted as a successful initialization and never be retried
+            const rsmi_status_t errc = rsmi_init(std::uint64_t{ 0 });
+            if (errc != RSMI_STATUS_SUCCESS) {
+                const char *error_string = nullptr;
+                if (rsmi_status_string(errc, &error_string) == RSMI_STATUS_SUCCESS && error_string != nullptr) {
+                    throw std::runtime_error{ fmt::format("Error in ROCm SMI function call \"rsmi_init\": {}", error_string) };
+                }
+                throw std::runtime_error{ fmt::format("Error in ROCm SMI function call \"rsmi_init\": {}", static_cast<int>(errc)) };
+            }
+        }
+        ++instances_;
+    }
+
+    // resolve device_id_ only after rsmi_init() has definitely run (by this instance or a previous one, guaranteed
+    // since we're now a counted instance); if resolution throws, roll the count back under the same mutex
+    try {
+        device_id_ = resolve_rsmi_device_id(hip_device_id_);
+    } catch (...) {
+        const std::lock_guard<std::mutex> lock{ lifecycle_mutex_ };
+        if (--instances_ == 0) {
+            rsmi_shut_down();
+        }
+        throw;
     }
 
     // resolve device_id_ only after rsmi_init() has definitely run (by this instance or a previous one); if
@@ -128,12 +167,11 @@ gpu_amd_hardware_sampler::~gpu_amd_hardware_sampler() {
             this->stop_sampling();
         }
 
-        // the last instance must shut down the ROCm SMI runtime
-        // make sure that rsmi_shut_down is only called once
+        // the last instance must shut down the ROCm SMI runtime; guarded by the same mutex as the constructor so
+        // this can't race a concurrent constructor's "am I first?" check
+        const std::lock_guard<std::mutex> lock{ lifecycle_mutex_ };
         if (--instances_ == 0) {
             HWS_ROCM_SMI_ERROR_CHECK(rsmi_shut_down())
-            // reset init_finished flag
-            init_finished_ = false;
         }
     } catch (const std::exception &e) {
         std::cerr << e.what() << std::endl;

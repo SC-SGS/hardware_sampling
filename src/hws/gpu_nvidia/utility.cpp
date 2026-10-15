@@ -17,6 +17,9 @@
 #include <string>        // std::string
 #include <system_error>  // std::error_code
 #include <vector>        // std::vector
+#include "hws/utility.hpp"  // hws::detail::to_lower_case
+#include <stdexcept>  // std::runtime_error
+
 
 #if defined(HWS_MPI_SUPPORT_ENABLED) && defined(HWS_FOR_NVIDIA_GPUS_ENABLED)
     #include "hws/visible_gpu_device.hpp"  // hws::detail::visible_gpu_device, hws::detail::device_backend_kind
@@ -96,6 +99,14 @@ std::vector<std::string> enumerate_all_nvidia_gpu_pci_bus_ids() {
 
     std::sort(bus_ids.begin(), bus_ids.end());
     return bus_ids;
+    // always check for errors (regardless of HWS_ERROR_CHECKS_ENABLED), since the PCI bus ID is used to select the device to sample
+    char bus_id[64] = {};
+    const cudaError_t errc = cudaDeviceGetPCIBusId(bus_id, sizeof(bus_id), local_index);
+    if (errc != cudaSuccess) {
+        throw std::runtime_error{ fmt::format("Error in CUDA function call \"cudaDeviceGetPCIBusId\" for CUDA device {}: {} ({})", local_index, cudaGetErrorName(errc), cudaGetErrorString(errc)) };
+    }
+    // normalize to lower case (CUDA returns upper case hex digits) to be comparable to hws::detail::format_pci_bus_id
+    return to_lower_case(bus_id);
 }
 
 #if defined(HWS_MPI_SUPPORT_ENABLED) && defined(HWS_FOR_NVIDIA_GPUS_ENABLED)
@@ -110,7 +121,7 @@ namespace {
  * @return the physical ID of the NVIDIA GPU device
  */
 [[nodiscard]] std::string nvidia_physical_id(const int local_index) {
-    return std::string{ "nvidia:" } + nvidia_device_pci_bus_id(local_index);
+    return fmt::format("nvidia:{}", nvidia_device_pci_bus_id(local_index));
 }
 
 }  // namespace

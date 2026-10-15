@@ -19,10 +19,10 @@
 
 #include "fmt/format.h"  // fmt::formatter, fmt::ostream_formatter
 
-#include <atomic>   // std::atomic
 #include <chrono>   // std::chrono::milliseconds, std::chrono_literals namespace
 #include <cstddef>  // std::size_t
 #include <iosfwd>   // std::ostream forward declaration
+#include <mutex>    // std::mutex
 #include <string>   // std::string
 
 namespace hws {
@@ -44,7 +44,8 @@ class gpu_nvidia_hardware_sampler : public hardware_sampler {
     /**
      * @brief Construct a new NVIDIA GPU hardware sampler for device @p device_id with the default sampling interval.
      * @details If this is the first NVIDIA GPU sampler, initializes the NVML environment.
-     * @param[in] device_id the ID of the device to sample
+     * @param[in] device_id the CUDA device index of the device to sample (i.e., as enumerated by CUDA after applying `CUDA_VISIBLE_DEVICES`/`CUDA_DEVICE_ORDER`);
+     *                      internally mapped to the matching NVML device via its PCI bus ID
      * @param[in] category the sample categories that are enabled for hardware sampling (default: all)
      */
     explicit gpu_nvidia_hardware_sampler(std::size_t device_id, sample_category category = sample_category::all);
@@ -58,7 +59,8 @@ class gpu_nvidia_hardware_sampler : public hardware_sampler {
     /**
      * @brief Construct a new NVIDIA GPU hardware sampler for device @p device_id with the @p sampling_interval.
      * @details If this is the first NVIDIA GPU sampler, initializes the NVML environment.
-     * @param[in] device_id the ID of the device to sample
+     * @param[in] device_id the CUDA device index of the device to sample (i.e., as enumerated by CUDA after applying `CUDA_VISIBLE_DEVICES`/`CUDA_DEVICE_ORDER`);
+     *                      internally mapped to the matching NVML device via its PCI bus ID
      * @param[in] sampling_interval the used sampling interval
      * @param[in] category the sample categories that are enabled for hardware sampling (default: all)
      */
@@ -172,10 +174,14 @@ class gpu_nvidia_hardware_sampler : public hardware_sampler {
     /// The temperature related NVIDIA GPU samples.
     nvml_temperature_samples temperature_samples_{};
 
-    /// The total number of currently active NVIDIA GPU hardware samplers.
-    inline static std::atomic<int> instances_{ 0 };
-    /// True if the NVML environment has been successfully initialized (only done by a single hardware sampler).
-    inline static std::atomic<bool> init_finished_{ false };
+    /// Guards `instances_` and every `nvmlInit()`/`nvmlShutdown()` call, so that the "first instance initializes,
+    /// last instance shuts down" decision and the actual init/shutdown call happen as one atomic step - a
+    /// busy-wait on a plain flag can't do this: a failing first `nvmlInit()` never sets it, permanently stranding
+    /// every waiter, and nothing prevents a shutdown from racing a concurrent init.
+    inline static std::mutex lifecycle_mutex_{};
+    /// The total number of currently active NVIDIA GPU hardware samplers; only ever read/written while holding
+    /// `lifecycle_mutex_`.
+    inline static int instances_{ 0 };
 };
 
 /**

@@ -73,7 +73,8 @@ namespace hws::detail {
  * @details This is the same, stable identifier used by `enumerate_all_nvidia_gpu_pci_bus_ids()`, so the two can be
  *          matched against each other to locate a CUDA-visible device within the full physical GPU topology.
  * @param[in] local_index the local CUDA device index
- * @return the PCI bus ID (`[[nodiscard]]`)
+ * @throws std::runtime_error if the PCI bus ID can't be queried (always checked, regardless of `HWS_ERROR_CHECKS_ENABLED`)
+ * @return the PCI bus ID in lower case (`[[nodiscard]]`)
  */
 [[nodiscard]] std::string nvidia_device_pci_bus_id(int local_index);
 

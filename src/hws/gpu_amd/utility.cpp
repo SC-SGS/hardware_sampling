@@ -7,15 +7,21 @@
 
 #include "hws/gpu_amd/utility.hpp"
 
+#include "hws/utility.hpp"  // hws::detail::to_lower_case
+
+#include "fmt/format.h"         // fmt::format
 #include "rocm_smi/rocm_smi.h"  // ROCm SMI runtime functions
 
-#include "hip/hip_runtime_api.h"  // hipGetDeviceCount, hipDeviceGetPCIBusId
+#include "hip/hip_runtime_api.h"  // hipGetDeviceCount, hipDeviceGetPCIBusId, hipGetErrorString
 
 #include <algorithm>   // std::sort
 #include <filesystem>  // std::filesystem::{directory_iterator, exists, directory_options}
 #include <string>      // std::string
 #include <system_error>  // std::error_code
 #include <vector>      // std::vector
+
+
+#include <stdexcept>  // std::runtime_error
 
 #if defined(HWS_MPI_SUPPORT_ENABLED) && defined(HWS_FOR_AMD_GPUS_ENABLED)
     #include "hws/visible_gpu_device.hpp"  // hws::detail::visible_gpu_device, hws::detail::device_backend_kind
@@ -81,6 +87,14 @@ std::vector<std::string> enumerate_all_amd_gpu_pci_bus_ids() {
 
     std::sort(bus_ids.begin(), bus_ids.end());
     return bus_ids;
+    // always check for errors (regardless of HWS_ERROR_CHECKS_ENABLED), since the PCI bus ID is used to select the device to sample
+    char bus_id[64] = {};
+    const hipError_t errc = hipDeviceGetPCIBusId(bus_id, sizeof(bus_id), local_index);
+    if (errc != hipSuccess) {
+        throw std::runtime_error{ fmt::format("Error in HIP function call \"hipDeviceGetPCIBusId\" for HIP device {}: {}", local_index, hipGetErrorString(errc)) };
+    }
+    // normalize to lower case to be comparable to hws::detail::format_pci_bus_id
+    return to_lower_case(bus_id);
 }
 
 #if defined(HWS_MPI_SUPPORT_ENABLED) && defined(HWS_FOR_AMD_GPUS_ENABLED)
@@ -95,7 +109,7 @@ namespace {
  * @return the physical ID of the AMD GPU device
  */
 [[nodiscard]] std::string amd_physical_id(const int local_index) {
-    return std::string{ "amd:" } + amd_device_pci_bus_id(local_index);
+    return fmt::format("amd:{}", amd_device_pci_bus_id(local_index));
 }
 
 }  // namespace
