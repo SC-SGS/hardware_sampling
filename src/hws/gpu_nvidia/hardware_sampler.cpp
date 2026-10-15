@@ -91,7 +91,8 @@ gpu_nvidia_hardware_sampler::gpu_nvidia_hardware_sampler(const std::chrono::mill
     gpu_nvidia_hardware_sampler{ 0, sampling_interval, category } { }
 
 gpu_nvidia_hardware_sampler::gpu_nvidia_hardware_sampler(const std::size_t device_id, const std::chrono::milliseconds sampling_interval, const sample_category category) :
-    hardware_sampler{ sampling_interval, category } {
+    hardware_sampler{ sampling_interval, category },
+    device_id_{ device_id } {
     // make sure that nvmlInit is only called once for all instances; holding lifecycle_mutex_ for the whole
     // "am I first?" decision plus the nvmlInit() call itself serializes it against every other constructor and
     // destructor, so a failing nvmlInit() can never strand a waiter the way a busy-wait on a flag could - the

@@ -143,21 +143,6 @@ gpu_amd_hardware_sampler::gpu_amd_hardware_sampler(const std::size_t device_id, 
         }
         throw;
     }
-
-    // resolve device_id_ only after rsmi_init() has definitely run (by this instance or a previous one); if
-    // resolution throws, this instance never finishes construction and its destructor never runs, so
-    // instances_/init_finished_ (and, if we were the one that just initialized ROCm SMI, the ROCm SMI runtime
-    // itself) must be rolled back manually here instead of leaking
-    try {
-        device_id_ = resolve_rsmi_device_id(hip_device_id_);
-    } catch (...) {
-        --instances_;
-        if (is_first_instance) {
-            init_finished_ = false;
-            rsmi_shut_down();
-        }
-        throw;
-    }
 }
 
 gpu_amd_hardware_sampler::~gpu_amd_hardware_sampler() {
