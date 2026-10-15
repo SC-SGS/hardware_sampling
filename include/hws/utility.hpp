@@ -263,8 +263,9 @@ template <typename T>
  *          "partitions") the PCI function field is repurposed by the vendor's management library for
  *          partition/die identification, but the function seen by the OS/sysfs for the *device* itself is
  *          always `0` - so vendor-provided domain/bus/device values should be combined with a hardcoded `0`
- *          function here rather than a vendor-reported function value, to stay comparable with sysfs PCI bus IDs
- *          (see e.g. `hws::detail::enumerate_all_amd_gpu_pci_bus_ids()`/`enumerate_all_nvidia_gpu_pci_bus_ids()`).
+ *          function here rather than a vendor-reported function value, to stay comparable with the (lower case)
+ *          PCI bus IDs reported by the HIP/CUDA runtimes (see `hws::detail::amd_device_pci_bus_id()`/
+ *          `hws::detail::nvidia_device_pci_bus_id()`).
  * @param[in] domain the PCI domain
  * @param[in] bus the PCI bus number
  * @param[in] device the PCI device (slot) number

@@ -76,7 +76,8 @@ namespace hws::detail {
 /**
  * @brief Return the PCI bus ID (e.g. `"0000:c1:00.0"`) of the AMD GPU device with the given HIP @p local_index.
  * @param[in] local_index the local HIP device index
- * @return the PCI bus ID (`[[nodiscard]]`)
+ * @throws std::runtime_error if the PCI bus ID can't be queried (always checked, regardless of `HWS_ERROR_CHECKS_ENABLED`)
+ * @return the PCI bus ID in lower case (`[[nodiscard]]`)
  */
 [[nodiscard]] std::string amd_device_pci_bus_id(int local_index);
 

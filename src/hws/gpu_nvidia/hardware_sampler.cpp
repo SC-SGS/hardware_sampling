@@ -55,7 +55,7 @@ namespace {
 [[nodiscard]] unsigned int resolve_nvml_device_id(const std::size_t cuda_device_id) {
     unsigned int nvml_count{};
     if (nvmlDeviceGetCount_v2(&nvml_count) != NVML_SUCCESS) {
-        throw std::runtime_error{ "gpu_nvidia_hardware_sampler: couldn't query the number of NVML devices while resolving the physical device for CUDA index " + std::to_string(cuda_device_id) + "!" };
+        throw std::runtime_error{ fmt::format("gpu_nvidia_hardware_sampler: couldn't query the number of NVML devices while resolving the physical device for CUDA index {}!", cuda_device_id) };
     }
 
     const std::string cuda_bus_id = detail::nvidia_device_pci_bus_id(static_cast<int>(cuda_device_id));
@@ -67,14 +67,14 @@ namespace {
             const std::string nvml_bus_id = detail::format_pci_bus_id(static_cast<std::uint32_t>(pcie_info.domain), static_cast<std::uint32_t>(pcie_info.bus), static_cast<std::uint32_t>(pcie_info.device));
             if (nvml_bus_id == cuda_bus_id) {
                 if (resolved.has_value()) {
-                    throw std::runtime_error{ "gpu_nvidia_hardware_sampler: found more than one NVML device reporting PCI bus ID " + cuda_bus_id + " (CUDA index " + std::to_string(cuda_device_id) + ")!" };
+                    throw std::runtime_error{ fmt::format("gpu_nvidia_hardware_sampler: found more than one NVML device reporting PCI bus ID {} (CUDA index {})!", cuda_bus_id, cuda_device_id) };
                 }
                 resolved = nvml_idx;
             }
         }
     }
     if (!resolved.has_value()) {
-        throw std::runtime_error{ "gpu_nvidia_hardware_sampler: couldn't find an NVML device with PCI bus ID " + cuda_bus_id + " (CUDA index " + std::to_string(cuda_device_id) + ")!" };
+        throw std::runtime_error{ fmt::format("gpu_nvidia_hardware_sampler: couldn't find an NVML device with PCI bus ID {} (CUDA index {})!", cuda_bus_id, cuda_device_id) };
     }
     return resolved.value();
 }
@@ -99,7 +99,12 @@ gpu_nvidia_hardware_sampler::gpu_nvidia_hardware_sampler(const std::size_t devic
     {
         const std::lock_guard<std::mutex> lock{ lifecycle_mutex_ };
         if (instances_ == 0) {
-            HWS_NVML_ERROR_CHECK(nvmlInit())
+            // always check for errors (regardless of HWS_ERROR_CHECKS_ENABLED): otherwise a failed nvmlInit() would
+            // still be counted as a successful initialization and never be retried
+            const nvmlReturn_t errc = nvmlInit();
+            if (errc != NVML_SUCCESS) {
+                throw std::runtime_error{ fmt::format("Error in NVML function call \"nvmlInit\": {} ({})", nvmlErrorString(errc), static_cast<int>(errc)) };
+            }
         }
         ++instances_;
     }

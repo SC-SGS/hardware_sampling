@@ -44,7 +44,8 @@ class gpu_nvidia_hardware_sampler : public hardware_sampler {
     /**
      * @brief Construct a new NVIDIA GPU hardware sampler for device @p device_id with the default sampling interval.
      * @details If this is the first NVIDIA GPU sampler, initializes the NVML environment.
-     * @param[in] device_id the ID of the device to sample
+     * @param[in] device_id the CUDA device index of the device to sample (i.e., as enumerated by CUDA after applying `CUDA_VISIBLE_DEVICES`/`CUDA_DEVICE_ORDER`);
+     *                      internally mapped to the matching NVML device via its PCI bus ID
      * @param[in] category the sample categories that are enabled for hardware sampling (default: all)
      */
     explicit gpu_nvidia_hardware_sampler(std::size_t device_id, sample_category category = sample_category::all);
@@ -58,7 +59,8 @@ class gpu_nvidia_hardware_sampler : public hardware_sampler {
     /**
      * @brief Construct a new NVIDIA GPU hardware sampler for device @p device_id with the @p sampling_interval.
      * @details If this is the first NVIDIA GPU sampler, initializes the NVML environment.
-     * @param[in] device_id the ID of the device to sample
+     * @param[in] device_id the CUDA device index of the device to sample (i.e., as enumerated by CUDA after applying `CUDA_VISIBLE_DEVICES`/`CUDA_DEVICE_ORDER`);
+     *                      internally mapped to the matching NVML device via its PCI bus ID
      * @param[in] sampling_interval the used sampling interval
      * @param[in] category the sample categories that are enabled for hardware sampling (default: all)
      */

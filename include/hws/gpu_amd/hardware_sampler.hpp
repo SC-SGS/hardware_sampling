@@ -43,7 +43,8 @@ class gpu_amd_hardware_sampler : public hardware_sampler {
     /**
      * @brief Construct a new AMD GPU hardware sampler for device @p device_id with the default sampling interval.
      * @details If this is the first AMD GPU sampler, initializes the ROCm SMI environment.
-     * @param[in] device_id the ID of the device to sample
+     * @param[in] device_id the HIP device index of the device to sample (i.e., as enumerated by HIP after applying `HIP_VISIBLE_DEVICES`/`ROCR_VISIBLE_DEVICES`);
+     *                      internally mapped to the matching ROCm SMI device via its PCI bus ID
      * @param[in] category the sample categories that are enabled for hardware sampling (default: all)
      */
     explicit gpu_amd_hardware_sampler(std::size_t device_id, sample_category category = sample_category::all);
@@ -57,7 +58,8 @@ class gpu_amd_hardware_sampler : public hardware_sampler {
     /**
      * @brief Construct a new AMD GPU hardware sampler for device @p device_id with the @p sampling_interval.
      * @details If this is the first AMD GPU sampler, initializes the ROCm SMI environment.
-     * @param[in] device_id the ID of the device to sample
+     * @param[in] device_id the HIP device index of the device to sample (i.e., as enumerated by HIP after applying `HIP_VISIBLE_DEVICES`/`ROCR_VISIBLE_DEVICES`);
+     *                      internally mapped to the matching ROCm SMI device via its PCI bus ID
      * @param[in] sampling_interval the used sampling interval
      * @param[in] category the sample categories that are enabled for hardware sampling (default: all)
      */
@@ -118,6 +120,8 @@ class gpu_amd_hardware_sampler : public hardware_sampler {
 
     /**
      * @copydoc hws::hardware_sampler::device_identification
+     * @note Uses the ROCm SMI device index (unique per node), not the HIP device index passed to the constructor; both may differ if
+     *       `HIP_VISIBLE_DEVICES`/`ROCR_VISIBLE_DEVICES` is set.
      */
     [[nodiscard]] std::string device_identification() const final;
 

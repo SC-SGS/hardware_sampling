@@ -46,9 +46,17 @@ namespace {
  *          `hws::detail::format_pci_bus_id()`.
  */
 [[nodiscard]] std::string bdfid_to_pci_bus_id(const std::uint64_t bdfid) {
-    const auto domain = static_cast<std::uint32_t>((bdfid >> 32) & 0xffffffffull);
-    const auto bus = static_cast<std::uint32_t>((bdfid >> 8) & 0xffull);
-    const auto device = static_cast<std::uint32_t>((bdfid >> 3) & 0x1full);
+    // bit layout of the BDFID fields
+    constexpr std::uint64_t bdfid_domain_shift = 32;
+    constexpr std::uint64_t bdfid_domain_mask = 0xffffffffull;
+    constexpr std::uint64_t bdfid_bus_shift = 8;
+    constexpr std::uint64_t bdfid_bus_mask = 0xffull;
+    constexpr std::uint64_t bdfid_device_shift = 3;
+    constexpr std::uint64_t bdfid_device_mask = 0x1full;
+
+    const auto domain = static_cast<std::uint32_t>((bdfid >> bdfid_domain_shift) & bdfid_domain_mask);
+    const auto bus = static_cast<std::uint32_t>((bdfid >> bdfid_bus_shift) & bdfid_bus_mask);
+    const auto device = static_cast<std::uint32_t>((bdfid >> bdfid_device_shift) & bdfid_device_mask);
     return detail::format_pci_bus_id(domain, bus, device);
 }
 
@@ -69,7 +77,7 @@ namespace {
 [[nodiscard]] std::uint32_t resolve_rsmi_device_id(const std::uint32_t hip_device_id) {
     std::uint32_t rsmi_count{};
     if (rsmi_num_monitor_devices(&rsmi_count) != RSMI_STATUS_SUCCESS) {
-        throw std::runtime_error{ "gpu_amd_hardware_sampler: couldn't query the number of ROCm SMI devices while resolving the physical device for HIP index " + std::to_string(hip_device_id) + "!" };
+        throw std::runtime_error{ fmt::format("gpu_amd_hardware_sampler: couldn't query the number of ROCm SMI devices while resolving the physical device for HIP index {}!", hip_device_id) };
     }
 
     const std::string hip_bus_id = detail::amd_device_pci_bus_id(static_cast<int>(hip_device_id));
@@ -78,13 +86,13 @@ namespace {
         std::uint64_t bdfid{};
         if (rsmi_dev_pci_id_get(rsmi_idx, &bdfid) == RSMI_STATUS_SUCCESS && bdfid_to_pci_bus_id(bdfid) == hip_bus_id) {
             if (resolved.has_value()) {
-                throw std::runtime_error{ "gpu_amd_hardware_sampler: found more than one ROCm SMI device with PCI bus ID " + hip_bus_id + " (HIP index " + std::to_string(hip_device_id) + ") - likely a partitioned accelerator, which isn't supported yet!" };
+                throw std::runtime_error{ fmt::format("gpu_amd_hardware_sampler: found more than one ROCm SMI device with PCI bus ID {} (HIP index {}) - likely a partitioned accelerator, which isn't supported yet!", hip_bus_id, hip_device_id) };
             }
             resolved = rsmi_idx;
         }
     }
     if (!resolved.has_value()) {
-        throw std::runtime_error{ "gpu_amd_hardware_sampler: couldn't find a ROCm SMI device with PCI bus ID " + hip_bus_id + " (HIP index " + std::to_string(hip_device_id) + ")!" };
+        throw std::runtime_error{ fmt::format("gpu_amd_hardware_sampler: couldn't find a ROCm SMI device with PCI bus ID {} (HIP index {})!", hip_bus_id, hip_device_id) };
     }
     return resolved.value();
 }
@@ -110,7 +118,16 @@ gpu_amd_hardware_sampler::gpu_amd_hardware_sampler(const std::size_t device_id, 
     {
         const std::lock_guard<std::mutex> lock{ lifecycle_mutex_ };
         if (instances_ == 0) {
-            HWS_ROCM_SMI_ERROR_CHECK(rsmi_init(std::uint64_t{ 0 }))
+            // always check for errors (regardless of HWS_ERROR_CHECKS_ENABLED): otherwise a failed rsmi_init() would
+            // still be counted as a successful initialization and never be retried
+            const rsmi_status_t errc = rsmi_init(std::uint64_t{ 0 });
+            if (errc != RSMI_STATUS_SUCCESS) {
+                const char *error_string = nullptr;
+                if (rsmi_status_string(errc, &error_string) == RSMI_STATUS_SUCCESS && error_string != nullptr) {
+                    throw std::runtime_error{ fmt::format("Error in ROCm SMI function call \"rsmi_init\": {}", error_string) };
+                }
+                throw std::runtime_error{ fmt::format("Error in ROCm SMI function call \"rsmi_init\": {}", static_cast<int>(errc)) };
+            }
         }
         ++instances_;
     }
