@@ -14,6 +14,7 @@
 
 #include "hws/event.hpp"
 #include "hws/hardware_sampler.hpp"
+#include "hws/mpi_sampling_mode.hpp"
 #include "hws/sample_category.hpp"
 #include "hws/system_hardware_sampler.hpp"
 #include "hws/version.hpp"

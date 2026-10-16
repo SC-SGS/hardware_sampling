@@ -24,7 +24,7 @@
 #include <vector>      // std::vector
 
 #if defined(HWS_MPI_SUPPORT_ENABLED)
-    #include "hws/mpi_sampling_mode.hpp"  // hws::detail::mpi_sampling_mode
+    #include "hws/mpi_sampling_mode.hpp"  // hws::mpi_sampling_mode
     #include <mpi.h>                      // MPI_Comm
 #endif
 
@@ -54,7 +54,7 @@ class system_hardware_sampler {
      * @param[in] mode the MPI sampling mode
      * @param[in] category the sample categories that are enabled for hardware sampling (default: all)
      */
-    explicit system_hardware_sampler(MPI_Comm communicator, detail::mpi_sampling_mode mode, sample_category category = sample_category::all);
+    explicit system_hardware_sampler(MPI_Comm communicator, mpi_sampling_mode mode, sample_category category = sample_category::all);
     /**
      * @brief Construct hardware samplers with the provided @p sampling_interval and MPI support.
      * @param[in] communicator the MPI communicator
@@ -62,7 +62,7 @@ class system_hardware_sampler {
      * @param[in] sampling_interval the used sampling interval
      * @param[in] category the sample categories that are enabled for hardware sampling (default: all)
      */
-    explicit system_hardware_sampler(MPI_Comm communicator, detail::mpi_sampling_mode mode, std::chrono::milliseconds sampling_interval, sample_category category = sample_category::all);
+    explicit system_hardware_sampler(MPI_Comm communicator, mpi_sampling_mode mode, std::chrono::milliseconds sampling_interval, sample_category category = sample_category::all);
 #endif
 
     /**

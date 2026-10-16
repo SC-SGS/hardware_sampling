@@ -14,7 +14,7 @@
 
 #if defined(HWS_MPI_SUPPORT_ENABLED)
 
-namespace hws::detail {
+namespace hws {
 
 /**
  * @brief The mode to use for MPI sampling.
@@ -26,7 +26,7 @@ enum class mpi_sampling_mode {
     whole_node
 };
 
-}  // namespace hws::detail
+}  // namespace hws
 
 #endif  // HWS_MPI_SUPPORT_ENABLED
 

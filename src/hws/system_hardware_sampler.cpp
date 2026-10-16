@@ -65,14 +65,14 @@ system_hardware_sampler::system_hardware_sampler(const std::chrono::milliseconds
 }
 
 #if defined(HWS_MPI_SUPPORT_ENABLED)
-system_hardware_sampler::system_hardware_sampler(MPI_Comm communicator, const detail::mpi_sampling_mode mode, const sample_category category) :
+system_hardware_sampler::system_hardware_sampler(MPI_Comm communicator, const mpi_sampling_mode mode, const sample_category category) :
     system_hardware_sampler(communicator, mode, HWS_SAMPLING_INTERVAL, category) { }
 
-system_hardware_sampler::system_hardware_sampler(MPI_Comm communicator, const detail::mpi_sampling_mode mode, const std::chrono::milliseconds sampling_interval, const sample_category category) {
-    if (mode == detail::mpi_sampling_mode::per_rank) {
+system_hardware_sampler::system_hardware_sampler(MPI_Comm communicator, const mpi_sampling_mode mode, const std::chrono::milliseconds sampling_interval, const sample_category category) {
+    if (mode == mpi_sampling_mode::per_rank) {
         // each rank creates samplers for all devices visible to him
         create_local_samplers(sampling_interval, category);
-    } else if (mode == detail::mpi_sampling_mode::whole_node) {
+    } else if (mode == mpi_sampling_mode::whole_node) {
         // create a custom, node-local MPI communicator
         detail::hostname_comm_info nc{ communicator };
 

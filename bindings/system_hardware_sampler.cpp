@@ -29,9 +29,9 @@ namespace py = pybind11;
 void init_system_hardware_sampler(py::module_ &m) {
 #if defined(HWS_MPI_SUPPORT_ENABLED)
     // bind mpi sampling mode enum
-    py::enum_<hws::detail::mpi_sampling_mode>(m, "MPISamplingMode")
-        .value("PER_RANK", hws::detail::mpi_sampling_mode::per_rank)
-        .value("WHOLE_NODE", hws::detail::mpi_sampling_mode::whole_node)
+    py::enum_<hws::mpi_sampling_mode>(m, "MPISamplingMode")
+        .value("PER_RANK", hws::mpi_sampling_mode::per_rank)
+        .value("WHOLE_NODE", hws::mpi_sampling_mode::whole_node)
         .export_values();
 #endif
     // bind the pure virtual hardware sampler base class
@@ -45,7 +45,7 @@ void init_system_hardware_sampler(py::module_ &m) {
 
         // (MPI_Comm, mode, category=all)
         .def(py::init([](py::object py_comm,
-                         hws::detail::mpi_sampling_mode mode,
+                         hws::mpi_sampling_mode mode,
                          hws::sample_category category) {
                  MPI_Comm comm = mpi_comm_from_python(py_comm);
                  return std::make_unique<hws::system_hardware_sampler>(comm, mode, category);
@@ -57,7 +57,7 @@ void init_system_hardware_sampler(py::module_ &m) {
 
         // (MPI_Comm, mode, sampling_interval, category=all)
         .def(py::init([](py::object py_comm,
-                         hws::detail::mpi_sampling_mode mode,
+                         hws::mpi_sampling_mode mode,
                          std::chrono::milliseconds sampling_interval,
                          hws::sample_category category) {
                  MPI_Comm comm = mpi_comm_from_python(py_comm);
