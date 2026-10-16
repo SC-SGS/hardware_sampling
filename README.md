@@ -229,8 +229,7 @@ current clock frequencies, temperatures, or memory consumption.
 
 **Note:** for AMD GPUs, `power_total_energy_consumption` is also calculated via `power_usage` if more than one AMD GPU
 sampler exists or MPI support is enabled, since ROCm SMI's energy counter can't be queried in parallel by multiple
-samplers (see the CMake option `HWS_AMD_GPU_ENERGY_SOURCE`). In this case, the event
-`rocm_smi: total energy consumption integrated from power usage instead of queried from the energy counter` is added.
+samplers (see the CMake option `HWS_AMD_GPU_ENERGY_SOURCE`).
 
 ### memory-related samples
 

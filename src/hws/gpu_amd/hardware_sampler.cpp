@@ -381,9 +381,6 @@ void gpu_amd_hardware_sampler::sampling_loop() {
             use_energy_counter = instances_ <= 1;
         }
 #endif
-        if (!use_energy_counter && power_samples_.power_usage_.has_value()) {
-            this->add_event("rocm_smi: total energy consumption integrated from power usage instead of queried from the energy counter");
-        }
 
         // queried samples -> retrieved every iteration if available
         [[maybe_unused]] std::uint64_t timestamp{};
