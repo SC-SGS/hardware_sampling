@@ -25,6 +25,7 @@
 #include <exception>  // std::exception, std::terminate
 #include <ios>        // std::ios_base
 #include <iostream>   // std::cerr, std::endl
+#include <mutex>      // std::mutex, std::lock_guard
 #include <optional>   // std::optional
 #include <ostream>    // std::ostream
 #include <stdexcept>  // std::runtime_error
@@ -172,6 +173,7 @@ void gpu_amd_hardware_sampler::sampling_loop() {
     this->add_time_point(std::chrono::steady_clock::now());
 
     double initial_total_power_consumption{};  // initial total power consumption in J
+    bool use_energy_counter{};                 // whether the total energy consumption is queried from ROCm SMI's energy counter (or integrated from the power usage)
 
     // retrieve initial general information
     if (this->sample_category_enabled(sample_category::general)) {
@@ -363,11 +365,31 @@ void gpu_amd_hardware_sampler::sampling_loop() {
             }
         }
 
+        // decide once whether the total energy consumption is queried from ROCm SMI's energy counter or integrated from the power usage
+#if defined(HWS_AMD_GPU_ENERGY_SOURCE_COUNTER)
+        // COUNTER: always use ROCm SMI's energy counter, even if multiple AMD GPU samplers query it in parallel
+        use_energy_counter = true;
+#elif defined(HWS_AMD_GPU_ENERGY_SOURCE_INTEGRATED) || defined(HWS_MPI_SUPPORT_ENABLED)
+        // INTEGRATED: always integrate the energy from the power usage
+        // AUTO in MPI builds: the instance count below is per process, but multiple MPI ranks on the same node may each
+        // own AMD GPU samplers -> always integrate, so that all AMD GPU samplers on a node use the same energy source
+        use_energy_counter = false;
+#else
+        // AUTO: ROCm SMI's energy counter can't be queried in parallel by multiple AMD GPU samplers -> integrate from power instead
+        {
+            const std::lock_guard<std::mutex> lock{ lifecycle_mutex_ };
+            use_energy_counter = instances_ <= 1;
+        }
+#endif
+        if (!use_energy_counter && power_samples_.power_usage_.has_value()) {
+            this->add_event("rocm_smi: total energy consumption integrated from power usage instead of queried from the energy counter");
+        }
+
         // queried samples -> retrieved every iteration if available
         [[maybe_unused]] std::uint64_t timestamp{};
         float resolution{};
         std::uint64_t power_total_energy_consumption{};
-        if (rsmi_dev_energy_count_get(device_id_, &power_total_energy_consumption, &resolution, &timestamp) == RSMI_STATUS_SUCCESS) {
+        if (use_energy_counter && rsmi_dev_energy_count_get(device_id_, &power_total_energy_consumption, &resolution, &timestamp) == RSMI_STATUS_SUCCESS) {
             const auto scaled_value = static_cast<decltype(power_samples_.power_total_energy_consumption_)::value_type::value_type>(power_total_energy_consumption) * static_cast<decltype(power_samples_.power_total_energy_consumption_)::value_type::value_type>(resolution);
             initial_total_power_consumption = scaled_value / 1000'000.0;
             power_samples_.power_total_energy_consumption_ = decltype(power_samples_.power_total_energy_consumption_)::value_type{ 0.0 };
@@ -637,7 +659,7 @@ void gpu_amd_hardware_sampler::sampling_loop() {
                     [[maybe_unused]] std::uint64_t timestamp{};
                     float resolution{};
                     std::uint64_t value{};
-                    if (rsmi_dev_energy_count_get(device_id_, &value, &resolution, &timestamp) == RSMI_STATUS_SUCCESS) {
+                    if (use_energy_counter && rsmi_dev_energy_count_get(device_id_, &value, &resolution, &timestamp) == RSMI_STATUS_SUCCESS) {
                         const auto scaled_value = static_cast<decltype(power_samples_.power_total_energy_consumption_)::value_type::value_type>(value) * static_cast<decltype(power_samples_.power_total_energy_consumption_)::value_type::value_type>(resolution);
                         power_samples_.power_total_energy_consumption_->push_back((scaled_value / 1000'000.0) - initial_total_power_consumption);
                     } else if (power_samples_.power_usage_.has_value()) {
