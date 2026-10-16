@@ -69,6 +69,14 @@ The `[optional_options]` can be one or multiple of:
   - `AUTO`: check whether AMD GPU information can be sampled but **do not** fail if this is not the case
   - `OFF`: do not check whether AMD GPU information can be sampled
 
+- `HWS_AMD_GPU_ENERGY_SOURCE=AUTO|COUNTER|INTEGRATED` (default: `AUTO`): the source of the AMD GPU
+  `power_total_energy_consumption` (ROCm SMI's energy counter can't be queried in parallel by multiple AMD GPU samplers)
+  - `AUTO`: integrate the energy from `power_usage` if more than one AMD GPU sampler exists, otherwise use ROCm SMI's
+    energy counter; if MPI support is enabled, always integrate the energy from `power_usage` (multiple MPI ranks on the
+    same node may each own AMD GPU samplers)
+  - `COUNTER`: always use ROCm SMI's energy counter, even if multiple AMD GPU samplers query it in parallel
+  - `INTEGRATED`: always integrate the energy from `power_usage`
+
 - `HWS_ENABLE_GPU_INTEL_SAMPLING=ON|OFF|AUTO` (default: `AUTO`):
   - `ON`: check whether Intel GPU information can be sampled and fail if this is not the case
   - `AUTO`: check whether Intel GPU information can be sampled but **do not** fail if this is not the case
@@ -218,6 +226,11 @@ current clock frequencies, temperatures, or memory consumption.
 | dram_rapl_throttling           |   sampled   |                 %                 |      -      |                                           -                                            |                          -                           |
 | power_total_energy_consumption |   sampled   | J<br>(calculated via power_usage) |      J      | J<br>(calculated via power_usage if<br>power_total_energy_consumption isn't available) |                          J                           |
 | power_profile                  |   sampled   |                 -                 |     int     |                                          str                                           |                          -                           |
+
+**Note:** for AMD GPUs, `power_total_energy_consumption` is also calculated via `power_usage` if more than one AMD GPU
+sampler exists or MPI support is enabled, since ROCm SMI's energy counter can't be queried in parallel by multiple
+samplers (see the CMake option `HWS_AMD_GPU_ENERGY_SOURCE`). In this case, the event
+`rocm_smi: total energy consumption integrated from power usage instead of queried from the energy counter` is added.
 
 ### memory-related samples
 

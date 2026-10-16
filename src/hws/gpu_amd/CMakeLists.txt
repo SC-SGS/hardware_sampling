@@ -35,3 +35,17 @@ target_sources(${HWS_LIBRARY_NAME} PRIVATE
 
 # add compile definition
 target_compile_definitions(${HWS_LIBRARY_NAME} PUBLIC HWS_FOR_AMD_GPUS_ENABLED)
+
+# select the source of the total energy consumption: ROCm SMI's energy counter can't be queried in parallel by multiple
+# AMD GPU samplers, so AUTO integrates the energy from the power usage if more than one AMD GPU sampler exists (or always
+# in MPI builds, since multiple MPI ranks on the same node may each own AMD GPU samplers)
+set(HWS_AMD_GPU_ENERGY_SOURCE AUTO CACHE STRING "Source of the AMD GPU total energy consumption: AUTO (integrate from power if more than one AMD GPU sampler exists or MPI support is enabled, otherwise use the ROCm SMI energy counter), COUNTER, or INTEGRATED.")
+set_property(CACHE HWS_AMD_GPU_ENERGY_SOURCE PROPERTY STRINGS AUTO COUNTER INTEGRATED)
+if (HWS_AMD_GPU_ENERGY_SOURCE MATCHES "^COUNTER$")
+    target_compile_definitions(${HWS_LIBRARY_NAME} PRIVATE HWS_AMD_GPU_ENERGY_SOURCE_COUNTER)
+elseif (HWS_AMD_GPU_ENERGY_SOURCE MATCHES "^INTEGRATED$")
+    target_compile_definitions(${HWS_LIBRARY_NAME} PRIVATE HWS_AMD_GPU_ENERGY_SOURCE_INTEGRATED)
+elseif (NOT HWS_AMD_GPU_ENERGY_SOURCE MATCHES "^AUTO$")
+    message(SEND_ERROR "HWS_AMD_GPU_ENERGY_SOURCE must be AUTO, COUNTER, or INTEGRATED, but is \"${HWS_AMD_GPU_ENERGY_SOURCE}\"!")
+endif ()
+message(STATUS "AMD GPU energy source: ${HWS_AMD_GPU_ENERGY_SOURCE}")
