@@ -74,6 +74,15 @@ The `[optional_options]` can be one or multiple of:
   - `AUTO`: check whether Intel GPU information can be sampled but **do not** fail if this is not the case
   - `OFF`: do not check whether Intel GPU information can be sampled
 
+- `HWS_ENABLE_CRAY_PM_COUNTERS_SAMPLING=ON|OFF|AUTO` (default: `AUTO`):
+  - `ON`: enable sampling of node power/energy via Cray/HPE's `/sys/cray/pm_counters` and fail if the build system
+    is not Linux
+  - `AUTO`: enable sampling via `/sys/cray/pm_counters` on Linux, but **do not** fail if this is not the case
+  - `OFF`: do not enable sampling via `/sys/cray/pm_counters`
+
+  **Note:** whether `/sys/cray/pm_counters` actually exists is only checked at runtime, so the backend is compiled in
+  on every Linux system (e.g. when building on a login node for execution on a compute node).
+
 - `HWS_ENABLE_ERROR_CHECKS=ON|OFF` (default: `OFF`): enable sanity checks during hardware sampling, may be problematic
   with smaller sample intervals
 - `HWS_SAMPLING_INTERVAL=100ms` (default: `100ms`): set the sampling interval in milliseconds
