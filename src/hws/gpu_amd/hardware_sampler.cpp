@@ -767,6 +767,12 @@ std::string gpu_amd_hardware_sampler::device_identification() const {
     return fmt::format("gpu_amd_device_{}", device_id_);
 }
 
+std::string gpu_amd_hardware_sampler::pci_bus_id() const {
+    std::uint64_t bdfid{};
+    HWS_ROCM_SMI_ERROR_CHECK(rsmi_dev_pci_id_get(device_id_, &bdfid))
+    return bdfid_to_pci_bus_id(bdfid);
+}
+
 std::string gpu_amd_hardware_sampler::samples_only_as_yaml_string() const {
     // check whether it's safe to generate the YAML entry
     if (this->is_sampling()) {

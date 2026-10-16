@@ -40,6 +40,11 @@ class cpu_hardware_sampler : public hardware_sampler {
      * @brief Construct a new CPU hardware sampler with the @p sampling_interval.
      * @param[in] sampling_interval the used sampling interval
      * @param[in] category the sample categories that are enabled for hardware sampling (default: all)
+     * @note If the turbostat backend is used, turbostat itself blocks for `HWS_TURBOSTAT_INTERVAL` seconds
+     *       per invocation (see the CMake option of the same name). If that is larger than
+     *       @p sampling_interval, the turbostat backend dominates and the achieved sampling cadence will be
+     *       closer to `HWS_TURBOSTAT_INTERVAL` than to @p sampling_interval; a warning is printed to
+     *       `std::cerr` in that case.
      */
     explicit cpu_hardware_sampler(std::chrono::milliseconds sampling_interval, sample_category category = sample_category::all);
 

@@ -9,14 +9,17 @@
 
 #include "hws/utility.hpp"  // hws::detail::to_lower_case
 
-#include "cuda_runtime_api.h"  // cudaDeviceGetPCIBusId, cudaGetErrorName, cudaGetErrorString
+#include "cuda_runtime_api.h"  // cudaGetDeviceCount, cudaDeviceGetPCIBusId, cudaGetErrorName, cudaGetErrorString
 #include "fmt/format.h"        // fmt::format
 #include "fmt/ranges.h"        // fmt::join
 #include "nvml.h"              // NVML runtime functions
 
-#include <stdexcept>  // std::runtime_error
-#include <string>     // std::string
-#include <vector>     // std::vector
+#include <algorithm>     // std::sort
+#include <filesystem>    // std::filesystem::{directory_iterator, exists, directory_options}
+#include <stdexcept>     // std::runtime_error
+#include <string>        // std::string
+#include <system_error>  // std::error_code
+#include <vector>        // std::vector
 
 #if defined(HWS_MPI_SUPPORT_ENABLED) && defined(HWS_FOR_NVIDIA_GPUS_ENABLED)
     #include "hws/visible_gpu_device.hpp"  // hws::detail::visible_gpu_device, hws::detail::device_backend_kind
@@ -73,6 +76,34 @@ std::string nvidia_device_pci_bus_id(const int local_index) {
     }
     // normalize to lower case (CUDA returns upper case hex digits) to be comparable to hws::detail::format_pci_bus_id
     return to_lower_case(bus_id);
+}
+
+std::vector<std::string> enumerate_all_nvidia_gpu_pci_bus_ids() {
+    std::vector<std::string> bus_ids{};
+
+    const std::filesystem::path nvidia_driver_dir{ "/sys/bus/pci/drivers/nvidia" };
+    std::error_code ec{};
+    if (!std::filesystem::exists(nvidia_driver_dir, ec) || ec) {
+        return bus_ids;
+    }
+
+    for (const std::filesystem::directory_entry &entry : std::filesystem::directory_iterator(nvidia_driver_dir, std::filesystem::directory_options::skip_permission_denied, ec)) {
+        if (ec) {
+            break;
+        }
+        // every PCI device bound to the nvidia driver shows up here as a symlink named after its PCI bus ID,
+        // e.g. "0000:c1:00.0" -> ../../../devices/.../0000:c1:00.0
+        if (!entry.is_symlink(ec)) {
+            continue;
+        }
+        const std::string name = entry.path().filename().string();
+        if (name.find(':') != std::string::npos && name.find('.') != std::string::npos) {
+            bus_ids.push_back(name);
+        }
+    }
+
+    std::sort(bus_ids.begin(), bus_ids.end());
+    return bus_ids;
 }
 
 #if defined(HWS_MPI_SUPPORT_ENABLED) && defined(HWS_FOR_NVIDIA_GPUS_ENABLED)
