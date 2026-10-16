@@ -268,6 +268,15 @@ class system_hardware_sampler {
      *         no pm_counters/AMD/NVIDIA GPU sampler present) (`[[nodiscard]]`)
      */
     [[nodiscard]] std::string device_correlation_hints_as_yaml_string() const;
+
+    /**
+     * @brief Return the YAML string of the single @p sampler (see `hws::hardware_sampler::as_yaml_string()`).
+     * @details For the `cray_pm_counters_hardware_sampler`, the `device_correlation_hints_as_yaml_string()` block
+     *          (if any) is appended, so the hints end up on the same level as that sampler's `version`, `events`, etc.
+     * @param[in] sampler the hardware sampler to return the YAML string for
+     * @return the YAML string (`[[nodiscard]]`)
+     */
+    [[nodiscard]] std::string sampler_as_yaml_string(const hardware_sampler &sampler) const;
 };
 
 }  // namespace hws

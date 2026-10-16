@@ -13,9 +13,10 @@
  */
 
 #include "hws/core.hpp"
-#include "hws/cray_pm_counters/utility.hpp"  // hws::detail::{accel_index_from_counter_key, accel_indices_from_counter_keys, guess_accel_index, accel_correlation_yaml_block}
+#include "hws/cray_pm_counters/utility.hpp"  // hws::detail::{parse_pm_counter, pm_counter_unit, accel_index_from_counter_key, accel_indices_from_counter_keys, guess_accel_index, accel_correlation_yaml_block}
 
 #include <chrono>    // std::chrono::milliseconds
+#include <cstdint>   // std::uint64_t
 #include <cstdlib>   // std::exit, setenv
 #include <filesystem>  // std::filesystem
 #include <fstream>   // std::ofstream
@@ -95,7 +96,13 @@ void test_real_values(const std::filesystem::path &root) {
     const auto &energy = sampler.power_samples().get_energy_counters();
     const auto &power = sampler.power_samples().get_power_counters();
     const auto &energy_ts = sampler.power_samples().get_energy_timestamps_us();
-    const auto &metadata = sampler.general_samples().get_metadata();
+    const auto &other = sampler.power_samples().get_other_counters();
+    const auto &other_ts = sampler.power_samples().get_other_timestamps_us();
+    const auto &other_units = sampler.power_samples().get_other_units();
+    const auto &fixed = sampler.general_samples().get_fixed_metadata();
+    const auto &numeric = sampler.general_samples().get_numeric_metadata();
+    const auto &strings = sampler.general_samples().get_string_metadata();
+    const auto &units = sampler.general_samples().get_units();
 
     check(energy.has_value() && energy->count("energy") == 1 && energy->at("energy").front() == 12044825101ull,
           "'energy' discovered and parsed as a measured energy counter");
@@ -112,13 +119,61 @@ void test_real_values(const std::filesystem::path &root) {
     check(!power.has_value() || power->count("power_cap") == 0, "'power_cap' excluded from power_counters");
     check(!power.has_value() || power->count("accel0_power_cap") == 0, "'accel0_power_cap' excluded from power_counters");
 
-    // ... they should show up as general metadata instead
-    check(metadata.has_value() && metadata->count("power_cap") == 1, "'power_cap' present in general metadata");
-    check(metadata.has_value() && metadata->count("capped_energy") == 1, "'capped_energy' present in general metadata");
-    check(metadata.has_value() && metadata->count("overshoot") == 1, "'overshoot' present in general metadata");
+    // ... they should show up as numeric "other" power related counters instead, with their unit split off
+    check(other.has_value() && other->count("power_cap") == 1 && other->at("power_cap").front() == 2894.0, "'power_cap' parsed as a number in the other power counters");
+    check(other.has_value() && other->count("accel0_power_cap") == 1, "'accel0_power_cap' present in the other power counters");
+    check(other.has_value() && other->count("capped_energy") == 1 && other->at("capped_energy").front() == 12752953.0, "'capped_energy' parsed as a number in the other power counters");
+    check(other.has_value() && other->count("overshoot_energy") == 1, "'overshoot_energy' present in the other power counters");
+    check(other_units.has_value() && other_units->count("power_cap") == 1 && other_units->at("power_cap") == "W", "'power_cap' has unit W");
+    check(other_units.has_value() && other_units->count("capped_energy") == 1 && other_units->at("capped_energy") == "J", "'capped_energy' has unit J");
+    check(other_ts.has_value() && other_ts->count("capped_energy") == 1 && other_ts->at("capped_energy").front() == 7810213855886ull, "'capped_energy's embedded HSS timestamp extracted correctly");
+    check(!other_ts.has_value() || other_ts->count("power_cap") == 0, "'power_cap' has no timestamps");
+
+    // plain numeric metadata must be sampled as numbers, not strings
+    check(numeric.has_value() && numeric->count("overshoot") == 1 && numeric->at("overshoot").front() == 62408.0, "'overshoot' parsed as a number in general metadata");
+    check(numeric.has_value() && numeric->count("generation") == 1 && numeric->at("generation").front() == 16.0, "'generation' parsed as a number in general metadata");
+    check(units.has_value() && units->count("overshoot") == 1 && units->at("overshoot") == "int", "'overshoot' has unit int");
     // freshness must be re-sampled every tick, not read once (regression check)
-    check(metadata.has_value() && metadata->count("freshness") == 1 && metadata->at("freshness").size() > 1,
+    check(numeric.has_value() && numeric->count("freshness") == 1 && numeric->at("freshness").size() > 1,
           "'freshness' is re-sampled every tick, not just once");
+
+    // static metadata is read only once
+    check(fixed.has_value() && fixed->count("version") == 1 && fixed->at("version") == 3.0, "'version' read once as a fixed number");
+    check(fixed.has_value() && fixed->count("raw_scan_hz") == 1 && fixed->at("raw_scan_hz") == 10.0, "'raw_scan_hz' read once as a fixed number");
+    check(!numeric.has_value() || numeric->count("version") == 0, "'version' isn't re-sampled");
+
+    // nothing in the synthetic dump is non-numeric
+    check(!strings.has_value() || strings->empty(), "no string metadata for an all-numeric pm_counters dump");
+
+    // the YAML output contains numbers and plain units only
+    const std::string yaml = sampler.samples_only_as_yaml_string();
+    check(yaml.find("(cumulative)") == std::string::npos && yaml.find("(instantaneous)") == std::string::npos, "YAML units are plain W/J");
+    check(yaml.find("values: 3\n") != std::string::npos, "YAML 'version' written as a scalar");
+    check(yaml.find(" W\"") == std::string::npos && yaml.find(" us\"") == std::string::npos && yaml.find("unit: \"string\"") == std::string::npos,
+          "YAML values are numbers, not raw strings with units");
+}
+
+void test_parse_pm_counter() {
+    std::cout << "test_parse_pm_counter\n";
+
+    const auto cap = hws::detail::parse_pm_counter("2894 W");
+    check(cap.has_value() && cap->value == 2894.0 && cap->unit == "W" && !cap->timestamp_us.has_value(), "'2894 W' -> value + unit");
+    const auto telemetry = hws::detail::parse_pm_counter("12752953 J 7810213855886 us");
+    check(telemetry.has_value() && telemetry->value == 12752953.0 && telemetry->unit == "J" && telemetry->timestamp_us == std::optional<std::uint64_t>{ 7810213855886ull },
+          "'<value> J <timestamp> us' -> value + unit + timestamp");
+    const auto plain = hws::detail::parse_pm_counter("62408");
+    check(plain.has_value() && plain->value == 62408.0 && plain->unit.empty() && plain->is_integer, "'62408' -> plain integer");
+    check(hws::detail::pm_counter_unit(plain.value()) == "int", "unitless integer gets unit int");
+    const auto fractional = hws::detail::parse_pm_counter("0.5");
+    check(fractional.has_value() && fractional->value == 0.5 && !fractional->is_integer, "'0.5' -> fractional number");
+    check(hws::detail::pm_counter_unit(fractional.value()) == "float", "unitless fractional number gets unit float");
+    const auto spaces = hws::detail::parse_pm_counter("  724   W\t7810213855886  us \n");
+    check(spaces.has_value() && spaces->value == 724.0 && spaces->unit == "W" && spaces->timestamp_us.has_value(), "arbitrary whitespace is handled");
+    check(!hws::detail::parse_pm_counter("ok").has_value(), "'ok' isn't numeric");
+    check(!hws::detail::parse_pm_counter("1 2 3").has_value(), "'1 2 3' isn't a single counter");
+    check(!hws::detail::parse_pm_counter("nan").has_value(), "'nan' isn't accepted as a number");
+    check(!hws::detail::parse_pm_counter("12abc").has_value(), "'12abc' isn't accepted as a number");
+    check(!hws::detail::parse_pm_counter("").has_value(), "empty content isn't numeric");
 }
 
 void test_adversarial_names(const std::filesystem::path &root) {
@@ -134,13 +189,16 @@ void test_adversarial_names(const std::filesystem::path &root) {
 
     const auto &energy = sampler.power_samples().get_energy_counters();
     const auto &power = sampler.power_samples().get_power_counters();
-    const auto &metadata = sampler.general_samples().get_metadata();
+    const auto &other = sampler.power_samples().get_other_counters();
+    const auto &strings = sampler.general_samples().get_string_metadata();
 
     // regression check (GPT-5.5 review finding): "energy"/"power" must be a path-segment suffix, not any substring
     check(!energy.has_value() || energy->count("energy_source") == 0, "'energy_source' not misclassified as an energy counter");
     check(!power.has_value() || power->count("power_state") == 0, "'power_state' not misclassified as a power counter");
-    check(metadata.has_value() && metadata->count("power_state") == 1, "'power_state' present in general metadata");
-    check(metadata.has_value() && metadata->count("energy_source") == 1, "'energy_source' present in general metadata");
+    // non-numeric entries always fall back to string metadata, even if their name contains "power"/"energy"
+    check(!other.has_value() || (other->count("power_state") == 0 && other->count("energy_source") == 0), "non-numeric entries not in the other power counters");
+    check(strings.has_value() && strings->count("power_state") == 1 && strings->at("power_state").front() == "ok", "'power_state' present as string metadata");
+    check(strings.has_value() && strings->count("energy_source") == 1, "'energy_source' present as string metadata");
 }
 
 void test_nested_path(const std::filesystem::path &root) {
@@ -258,6 +316,7 @@ int main() {
     const std::filesystem::path root = std::filesystem::temp_directory_path() / "hws_cray_pm_counters_test";
 
     test_absent();
+    test_parse_pm_counter();
     make_synthetic_pm_counters(root);
     test_real_values(root);
     test_adversarial_names(root);

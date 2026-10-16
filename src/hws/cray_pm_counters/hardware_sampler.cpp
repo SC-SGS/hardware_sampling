@@ -8,7 +8,7 @@
 #include "hws/cray_pm_counters/hardware_sampler.hpp"
 
 #include "hws/cray_pm_counters/pm_counters_samples.hpp"  // hws::{cray_pm_counters_general_samples, cray_pm_counters_power_samples}
-#include "hws/cray_pm_counters/utility.hpp"               // hws::detail::{pm_counters_available, list_pm_counter_files, pm_counter_key, read_pm_counter_raw, read_pm_counter_reading, pm_counter_reading, is_energy_counter_key, is_power_counter_key, accel_indices_from_counter_keys}
+#include "hws/cray_pm_counters/utility.hpp"               // hws::detail::{list_pm_counter_files, pm_counter_key, read_pm_counter_raw, read_pm_counter_reading, pm_counter_reading, pm_counter_unit, is_energy_counter_key, is_power_counter_key, is_power_related_counter, is_static_pm_counter_key, accel_indices_from_counter_keys}
 #include "hws/hardware_sampler.hpp"                       // hws::hardware_sampler
 #include "hws/sample_category.hpp"                        // hws::sample_category
 #include "hws/utility.hpp"                                // hws::detail::time_points_to_epoch
@@ -19,10 +19,12 @@
 
 #include <algorithm>   // std::max
 #include <chrono>      // std::chrono::{steady_clock, milliseconds, duration_cast}
+#include <cstdint>     // std::uint64_t
 #include <exception>   // std::exception, std::terminate
 #include <filesystem>  // std::filesystem::path
 #include <ios>         // std::ios_base
 #include <iostream>    // std::cerr, std::endl
+#include <limits>      // std::numeric_limits
 #include <optional>    // std::optional
 #include <ostream>     // std::ostream
 #include <stdexcept>   // std::runtime_error
@@ -50,17 +52,100 @@ cray_pm_counters_hardware_sampler::~cray_pm_counters_hardware_sampler() {
     }
 }
 
+void cray_pm_counters_hardware_sampler::discover_pm_counters() {
+    const bool general_enabled = this->sample_category_enabled(sample_category::general);
+    const bool power_enabled = this->sample_category_enabled(sample_category::power);
+
+    for (const std::filesystem::path &file : detail::list_pm_counter_files()) {
+        const std::string key = detail::pm_counter_key(file);
+
+        // measured telemetry is classified by name alone
+        if (detail::is_energy_counter_key(key)) {
+            energy_counter_paths_.emplace(key, file);
+            continue;
+        }
+        if (detail::is_power_counter_key(key)) {
+            power_counter_paths_.emplace(key, file);
+            continue;
+        }
+
+        // everything else is classified by its name and its (parsed) content, read once here
+        const std::optional<detail::pm_counter_reading> reading = detail::read_pm_counter_reading(file);
+        if (!reading.has_value()) {
+            // not numeric at all -> sampled as raw string
+            string_general_paths_.emplace(key, file);
+            continue;
+        }
+
+        const std::string unit = detail::pm_counter_unit(reading.value());
+        if (detail::is_power_related_counter(key, reading->unit)) {
+            // e.g. power caps or capped/overshoot energy
+            other_power_paths_.emplace(key, file);
+            if (power_enabled) {
+                if (!power_samples_.other_units_.has_value()) {
+                    power_samples_.other_units_ = cray_pm_counters_power_samples::unit_map_type{};
+                }
+                power_samples_.other_units_.value()[key] = unit;
+            }
+            continue;
+        }
+
+        if (detail::is_static_pm_counter_key(key)) {
+            // static metadata -> read only once (raw_scan_hz is needed for throttling, even if general isn't enabled)
+            if (key == "raw_scan_hz") {
+                raw_scan_hz_ = reading->value;
+            }
+            if (general_enabled) {
+                if (!general_samples_.fixed_metadata_.has_value()) {
+                    general_samples_.fixed_metadata_ = cray_pm_counters_general_samples::fixed_metadata_type{};
+                }
+                general_samples_.fixed_metadata_.value()[key] = reading->value;
+            }
+        } else {
+            // numeric metadata -> sampled every tick
+            numeric_general_paths_.emplace(key, file);
+        }
+        if (general_enabled) {
+            if (!general_samples_.units_.has_value()) {
+                general_samples_.units_ = cray_pm_counters_general_samples::unit_map_type{};
+            }
+            general_samples_.units_.value()[key] = unit;
+        }
+    }
+}
+
 void cray_pm_counters_hardware_sampler::sample_once() {
     if (this->sample_category_enabled(sample_category::general)) {
-        if (!general_samples_.metadata_.has_value() && !general_paths_.empty()) {
-            general_samples_.metadata_ = cray_pm_counters_general_samples::metadata_type{};
+        if (!general_samples_.numeric_metadata_.has_value() && !numeric_general_paths_.empty()) {
+            general_samples_.numeric_metadata_ = cray_pm_counters_general_samples::numeric_metadata_type{};
         }
-        for (const auto &[key, path] : general_paths_) {
-            general_samples_.metadata_.value()[key].push_back(detail::read_pm_counter_raw(path));
+        if (!general_samples_.string_metadata_.has_value() && !string_general_paths_.empty()) {
+            general_samples_.string_metadata_ = cray_pm_counters_general_samples::string_metadata_type{};
+        }
+        for (const auto &[key, path] : numeric_general_paths_) {
+            const std::optional<detail::pm_counter_reading> reading = detail::read_pm_counter_reading(path);
+            // push NaN on a failed read to keep the values aligned with the sampler's time points
+            general_samples_.numeric_metadata_.value()[key].push_back(reading.has_value() ? reading->value : std::numeric_limits<double>::quiet_NaN());
+        }
+        for (const auto &[key, path] : string_general_paths_) {
+            general_samples_.string_metadata_.value()[key].push_back(detail::read_pm_counter_raw(path));
         }
     }
 
     if (this->sample_category_enabled(sample_category::power)) {
+        if (!power_samples_.other_counters_.has_value() && !other_power_paths_.empty()) {
+            power_samples_.other_counters_ = cray_pm_counters_power_samples::other_counter_map_type{};
+            power_samples_.other_timestamps_us_ = cray_pm_counters_power_samples::counter_map_type{};
+        }
+        for (const auto &[key, path] : other_power_paths_) {
+            const std::optional<detail::pm_counter_reading> reading = detail::read_pm_counter_reading(path);
+            // push NaN on a failed read to keep the values aligned with the sampler's time points
+            power_samples_.other_counters_.value()[key].push_back(reading.has_value() ? reading->value : std::numeric_limits<double>::quiet_NaN());
+            if (reading.has_value() && reading->timestamp_us.has_value()) {
+                power_samples_.other_timestamps_us_.value()[key].push_back(reading->timestamp_us.value());
+            }
+        }
+
         if (!power_samples_.energy_counters_.has_value() && !energy_counter_paths_.empty()) {
             power_samples_.energy_counters_ = cray_pm_counters_power_samples::counter_map_type{};
             power_samples_.energy_timestamps_us_ = cray_pm_counters_power_samples::counter_map_type{};
@@ -72,7 +157,7 @@ void cray_pm_counters_hardware_sampler::sample_once() {
         for (const auto &[key, path] : energy_counter_paths_) {
             const std::optional<detail::pm_counter_reading> reading = detail::read_pm_counter_reading(path);
             if (reading.has_value()) {
-                power_samples_.energy_counters_.value()[key].push_back(reading->value);
+                power_samples_.energy_counters_.value()[key].push_back(static_cast<std::uint64_t>(reading->value));
                 if (reading->timestamp_us.has_value()) {
                     power_samples_.energy_timestamps_us_.value()[key].push_back(reading->timestamp_us.value());
                 }
@@ -81,7 +166,7 @@ void cray_pm_counters_hardware_sampler::sample_once() {
         for (const auto &[key, path] : power_counter_paths_) {
             const std::optional<detail::pm_counter_reading> reading = detail::read_pm_counter_reading(path);
             if (reading.has_value()) {
-                power_samples_.power_counters_.value()[key].push_back(reading->value);
+                power_samples_.power_counters_.value()[key].push_back(static_cast<std::uint64_t>(reading->value));
                 if (reading->timestamp_us.has_value()) {
                     power_samples_.power_timestamps_us_.value()[key].push_back(reading->timestamp_us.value());
                 }
@@ -91,52 +176,27 @@ void cray_pm_counters_hardware_sampler::sample_once() {
 }
 
 std::optional<std::chrono::milliseconds> cray_pm_counters_hardware_sampler::hardware_tick_period() const {
-    // read directly from the discovered path rather than general_samples_.metadata_: the latter is only populated
-    // when sample_category::general is enabled, but throttling to the hardware's real rate must apply regardless
-    // of which sample categories the caller requested (e.g. sample_category::power alone).
-    const auto it = general_paths_.find("raw_scan_hz");
-    if (it == general_paths_.cend()) {
+    // use raw_scan_hz_ rather than general_samples_.fixed_metadata_: the latter is only populated when
+    // sample_category::general is enabled, but throttling to the hardware's real rate must apply regardless of which
+    // sample categories the caller requested (e.g. sample_category::power alone).
+    if (!raw_scan_hz_.has_value() || raw_scan_hz_.value() <= 0.0) {
         return std::nullopt;
     }
-
-    const std::string content = detail::read_pm_counter_raw(it->second);
-    if (content.empty()) {
-        return std::nullopt;
-    }
-
-    try {
-        const double hz = detail::convert_to<double>(content);
-        if (hz <= 0.0) {
-            return std::nullopt;
-        }
-        return std::chrono::milliseconds{ static_cast<std::chrono::milliseconds::rep>(1000.0 / hz) };
-    } catch (const std::exception &) {
-        return std::nullopt;
-    }
+    return std::chrono::milliseconds{ static_cast<std::chrono::milliseconds::rep>(1000.0 / raw_scan_hz_.value()) };
 }
 
 void cray_pm_counters_hardware_sampler::sampling_loop() {
     //
-    // discover the available pm_counters files once and classify them by name into energy counters, power counters,
-    // and general metadata; the exact set of files is Cray-generation specific, so every file below
-    // /sys/cray/pm_counters is picked up dynamically instead of relying on hardcoded names. All three categories
-    // are re-read every tick (including metadata like "freshness", which HPE's own consistency check relies on
-    // changing - see cray_pm_counters_general_samples).
+    // discover the available pm_counters files once and classify them by name and content into measured energy/power
+    // counters, other power related counters, and general metadata; the exact set of files is Cray-generation
+    // specific, so every file below /sys/cray/pm_counters is picked up dynamically instead of relying on hardcoded
+    // names. Everything except the static metadata (version, raw_scan_hz) is re-read every tick (including metadata
+    // like "freshness", which HPE's own consistency check relies on changing - see cray_pm_counters_general_samples).
     //
 
     this->add_time_point(std::chrono::steady_clock::now());
 
-    for (const std::filesystem::path &file : detail::list_pm_counter_files()) {
-        const std::string key = detail::pm_counter_key(file);
-
-        if (detail::is_energy_counter_key(key)) {
-            energy_counter_paths_.emplace(key, file);
-        } else if (detail::is_power_counter_key(key)) {
-            power_counter_paths_.emplace(key, file);
-        } else {
-            general_paths_.emplace(key, file);
-        }
-    }
+    this->discover_pm_counters();
 
     this->sample_once();
 

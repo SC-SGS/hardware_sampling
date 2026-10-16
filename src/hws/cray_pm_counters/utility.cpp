@@ -13,9 +13,11 @@
 #include "fmt/ranges.h"  // fmt::join
 
 #include <algorithm>    // std::sort, std::unique
+#include <cerrno>       // errno, ERANGE
+#include <cmath>        // std::isfinite
 #include <cstddef>      // std::size_t
 #include <cstdint>      // std::uint64_t
-#include <cstdlib>      // std::getenv
+#include <cstdlib>      // std::getenv, std::strtod
 #include <filesystem>   // std::filesystem::{path, directory_entry, exists, is_directory, recursive_directory_iterator, relative}
 #include <fstream>      // std::ifstream
 #include <optional>     // std::optional, std::nullopt
@@ -84,34 +86,99 @@ std::string read_pm_counter_raw(const std::filesystem::path &file) {
     return std::string{ detail::trim(content.str()) };
 }
 
-std::optional<pm_counter_reading> read_pm_counter_reading(const std::filesystem::path &file) {
-    const std::string content = read_pm_counter_raw(file);
-    if (content.empty()) {
+namespace {
+
+// split at any whitespace and drop empty tokens (pm_counters files may separate fields by more than one space)
+[[nodiscard]] std::vector<std::string_view> split_whitespace(const std::string_view str) {
+    std::vector<std::string_view> tokens{};
+    std::string_view::size_type pos = 0;
+    while (pos < str.size()) {
+        pos = str.find_first_not_of(" \t\r\n", pos);
+        if (pos == std::string_view::npos) {
+            break;
+        }
+        const std::string_view::size_type end = str.find_first_of(" \t\r\n", pos);
+        tokens.push_back(str.substr(pos, end == std::string_view::npos ? std::string_view::npos : end - pos));
+        pos = end;
+    }
+    return tokens;
+}
+
+// strictly parse a full token as a finite decimal number (rejects e.g. "nan", "inf", "0x10", or "12abc")
+[[nodiscard]] std::optional<double> parse_number(const std::string_view token) {
+    if (token.empty() || token.find_first_not_of("0123456789+-.eE") != std::string_view::npos) {
         return std::nullopt;
     }
+    const std::string str{ token };
+    char *end = nullptr;
+    errno = 0;
+    const double value = std::strtod(str.c_str(), &end);
+    if (end != str.c_str() + str.size() || errno == ERANGE || !std::isfinite(value)) {
+        return std::nullopt;
+    }
+    return value;
+}
 
-    const std::vector<std::string_view> tokens = detail::split(content, ' ');
+}  // namespace
+
+std::optional<pm_counter_reading> parse_pm_counter(const std::string_view content) {
+    std::vector<std::string_view> tokens = split_whitespace(content);
     if (tokens.empty()) {
         return std::nullopt;
     }
 
     pm_counter_reading reading{};
-    try {
-        reading.value = detail::convert_to<std::uint64_t>(tokens.front());
-    } catch (const std::exception &) {
+
+    // the first token must always be the numeric value
+    const std::optional<double> value = parse_number(tokens.front());
+    if (!value.has_value()) {
         return std::nullopt;
     }
+    reading.value = value.value();
+    reading.is_integer = detail::is_integer(tokens.front());
 
     // PM counters version 3 appends a microsecond timestamp as "... <timestamp_us> us" to telemetry (but not cap) files
-    if (tokens.size() >= 2 && tokens.back() == "us" && detail::is_integer(tokens[tokens.size() - 2])) {
+    if (tokens.size() >= 3 && tokens.back() == "us" && detail::is_integer(tokens[tokens.size() - 2])) {
         try {
             reading.timestamp_us = detail::convert_to<std::uint64_t>(tokens[tokens.size() - 2]);
         } catch (const std::exception &) {
-            // ignore an unparsable timestamp, the value itself was already parsed successfully
+            return std::nullopt;
         }
+        tokens.resize(tokens.size() - 2);
+    }
+
+    // at most one remaining, non-numeric token: the unit
+    if (tokens.size() == 2) {
+        if (parse_number(tokens.back()).has_value()) {
+            return std::nullopt;
+        }
+        reading.unit = std::string{ tokens.back() };
+    } else if (tokens.size() > 2) {
+        return std::nullopt;
     }
 
     return reading;
+}
+
+std::optional<pm_counter_reading> read_pm_counter_reading(const std::filesystem::path &file) {
+    return parse_pm_counter(read_pm_counter_raw(file));
+}
+
+bool is_power_related_counter(const std::string &key, const std::string &unit) {
+    const std::string lower_case_key = detail::to_lower_case(key);
+    return lower_case_key.find("power") != std::string::npos || lower_case_key.find("energy") != std::string::npos || unit == "W" || unit == "J";
+}
+
+bool is_static_pm_counter_key(const std::string &key) {
+    // the pm_counters protocol version and the hardware's own update rate can't change while the interface exists
+    return key == "version" || key == "raw_scan_hz";
+}
+
+std::string pm_counter_unit(const pm_counter_reading &reading) {
+    if (!reading.unit.empty()) {
+        return reading.unit;
+    }
+    return reading.is_integer ? "int" : "float";
 }
 
 namespace {

@@ -23,7 +23,10 @@ void init_cray_pm_counters_hardware_sampler(py::module_ &m) {
     // bind the general samples
     py::class_<hws::cray_pm_counters_general_samples>(m, "CrayPmCountersGeneralSamples")
         .def("has_samples", &hws::cray_pm_counters_general_samples::has_samples, "true if any sample is available, false otherwise")
-        .def("get_metadata", &hws::cray_pm_counters_general_samples::get_metadata, "the dynamically discovered, non-energy, non-power pm_counters metadata entries (e.g. version, generation, raw_scan_hz, freshness), keyed by file name")
+        .def("get_fixed_metadata", &hws::cray_pm_counters_general_samples::get_fixed_metadata, "the static numeric pm_counters metadata entries read only once (e.g. version, raw_scan_hz), keyed by file name")
+        .def("get_numeric_metadata", &hws::cray_pm_counters_general_samples::get_numeric_metadata, "the sampled numeric pm_counters metadata entries (e.g. freshness, generation, overshoot), keyed by file name; NaN if a reading couldn't be parsed")
+        .def("get_string_metadata", &hws::cray_pm_counters_general_samples::get_string_metadata, "the sampled non-numeric pm_counters metadata entries as raw file content, keyed by file name")
+        .def("get_units", &hws::cray_pm_counters_general_samples::get_units, "the units of the fixed and numeric metadata entries, keyed by file name")
         .def("__repr__", [](const hws::cray_pm_counters_general_samples &self) {
             return fmt::format("<HardwareSampling.CrayPmCountersGeneralSamples with\n{}\n>", self);
         });
@@ -35,6 +38,9 @@ void init_cray_pm_counters_hardware_sampler(py::module_ &m) {
         .def("get_power_counters", &hws::cray_pm_counters_power_samples::get_power_counters, "the dynamically discovered measured power counters in W (instantaneous), keyed by file name, e.g. 'power' (whole node) or 'accel0_power' (per accelerator)")
         .def("get_energy_timestamps_us", &hws::cray_pm_counters_power_samples::get_energy_timestamps_us, "per-sample HSS latch timestamp for the energy counters, in us (PM counters v3+ only)")
         .def("get_power_timestamps_us", &hws::cray_pm_counters_power_samples::get_power_timestamps_us, "per-sample HSS latch timestamp for the power counters, in us (PM counters v3+ only)")
+        .def("get_other_counters", &hws::cray_pm_counters_power_samples::get_other_counters, "the other power related pm_counters entries (e.g. power_cap, accel0_power_cap, capped_energy, overshoot_energy), keyed by file name; NaN if a reading couldn't be parsed")
+        .def("get_other_timestamps_us", &hws::cray_pm_counters_power_samples::get_other_timestamps_us, "per-sample HSS latch timestamp for the other power related counters, in us (if the file provides one)")
+        .def("get_other_units", &hws::cray_pm_counters_power_samples::get_other_units, "the units of the other power related counters, keyed by file name")
         .def("__repr__", [](const hws::cray_pm_counters_power_samples &self) {
             return fmt::format("<HardwareSampling.CrayPmCountersPowerSamples with\n{}\n>", self);
         });

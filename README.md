@@ -303,15 +303,22 @@ tables above, `pm_counters` doesn't expose a fixed, well-known set of sample nam
 across PM counter versions and node generations, so they are discovered and classified at runtime instead. Each
 discovered file is classified into one of:
 
-| YAML section | sample type | description                                                                                                                                              |
-|:-------------|:-----------:|:----------------------------------------------------------------------------------------------------------------------------------------------------------|
-| general      |    fixed    | everything else, e.g. configured caps (`power_cap`), derived/event counters (`overshoot`), and protocol metadata (`freshness`, `generation`, `version`)   |
-| power        |   sampled   | measured power counters, in W (instantaneous), e.g. `power` (whole node) or `accel[i]_power` (per accelerator)                                            |
-| power        |   sampled   | measured energy counters, in J (cumulative), e.g. `energy` (whole node) or `accel[i]_energy` (per accelerator)                                            |
+| YAML section | sample type | description                                                                                                                               |
+|:-------------|:-----------:|:-------------------------------------------------------------------------------------------------------------------------------------------|
+| general      |    fixed    | static protocol metadata, read only once: `version`, `raw_scan_hz`                                                                        |
+| general      |   sampled   | other numeric metadata, e.g. `freshness`, `generation`, `overshoot`, `startup` (unit `int`/`float` if the file doesn't report one)        |
+| general      |   sampled   | fallback for files that aren't numeric at all, sampled as raw strings (unit `string`)                                                     |
+| power        |   sampled   | measured power counters, in W (instantaneous), e.g. `power` (whole node) or `accel[i]_power` (per accelerator)                            |
+| power        |   sampled   | measured energy counters, in J (cumulative), e.g. `energy` (whole node) or `accel[i]_energy` (per accelerator)                            |
+| power        |   sampled   | other power/energy related counters (name contains `power`/`energy` or unit W/J), e.g. `power_cap`, `capped_energy`, `overshoot_energy`   |
+
+Every pm_counters file is parsed as `"<value> [<unit>] [<timestamp> us]"`: the value is sampled as a number, the unit
+is written to the YAML `unit` field, and the HSS timestamp (if present) to `timestamps_us`.
 
 On a node with accelerators visible to hws (NVIDIA or AMD GPUs), `system_hardware_sampler` additionally emits a
-best-effort, **UNVERIFIED** `device_correlation_hints` YAML block that guesses which `accel[i]` counter corresponds
-to which visible GPU device, based on ascending PCI bus address order - see
+best-effort, **UNVERIFIED** `device_correlation_hints` YAML block inside the pm_counters sampler's entry (next to its
+`version`, `events`, etc.) that guesses which `accel[i]` counter corresponds to which visible GPU device, based on
+ascending PCI bus address order - see
 [`system_hardware_sampler::device_correlation_hints_as_yaml_string()`](include/hws/system_hardware_sampler.hpp) for
 the exact caveats.
 

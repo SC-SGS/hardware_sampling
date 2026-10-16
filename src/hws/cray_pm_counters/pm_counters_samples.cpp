@@ -14,6 +14,7 @@
 #include "fmt/ranges.h"  // fmt::join
 
 #include <algorithm>      // std::sort
+#include <cmath>          // std::isnan
 #include <cstdint>        // std::uint64_t
 #include <optional>       // std::optional
 #include <ostream>        // std::ostream
@@ -37,6 +38,32 @@ template <typename MapType>
     return keys;
 }
 
+// format a single number for the YAML output; NaN (an unparsable reading) is written as YAML's ".nan"
+[[nodiscard]] std::string format_number(const double value) {
+    return std::isnan(value) ? std::string{ ".nan" } : fmt::format("{}", value);
+}
+
+// format all numbers for the YAML output, see format_number
+[[nodiscard]] std::string format_numbers(const std::vector<double> &values) {
+    std::vector<std::string> formatted{};
+    formatted.reserve(values.size());
+    for (const double value : values) {
+        formatted.push_back(format_number(value));
+    }
+    return fmt::format("{}", fmt::join(formatted, ", "));
+}
+
+// look up the unit of the entry key; "int" if none is known (shouldn't happen, every numeric entry gets a unit)
+template <typename UnitMapType>
+[[nodiscard]] std::string unit_of(const std::optional<UnitMapType> &units, const std::string &key) {
+    if (units.has_value()) {
+        if (const auto it = units.value().find(key); it != units.value().cend()) {
+            return it->second;
+        }
+    }
+    return "int";
+}
+
 }  // namespace
 
 //*************************************************************************************************************************************//
@@ -44,7 +71,7 @@ template <typename MapType>
 //*************************************************************************************************************************************//
 
 bool cray_pm_counters_general_samples::has_samples() const {
-    return this->metadata_.has_value();
+    return this->fixed_metadata_.has_value() || this->numeric_metadata_.has_value() || this->string_metadata_.has_value();
 }
 
 std::string cray_pm_counters_general_samples::generate_yaml_string() const {
@@ -56,13 +83,41 @@ std::string cray_pm_counters_general_samples::generate_yaml_string() const {
     std::string str{ "general:\n" };
     const std::string root = detail::pm_counters_root().generic_string();
 
-    if (this->metadata_.has_value()) {
-        for (const std::string &key : sorted_keys(this->metadata_.value())) {
+    // emit all entries sorted by name, regardless of whether they are fixed, numeric, or string entries
+    std::vector<std::string> keys{};
+    if (this->fixed_metadata_.has_value()) {
+        const std::vector<std::string> fixed_keys = sorted_keys(this->fixed_metadata_.value());
+        keys.insert(keys.end(), fixed_keys.cbegin(), fixed_keys.cend());
+    }
+    if (this->numeric_metadata_.has_value()) {
+        const std::vector<std::string> numeric_keys = sorted_keys(this->numeric_metadata_.value());
+        keys.insert(keys.end(), numeric_keys.cbegin(), numeric_keys.cend());
+    }
+    if (this->string_metadata_.has_value()) {
+        const std::vector<std::string> string_keys = sorted_keys(this->string_metadata_.value());
+        keys.insert(keys.end(), string_keys.cbegin(), string_keys.cend());
+    }
+    std::sort(keys.begin(), keys.end());
+
+    for (const std::string &key : keys) {
+        if (this->fixed_metadata_.has_value() && this->fixed_metadata_.value().count(key) != 0) {
+            str += fmt::format("  {}:\n"
+                               "    unit: \"{}\"\n"
+                               "    source: \"{}/{}\"\n"
+                               "    values: {}\n",
+                               key, unit_of(this->units_, key), root, key, format_number(this->fixed_metadata_.value().at(key)));
+        } else if (this->numeric_metadata_.has_value() && this->numeric_metadata_.value().count(key) != 0) {
+            str += fmt::format("  {}:\n"
+                               "    unit: \"{}\"\n"
+                               "    source: \"{}/{}\"\n"
+                               "    values: [{}]\n",
+                               key, unit_of(this->units_, key), root, key, format_numbers(this->numeric_metadata_.value().at(key)));
+        } else {
             str += fmt::format("  {}:\n"
                                "    unit: \"string\"\n"
                                "    source: \"{}/{}\"\n"
                                "    values: [{}]\n",
-                               key, root, key, fmt::join(detail::quote(this->metadata_.value().at(key)), ", "));
+                               key, root, key, fmt::join(detail::quote(this->string_metadata_.value().at(key)), ", "));
         }
     }
 
@@ -70,7 +125,14 @@ std::string cray_pm_counters_general_samples::generate_yaml_string() const {
 }
 
 std::ostream &operator<<(std::ostream &out, const cray_pm_counters_general_samples &samples) {
-    return out << fmt::format("metadata: {}", detail::map_entry_to_string(samples.get_metadata()));
+    return out << fmt::format("fixed_metadata: {}\n"
+                              "numeric_metadata: {}\n"
+                              "string_metadata: {}\n"
+                              "units: {}",
+                              detail::map_entry_to_string(samples.get_fixed_metadata()),
+                              detail::map_entry_to_string(samples.get_numeric_metadata()),
+                              detail::map_entry_to_string(samples.get_string_metadata()),
+                              detail::map_entry_to_string(samples.get_units()));
 }
 
 //*************************************************************************************************************************************//
@@ -78,7 +140,7 @@ std::ostream &operator<<(std::ostream &out, const cray_pm_counters_general_sampl
 //*************************************************************************************************************************************//
 
 bool cray_pm_counters_power_samples::has_samples() const {
-    return this->energy_counters_.has_value() || this->power_counters_.has_value();
+    return this->energy_counters_.has_value() || this->power_counters_.has_value() || this->other_counters_.has_value();
 }
 
 std::string cray_pm_counters_power_samples::generate_yaml_string() const {
@@ -102,7 +164,7 @@ std::string cray_pm_counters_power_samples::generate_yaml_string() const {
     if (this->energy_counters_.has_value()) {
         for (const std::string &key : sorted_keys(this->energy_counters_.value())) {
             str += fmt::format("  {}:\n"
-                               "    unit: \"J (cumulative)\"\n"
+                               "    unit: \"J\"\n"
                                "    source: \"{}/{}\"\n"
                                "    values: [{}]\n",
                                key, root, key, fmt::join(this->energy_counters_.value().at(key), ", "));
@@ -114,11 +176,23 @@ std::string cray_pm_counters_power_samples::generate_yaml_string() const {
     if (this->power_counters_.has_value()) {
         for (const std::string &key : sorted_keys(this->power_counters_.value())) {
             str += fmt::format("  {}:\n"
-                               "    unit: \"W (instantaneous)\"\n"
+                               "    unit: \"W\"\n"
                                "    source: \"{}/{}\"\n"
                                "    values: [{}]\n",
                                key, root, key, fmt::join(this->power_counters_.value().at(key), ", "));
             if (const std::vector<std::uint64_t> *timestamps = find_timestamps(this->power_timestamps_us_, key); timestamps != nullptr) {
+                str += fmt::format("    timestamps_us: [{}]\n", fmt::join(*timestamps, ", "));
+            }
+        }
+    }
+    if (this->other_counters_.has_value()) {
+        for (const std::string &key : sorted_keys(this->other_counters_.value())) {
+            str += fmt::format("  {}:\n"
+                               "    unit: \"{}\"\n"
+                               "    source: \"{}/{}\"\n"
+                               "    values: [{}]\n",
+                               key, unit_of(this->other_units_, key), root, key, format_numbers(this->other_counters_.value().at(key)));
+            if (const std::vector<std::uint64_t> *timestamps = find_timestamps(this->other_timestamps_us_, key); timestamps != nullptr && !timestamps->empty()) {
                 str += fmt::format("    timestamps_us: [{}]\n", fmt::join(*timestamps, ", "));
             }
         }
@@ -131,11 +205,17 @@ std::ostream &operator<<(std::ostream &out, const cray_pm_counters_power_samples
     return out << fmt::format("energy_counters: {}\n"
                               "energy_timestamps_us: {}\n"
                               "power_counters: {}\n"
-                              "power_timestamps_us: {}",
+                              "power_timestamps_us: {}\n"
+                              "other_counters: {}\n"
+                              "other_timestamps_us: {}\n"
+                              "other_units: {}",
                               detail::map_entry_to_string(samples.get_energy_counters()),
                               detail::map_entry_to_string(samples.get_energy_timestamps_us()),
                               detail::map_entry_to_string(samples.get_power_counters()),
-                              detail::map_entry_to_string(samples.get_power_timestamps_us()));
+                              detail::map_entry_to_string(samples.get_power_timestamps_us()),
+                              detail::map_entry_to_string(samples.get_other_counters()),
+                              detail::map_entry_to_string(samples.get_other_timestamps_us()),
+                              detail::map_entry_to_string(samples.get_other_units()));
 }
 
 }  // namespace hws

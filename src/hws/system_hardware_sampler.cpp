@@ -234,17 +234,16 @@ const std::unique_ptr<hardware_sampler> &system_hardware_sampler::sampler(const 
 }
 
 void system_hardware_sampler::dump_yaml(const char *filename) const {
-    std::for_each(samplers_.cbegin(), samplers_.cend(), [&filename](const auto &ptr) { ptr->dump_yaml(filename); });
-
-    // each individual sampler already wrote its own "---"-separated YAML document above; the correlation hints
-    // aren't tied to any single sampler, so they get one more such document of their own, if there's anything to
-    // report (see device_correlation_hints_as_yaml_string()).
-    const std::string hints = this->device_correlation_hints_as_yaml_string();
-    if (!hints.empty()) {
-        std::ofstream file{ filename, std::ios_base::app };
-        file << "---\n\n"
-             << hints;
+    // generate all YAML strings first (throws if any sampler is still sampling), then write one "---"-separated YAML
+    // document per sampler (the same as hardware_sampler::dump_yaml(), but including the correlation hints for the
+    // pm_counters sampler, see sampler_as_yaml_string())
+    std::string yaml_output{};
+    for (const std::unique_ptr<hardware_sampler> &ptr : samplers_) {
+        yaml_output += "---\n\n" + this->sampler_as_yaml_string(*ptr);
     }
+
+    std::ofstream file{ filename, std::ios_base::app };
+    file << yaml_output;
 }
 
 void system_hardware_sampler::dump_yaml(const std::string &filename) const {
@@ -275,14 +274,10 @@ void system_hardware_sampler::dump_yaml_global(const char *filename, MPI_Comm co
 
     // accumulate string from each sampler
     std::size_t sampler_idx = 0;
-    std::for_each(samplers_.cbegin(), samplers_.cend(), [&rank_yaml_output, &sampler_idx](const auto &ptr) {
+    std::for_each(samplers_.cbegin(), samplers_.cend(), [this, &rank_yaml_output, &sampler_idx](const auto &ptr) {
         rank_yaml_output += "sampler_" + std::to_string(sampler_idx++) + ":\n";
-        rank_yaml_output += detail::indent_lines(ptr->as_yaml_string(), "  ");
+        rank_yaml_output += detail::indent_lines(this->sampler_as_yaml_string(*ptr), "  ");
     });
-
-    // not tied to any single sampler, so appended directly rather than under a "sampler_N:" key; empty if there's
-    // nothing to report (see device_correlation_hints_as_yaml_string())
-    rank_yaml_output += this->device_correlation_hints_as_yaml_string();
 
     const std::string global_yaml_output = detail::gather_yaml_strings_mpi(rank_yaml_output, communicator);
 
@@ -302,8 +297,17 @@ void system_hardware_sampler::dump_yaml_global(const std::filesystem::path &file
 #endif
 
 std::string system_hardware_sampler::as_yaml_string() const {
-    return std::accumulate(samplers_.cbegin(), samplers_.cend(), std::string{}, [](const std::string str, const auto &ptr) { return str + ptr->as_yaml_string(); })
-           + this->device_correlation_hints_as_yaml_string();
+    return std::accumulate(samplers_.cbegin(), samplers_.cend(), std::string{}, [this](const std::string str, const auto &ptr) { return str + this->sampler_as_yaml_string(*ptr); });
+}
+
+std::string system_hardware_sampler::sampler_as_yaml_string(const hardware_sampler &sampler) const {
+#if defined(HWS_FOR_CRAY_PM_COUNTERS_ENABLED)
+    // the correlation hints describe the pm_counters accel[i] entries, so they belong to the pm_counters sampler
+    if (dynamic_cast<const cray_pm_counters_hardware_sampler *>(&sampler) != nullptr) {
+        return sampler.as_yaml_string() + this->device_correlation_hints_as_yaml_string();
+    }
+#endif
+    return sampler.as_yaml_string();
 }
 
 std::string system_hardware_sampler::samples_only_as_yaml_string() const {

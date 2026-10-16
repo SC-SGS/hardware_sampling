@@ -62,24 +62,66 @@ inline constexpr std::string_view default_pm_counters_root = "/sys/cray/pm_count
 [[nodiscard]] std::string read_pm_counter_raw(const std::filesystem::path &file);
 
 /**
- * @brief A single pm_counters energy/power reading.
- * @details On Hunter (PM counters version 3), telemetry files (e.g. `energy`, `accel0_power`) contain
- *          `"<value> <unit> <timestamp_us> us"` (e.g. `"2869283299 J 7810213855886 us"`), while power/energy cap
- *          files and older PM counter versions may only contain `"<value> <unit>"` or even just `"<value>"`.
+ * @brief A single, numeric pm_counters reading.
+ * @details On Hunter (PM counters version 3), telemetry files (e.g. `energy`, `accel0_power`, `capped_energy`)
+ *          contain `"<value> <unit> <timestamp_us> us"` (e.g. `"2869283299 J 7810213855886 us"`), cap files contain
+ *          `"<value> <unit>"` (e.g. `"2894 W"`), and plain counters/metadata only `"<value>"` (e.g. `"16"`).
  */
 struct pm_counter_reading {
-    /// The counter's raw value (unit depends on the file, e.g. J for energy, W for power).
-    std::uint64_t value{};
+    /// The counter's numeric value (unit given by `unit`).
+    double value{};
+    /// The unit reported in the file (e.g. `"W"` or `"J"`), or an empty string if the file doesn't report one.
+    std::string unit{};
     /// The microsecond timestamp at which the value was latched by the HSS, if the file provides one.
     std::optional<std::uint64_t> timestamp_us{};
+    /// `true` if the value was written as an integer (i.e., without a decimal point/exponent).
+    bool is_integer{ false };
 };
 
 /**
- * @brief Read the content of @p file and try to parse it as a `pm_counter_reading`.
+ * @brief Try to parse the (already read) content of a pm_counters file as a numeric `pm_counter_reading`.
+ * @details Accepts `"<value>"`, `"<value> <unit>"`, `"<value> <timestamp_us> us"`, and
+ *          `"<value> <unit> <timestamp_us> us"` with arbitrary whitespace in between; everything else (e.g. `"ok"` or
+ *          `"1 2 3"`) isn't a numeric counter and yields `std::nullopt`, so the caller can fall back to sampling the
+ *          raw string.
+ * @param[in] content the file content
+ * @return the parsed reading, or `std::nullopt` if @p content isn't a numeric counter (`[[nodiscard]]`)
+ */
+[[nodiscard]] std::optional<pm_counter_reading> parse_pm_counter(std::string_view content);
+
+/**
+ * @brief Read the content of @p file and try to parse it as a numeric `pm_counter_reading`.
  * @param[in] file the file to read
- * @return the parsed reading, or `std::nullopt` if the file couldn't be read or doesn't start with an unsigned integer (`[[nodiscard]]`)
+ * @return the parsed reading, or `std::nullopt` if the file couldn't be read or isn't a numeric counter (`[[nodiscard]]`)
  */
 [[nodiscard]] std::optional<pm_counter_reading> read_pm_counter_reading(const std::filesystem::path &file);
+
+/**
+ * @brief Check whether the numeric pm_counters entry @p key with the parsed unit @p unit is power/energy related
+ *        (best-effort), e.g. `power_cap`, `accel0_power_cap`, `capped_energy`, or `overshoot_energy`.
+ * @details Used for every numeric counter that isn't measured energy/power telemetry (see `is_energy_counter_key`/
+ *          `is_power_counter_key`): `true` if @p key contains "power" or "energy" or if @p unit is "W" or "J".
+ * @param[in] key the map key to check
+ * @param[in] unit the unit parsed from the file
+ * @return `true` if the entry belongs to the power samples, otherwise `false` (`[[nodiscard]]`)
+ */
+[[nodiscard]] bool is_power_related_counter(const std::string &key, const std::string &unit);
+
+/**
+ * @brief Check whether the pm_counters entry @p key is static for the whole lifetime of the pm_counters interface
+ *        (currently `version` and `raw_scan_hz`), i.e., only has to be read once instead of every sampling tick.
+ * @param[in] key the map key to check
+ * @return `true` if @p key is static, otherwise `false` (`[[nodiscard]]`)
+ */
+[[nodiscard]] bool is_static_pm_counter_key(const std::string &key);
+
+/**
+ * @brief Return the YAML unit for a numeric pm_counters entry: the unit reported in the file, or `"int"`/`"float"`
+ *        if the file doesn't report one.
+ * @param[in] reading the parsed reading
+ * @return the unit (`[[nodiscard]]`)
+ */
+[[nodiscard]] std::string pm_counter_unit(const pm_counter_reading &reading);
 
 /**
  * @brief Check whether the map key @p key (as returned by `pm_counter_key`) looks like a measured energy counter:

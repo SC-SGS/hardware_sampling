@@ -113,14 +113,20 @@ class cray_pm_counters_hardware_sampler : public hardware_sampler {
     void sampling_loop() final;
 
     /**
-     * @brief Read every discovered pm_counters file once and append the readings to `general_samples_`/`power_samples_`.
-     * @details Called both for the very first sample and on every subsequent tick of the sampling loop - all three
-     *          categories (general, energy, power) are re-read every tick, see `cray_pm_counters_general_samples`.
+     * @brief Discover all pm_counters files once, classify them, and read the static metadata (see
+     *        `hws::detail::is_static_pm_counter_key`) a single time.
+     */
+    void discover_pm_counters();
+
+    /**
+     * @brief Read every discovered, non-static pm_counters file once and append the readings to `general_samples_`/`power_samples_`.
+     * @details Called both for the very first sample and on every subsequent tick of the sampling loop - everything
+     *          except the static metadata is re-read every tick, see `cray_pm_counters_general_samples`.
      */
     void sample_once();
 
     /**
-     * @brief Derive the hardware's own update period from the already-sampled `raw_scan_hz` metadata.
+     * @brief Derive the hardware's own update period from the `raw_scan_hz` value read once at discovery.
      * @return the hardware tick period, or `std::nullopt` if `raw_scan_hz` wasn't found/couldn't be parsed (`[[nodiscard]]`)
      */
     [[nodiscard]] std::optional<std::chrono::milliseconds> hardware_tick_period() const;
@@ -130,12 +136,18 @@ class cray_pm_counters_hardware_sampler : public hardware_sampler {
     /// The power related pm_counters samples.
     cray_pm_counters_power_samples power_samples_{};
 
-    /// The full sysfs path of every general metadata file discovered at sampling start, keyed by its `general_samples().get_metadata()` map key.
-    std::unordered_map<std::string, std::filesystem::path> general_paths_{};
+    /// The full sysfs path of every sampled numeric general metadata file, keyed by its `general_samples().get_numeric_metadata()` map key.
+    std::unordered_map<std::string, std::filesystem::path> numeric_general_paths_{};
+    /// The full sysfs path of every sampled non-numeric general metadata file, keyed by its `general_samples().get_string_metadata()` map key.
+    std::unordered_map<std::string, std::filesystem::path> string_general_paths_{};
     /// The full sysfs path of every energy counter discovered at sampling start, keyed by its `power_samples().get_energy_counters()` map key.
     std::unordered_map<std::string, std::filesystem::path> energy_counter_paths_{};
     /// The full sysfs path of every power counter discovered at sampling start, keyed by its `power_samples().get_power_counters()` map key.
     std::unordered_map<std::string, std::filesystem::path> power_counter_paths_{};
+    /// The full sysfs path of every other power related counter discovered at sampling start, keyed by its `power_samples().get_other_counters()` map key.
+    std::unordered_map<std::string, std::filesystem::path> other_power_paths_{};
+    /// The hardware's own update rate (`raw_scan_hz`), read once at discovery regardless of the enabled sample categories.
+    std::optional<double> raw_scan_hz_{};
 };
 
 /**
